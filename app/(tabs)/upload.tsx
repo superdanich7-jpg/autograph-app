@@ -1,6 +1,5 @@
 // app/(tabs)/upload.tsx
 import * as ImagePicker from 'expo-image-picker';
-
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,14 +14,16 @@ import {
 } from 'react-native';
 import { usePosts } from '../../context/PostsContext';
 
-
 export default function UploadScreen() {
+    // ✅ Хук вызываем ВНАЧАЛЕ
+    const { addPost } = usePosts();
+
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [caption, setCaption] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Запрос прав (обязательно для Android 13+)
-    const requestPermissions = async () => {
+    // Запрос прав на галерею
+    const requestGalleryPermission = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
             Alert.alert('Нужен доступ', 'Разрешите доступ к фото в настройках');
@@ -31,66 +32,79 @@ export default function UploadScreen() {
         return true;
     };
 
-    // Выбор изображения — ИСПРАВЛЕНО под новый API
+    // 📷 СЪЁМКА НА КАМЕРУ
+    const takePhoto = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Нужен доступ', 'Разрешите доступ к камере в настройках');
+            return;
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: 'images', // ✅ Строка вместо энума
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.9,
+        });
+
+        if (!result.canceled && result.assets?.[0]?.uri) {
+            setImageUri(result.assets[0].uri);
+        }
+    };
+
+    // 🖼 Выбор из галереи
     const pickImage = async () => {
-        const hasPermission = await requestPermissions();
+        const hasPermission = await requestGalleryPermission();
         if (!hasPermission) return;
 
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: 'images',
+            mediaTypes: 'images', // ✅ Строка вместо энума
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.8,
         });
 
-        // ✅ Новый API: canceled (не cancelled) и assets[0].uri (не uris)
         if (!result.canceled && result.assets?.[0]?.uri) {
             setImageUri(result.assets[0].uri);
-        } else if (result.canceled) {
-            console.log('Выбор отменён');
-        } else {
-            Alert.alert('Ошибка', 'Не удалось загрузить изображение');
         }
     };
 
-    // Публикация (демо-режим)
+    // 🚀 Публикация
     const handlePublish = async () => {
         if (!imageUri) {
-            Alert.alert('Ошибка', 'Сначала выберите фото');
+            Alert.alert('Ошибка', 'Сначала выберите или снимите фото');
             return;
         }
 
         setLoading(true);
 
-        // Имитация загрузки (здесь потом будет Supabase)
         setTimeout(() => {
-            setLoading(false);
-            Alert.alert('✅ Опубликовано!', 'Фото добавлено в ленту (демо)');
+            addPost({
+                uri: imageUri!,
+                caption: caption,
+                timestamp: new Date().toISOString(),
+            });
 
-            // Сброс формы
+            setLoading(false);
+            Alert.alert('✅ Опубликовано!', 'Автограф добавлен в ленту');
             setImageUri(null);
             setCaption('');
         }, 1500);
-
-        addPost({
-            uri: imageUri!,
-            caption: caption,
-            timestamp: new Date().toISOString(),
-        });
     };
-
-    const { addPost } = usePosts();
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.title}>📤 Загрузить автограф</Text>
 
-            {/* Кнопка выбора фото */}
-            <TouchableOpacity style={styles.pickButton} onPress={pickImage}>
-                <Text style={styles.pickButtonText}>
-                    {imageUri ? '🔄 Заменить фото' : '🖼 Выбрать из галереи'}
-                </Text>
-            </TouchableOpacity>
+            {/* Кнопки выбора медиа */}
+            <View style={styles.mediaButtons}>
+                <TouchableOpacity style={[styles.mediaBtn, styles.cameraBtn]} onPress={takePhoto}>
+                    <Text style={styles.mediaBtnText}>📷 Камера</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.mediaBtn, styles.galleryBtn]} onPress={pickImage}>
+                    <Text style={styles.mediaBtnText}>🖼 Галерея</Text>
+                </TouchableOpacity>
+            </View>
 
             {/* Превью изображения */}
             {imageUri && (
@@ -109,7 +123,7 @@ export default function UploadScreen() {
                 placeholderTextColor="#999"
             />
 
-            {/* Кнопка публикации — ИСПРАВЛЕНО: TouchableOpacity вместо Button */}
+            {/* Кнопка публикации */}
             <TouchableOpacity
                 style={[styles.publishButton, (!imageUri || loading) && styles.publishButtonDisabled]}
                 onPress={handlePublish}
@@ -126,68 +140,32 @@ export default function UploadScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#fff',
-        alignItems: 'center'
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 25,
-        textAlign: 'center'
-    },
-    pickButton: {
-        backgroundColor: '#007AFF',
-        paddingVertical: 14,
-        paddingHorizontal: 30,
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    pickButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-        textAlign: 'center',
-    },
-    previewContainer: {
-        width: '100%',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    preview: {
-        width: '100%',
-        height: 300,
-        borderRadius: 12,
-        backgroundColor: '#f0f0f0',
-    },
+    container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+    title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+
+    // Кнопки медиа
+    mediaButtons: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
+    mediaBtn: { flex: 1, padding: 14, borderRadius: 10, alignItems: 'center', marginHorizontal: 5 },
+    cameraBtn: { backgroundColor: '#007AFF' },
+    galleryBtn: { backgroundColor: '#5856D6' },
+    mediaBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+
+    // Превью
+    previewContainer: { width: '100%', alignItems: 'center', marginBottom: 20 },
+    preview: { width: '100%', height: 300, borderRadius: 12, backgroundColor: '#f0f0f0' },
+
+    // Поле ввода
     input: {
-        width: '100%',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        padding: 14,
-        minHeight: 80,
-        textAlignVertical: 'top',
-        backgroundColor: '#f9f9f9',
-        marginBottom: 25,
-        fontSize: 16,
+        width: '100%', borderWidth: 1, borderColor: '#ddd', borderRadius: 10,
+        padding: 14, minHeight: 80, textAlignVertical: 'top',
+        backgroundColor: '#f9f9f9', marginBottom: 25, fontSize: 16,
     },
+
+    // Кнопка публикации
     publishButton: {
-        backgroundColor: '#00c853',
-        paddingVertical: 16,
-        paddingHorizontal: 40,
-        borderRadius: 12,
-        width: '100%',
-        alignItems: 'center',
+        backgroundColor: '#00c853', paddingVertical: 16, paddingHorizontal: 40,
+        borderRadius: 12, width: '100%', alignItems: 'center',
     },
-    publishButtonDisabled: {
-        backgroundColor: '#ccc',
-    },
-    publishButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
+    publishButtonDisabled: { backgroundColor: '#ccc' },
+    publishButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
