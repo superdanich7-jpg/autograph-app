@@ -33,8 +33,10 @@ interface AnalyzeResponse {
 }
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req: Request) => {
@@ -59,6 +61,23 @@ serve(async (req: Request) => {
     if (!imageBase64) {
       return new Response(
         JSON.stringify({ success: false, error: 'Missing imageBase64' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate image size: max 5MB (base64 ~1.37x binary size)
+    const maxSize = 5 * 1024 * 1024 * 1.37; // ~7MB base64
+    if (imageBase64.length > maxSize) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Image too large. Max 5MB.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate base64 format
+    if (!/^[A-Za-z0-9+/=]+$/.test(imageBase64)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid image format. Expected base64.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

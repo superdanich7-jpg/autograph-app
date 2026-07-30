@@ -34,3 +34,9 @@
   - [x] Empty states с actionable CTA на всех экранах
   - [x] useEffect импортирован для управления состоянием загрузки
   - [x] Skeleton компонент уже существует (PostCardSkeleton, ProfileSkeleton)
+- [x] Безопасность и стабильность
+  - [x] CORS: ALLOWED_ORIGIN env var, методы, max-age
+  - [x] Edge Function: валидация размера imageBase64 (max 5MB)
+  - [x] Edge Function: валидация формата base64
+  - [x] Rate limiting: уже есть на клиенте (2s между голосами)
+  - [x] Deprecated: expo-file-system/legacy (миграция на expo-file-system)
