@@ -23,4 +23,9 @@
   - [x] Добавлен CollectionDetailModal с просмотром и удалением автографов
   - [x] Добавлена кнопка "В подборку" в детальный просмотр автографа
   - [x] Исправлены все TypeScript ошибки (Image import, duplicate import)
-- [x] Task 3 в процессе: Toast notifications
+- [x] Task 3 завершен: Улучшена обработка ошибок
+  - [x] ErrorBoundary: theme support + showToast при ошибке
+  - [x] AchievementsSection: console.warn → showToast
+  - [x] ExportCollection: console.warn → showToast + import
+  - [x] ShareSheet: console.warn → showToast + import
+  - [x] Toast-уведомления работают на всех пользовательских экранах

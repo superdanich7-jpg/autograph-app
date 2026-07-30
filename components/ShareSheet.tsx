@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { getPostDeepLink, generateQrCodeDataUrl, saveQrCodeToGallery, sharePost as sharePostUtil } from '../lib/sharing';
+import { showToast } from './Toast';
 
 type ShareSheetProps = {
   visible: boolean;
@@ -28,6 +29,7 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
       onClose();
     } catch (error) {
       console.warn('Share failed:', error);
+      showToast('Ошибка при отправке', 'error');
     }
   };
 

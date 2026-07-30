@@ -1,17 +1,26 @@
 /**
  * ErrorBoundary — ловит ошибки рендеринга в React дереве.
- * В продакшн-приложениях это обязательный элемент:
- * без него одна ошибка в компоненте крашит всё приложение.
+ * Поддерживает тему, показывает fallback UI с кнопкой перезагрузки.
+ * В production отправляет ошибку в showToast.
  */
 
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { showToast } from './Toast';
 
 type Props = {
   children: React.ReactNode;
   fallbackTitle?: string;
   fallbackMessage?: string;
+  colors?: {
+    background: string;
+    text: string;
+    textSecondary: string;
+    primary: string;
+    primaryText: string;
+    danger: string;
+  };
 };
 
 type State = {
@@ -27,8 +36,8 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // В реальном приложении здесь отправляем в Sentry/DataDog
     console.error('[ErrorBoundary]', error.message, info.componentStack);
+    showToast(error.message || 'Произошла ошибка', 'error');
   }
 
   handleReset = () => {
@@ -37,22 +46,31 @@ export default class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const c = this.props.colors || {
+        background: '#0F172A',
+        text: '#F8FAFC',
+        textSecondary: '#94A3B8',
+        primary: '#3B82F6',
+        primaryText: '#FFFFFF',
+        danger: '#EF4444',
+      };
+
       return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: c.background }]}>
           <View style={styles.iconWrap}>
-            <Ionicons name="alert-circle" size={48} color="#EF4444" />
+            <Ionicons name="alert-circle" size={48} color={c.danger} />
           </View>
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: c.text }]}>
             {this.props.fallbackTitle ?? 'Что-то пошло не так'}
           </Text>
-          <Text style={styles.message}>
+          <Text style={[styles.message, { color: c.textSecondary }]}>
             {this.props.fallbackMessage ?? 'Произошла непредвиденная ошибка. Попробуйте перезапустить экран.'}
           </Text>
           {this.state.error ? (
-            <Text style={styles.errorDetail}>{this.state.error.message}</Text>
+            <Text style={[styles.errorDetail, { color: c.textSecondary }]}>{this.state.error.message}</Text>
           ) : null}
-          <TouchableOpacity style={styles.button} onPress={this.handleReset}>
-            <Text style={styles.buttonText}>Попробовать снова</Text>
+          <TouchableOpacity style={[styles.button, { backgroundColor: c.primary }]} onPress={this.handleReset}>
+            <Text style={[styles.buttonText, { color: c.primaryText }]}>Попробовать снова</Text>
           </TouchableOpacity>
         </View>
       );
@@ -68,7 +86,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-    backgroundColor: '#0F172A',
   },
   iconWrap: {
     marginBottom: 16,
@@ -76,32 +93,27 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#F8FAFC',
     marginBottom: 8,
     textAlign: 'center',
   },
   message: {
     fontSize: 14,
-    color: '#94A3B8',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 12,
   },
   errorDetail: {
     fontSize: 12,
-    color: '#64748B',
     textAlign: 'center',
     marginBottom: 20,
     fontFamily: 'monospace',
   },
   button: {
-    backgroundColor: '#3B82F6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   buttonText: {
-    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
   },

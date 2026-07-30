@@ -50,7 +50,8 @@ export default function AchievementsSection({ userId }: Props) {
             setAll(allAch);
             setEarned(new Set(userAch.map((ua) => ua.achievement_id)));
         } catch (e) {
-            console.warn('Failed to load achievements:', e);
+            const { showToast } = require('./Toast');
+            showToast('Не удалось загрузить достижения', 'error');
         }
         setLoading(false);
     }

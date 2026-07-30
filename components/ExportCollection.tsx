@@ -16,6 +16,7 @@ import {
 import { usePosts } from '../context/PostsContext';
 import { useTheme } from '../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../lib/helpers';
+import { showToast } from './Toast';
 
 export default function ExportCollection() {
     const { posts } = usePosts();
@@ -82,7 +83,7 @@ export default function ExportCollection() {
             }
         } catch (e) {
             Alert.alert('Ошибка', 'Не удалось экспортировать коллекцию.');
-            console.warn('Export error:', e);
+            showToast('Ошибка при экспорте', 'error');
         } finally {
             setExporting(false);
         }
