@@ -29,3 +29,8 @@
   - [x] ExportCollection: console.warn → showToast + import
   - [x] ShareSheet: console.warn → showToast + import
   - [x] Toast-уведомления работают на всех пользовательских экранах
+- [x] UX-основы: Skeleton loading + Empty states
+  - [x] PostCardSkeleton добавлен в ленту (initial loading)
+  - [x] Empty states с actionable CTA на всех экранах
+  - [x] useEffect импортирован для управления состоянием загрузки
+  - [x] Skeleton компонент уже существует (PostCardSkeleton, ProfileSkeleton)

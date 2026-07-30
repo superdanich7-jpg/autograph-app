@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     FlatList,
@@ -34,6 +34,7 @@ import {
     isDisputed,
 } from '../../lib/helpers';
 import ShareSheet from '../../components/ShareSheet';
+import { PostCardSkeleton } from '../../components/ui/Skeleton';
 
 type VoteButtonProps = {
     label: string;
@@ -149,10 +150,11 @@ function PostDetailModal({
 }
 
 export default function FeedScreen() {
-    const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData } = usePosts();
+    const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData, syncStatus } = usePosts();
     const { colors } = useTheme();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
     const [commentsVisible, setCommentsVisible] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
     const [commentText, setCommentText] = useState('');
@@ -482,7 +484,13 @@ export default function FeedScreen() {
                 </View>
             </View>
 
-            {filteredPosts.length === 0 ? (
+            {initialLoading && posts.length === 0 ? (
+                <View style={styles.list}>
+                    <PostCardSkeleton />
+                    <PostCardSkeleton />
+                    <PostCardSkeleton />
+                </View>
+            ) : filteredPosts.length === 0 ? (
                 <View style={styles.emptyWrap}>
                     <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
