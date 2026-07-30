@@ -1,6 +1,8 @@
-// app/(tabs)/index.tsx
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 import {
+    Alert,
     FlatList,
     Image,
     Keyboard,
@@ -8,109 +10,495 @@ import {
     Modal,
     Platform,
     RefreshControl,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { usePosts } from '../../context/PostsContext';
+import Badge from '../../components/ui/Badge';
+import {
+    POST_CATEGORIES,
+    Post,
+    PostCategory,
+    usePosts
+} from '../../context/PostsContext';
 import { useTheme } from '../../context/ThemeContext';
+import {
+    getAuthenticity,
+    getCategoryLabel,
+    getEvidenceLabel,
+    getRarityLabel,
+    isDisputed,
+} from '../../lib/helpers';
+import ShareSheet from '../../components/ShareSheet';
+
+type VoteButtonProps = {
+    label: string;
+    icon: 'checkmark-circle' | 'close-circle';
+    active: boolean;
+    disabled?: boolean;
+    color: string;
+    surface: string;
+    text: string;
+    onPress: () => void;
+};
+
+function VoteButton({ label, icon, active, disabled = false, color, surface, text, onPress }: VoteButtonProps) {
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            activeOpacity={0.85}
+            disabled={disabled}
+            style={[styles.voteButton, { backgroundColor: active ? color : surface, opacity: disabled ? 0.55 : 1 }]}
+        >
+            <Ionicons name={icon} size={16} color={active ? '#fff' : text} />
+            <Text style={[styles.voteButtonText, { color: active ? '#fff' : text }]}>{label}</Text>
+        </TouchableOpacity>
+    );
+}
+
+function PostDetailModal({
+    post,
+    visible,
+    onClose,
+    onShare,
+    colors,
+}: {
+    post: Post | null;
+    visible: boolean;
+    onClose: () => void;
+    onShare?: (post: Post) => void;
+    colors: ReturnType<typeof useTheme>['colors'];
+}) {
+    if (!post) return null;
+
+    const authenticity = getAuthenticity(post);
+
+    return (
+        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
+            <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+                <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={1}>{post.celebrityName}</Text>
+                    <View style={styles.headerActions}>
+                        <TouchableOpacity onPress={() => onShare?.(post)} style={styles.headerActionBtn}>
+                            <Ionicons name="share-outline" size={22} color={colors.primary} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                            <Ionicons name="close" size={24} color={colors.text} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <ScrollView contentContainerStyle={styles.detailScroll}>
+                    <Image source={{ uri: post.uri }} style={styles.detailImage} resizeMode="cover" />
+
+                    <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <Text style={[styles.detailTitle, { color: colors.text }]}>{post.celebrityName}</Text>
+                        <Text style={[styles.detailMeta, { color: colors.textSecondary }]}>
+                            {post.location} • {post.dateReceived}
+                        </Text>
+                        <Text style={[styles.detailDescription, { color: colors.text }]}>{post.caption || 'Без описания'}</Text>
+
+                        <View style={styles.detailBadges}>
+                            <View style={[styles.badge, { backgroundColor: colors.surface }]}>
+                                <Text style={[styles.badgeText, { color: colors.text }]}>{getCategoryLabel(post.category)}</Text>
+                            </View>
+                            <View style={[styles.badge, { backgroundColor: colors.surface }]}>
+                                <Text style={[styles.badgeText, { color: colors.text }]}>{getRarityLabel(post.rarity)}</Text>
+                            </View>
+                        </View>
+
+                        <Text style={[styles.evidenceTitle, { color: colors.textSecondary }]}>Доказательства</Text>
+                        <View style={styles.detailBadges}>
+                            {post.evidence.map((item) => (
+                                <View key={item} style={[styles.badge, { backgroundColor: colors.surface }]}>
+                                    <Text style={[styles.badgeText, { color: colors.text }]}>{getEvidenceLabel(item)}</Text>
+                                </View>
+                            ))}
+                        </View>
+
+                        <View style={styles.detailStats}>
+                            <Text style={[styles.detailMeta, { color: colors.textSecondary }]}>
+                                {post.realVotes} за реальный • {post.fakeVotes} за фейк
+                            </Text>
+                            <Text style={[styles.detailConfidence, { color: colors.text }]}>
+                                {authenticity.totalVotes === 0 ? 'Нет голосов' : `${authenticity.confidence}% достоверности`}
+                            </Text>
+                        </View>
+
+                        {post.isAnalyzed ? (
+                            <View style={[styles.aiCard, { backgroundColor: colors.surface }]}>
+                                <View style={styles.aiTitleRow}>
+                                    <Ionicons name="sparkles-outline" size={16} color={colors.primary} />
+                                    <Text style={[styles.aiTitle, { color: colors.text }]}>Предварительная проверка</Text>
+                                </View>
+                                <Text style={[styles.aiHint, { color: colors.textSecondary }]}>
+                                    Возможное совпадение: {post.aiSuggestion || post.celebrityName}
+                                    {typeof post.aiConfidence === 'number' ? ` (${post.aiConfidence}% совпадения)` : ''}
+                                </Text>
+                            </View>
+                        ) : null}
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        </Modal>
+    );
+}
 
 export default function FeedScreen() {
-    const { posts, toggleLike, addComment } = usePosts();
+    const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData } = usePosts();
     const { colors } = useTheme();
-    const [refreshing, setRefreshing] = React.useState(false);
-
-    // Состояние для модального окна
-    const [modalVisible, setModalVisible] = useState(false);
+    const router = useRouter();
+    const [refreshing, setRefreshing] = useState(false);
+    const [commentsVisible, setCommentsVisible] = useState(false);
     const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
     const [commentText, setCommentText] = useState('');
+    const [query, setQuery] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState<'all' | PostCategory>('all');
+    const [onlyVerified, setOnlyVerified] = useState(false);
+    const [sortMode, setSortMode] = useState<'latest' | 'trusted' | 'debated'>('latest');
+    const [detailPost, setDetailPost] = useState<Post | null>(null);
+    const [sharePost, setSharePost] = useState<Post | null>(null);
 
-    const onRefresh = React.useCallback(() => {
+    const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
-        setTimeout(() => setRefreshing(false), 500);
-    }, []);
+        await refreshCloudData();
+        setRefreshing(false);
+    }, [refreshCloudData]);
 
-    // Открыть модалку
-    const openComments = (postId: string) => {
-        setSelectedPostId(postId);
-        setModalVisible(true);
-    };
+    const filteredPosts = useMemo(() => {
+        const nextPosts = posts.filter((post) => {
+            const normalizedQuery = query.trim().toLowerCase();
+            const matchesQuery =
+                !normalizedQuery ||
+                post.celebrityName.toLowerCase().includes(normalizedQuery) ||
+                post.location.toLowerCase().includes(normalizedQuery) ||
+                post.caption.toLowerCase().includes(normalizedQuery);
 
-    // Отправить комментарий
+            const matchesCategory = categoryFilter === 'all' || post.category === categoryFilter;
+            const authenticity = getAuthenticity(post);
+            const matchesVerified = !onlyVerified || authenticity.confidence >= 70;
+
+            return matchesQuery && matchesCategory && matchesVerified;
+        });
+
+        if (sortMode === 'trusted') {
+            return [...nextPosts].sort((a, b) => {
+                const authA = getAuthenticity(a);
+                const authB = getAuthenticity(b);
+                return authB.confidence - authA.confidence || authB.totalScore - authA.totalScore;
+            });
+        }
+
+        if (sortMode === 'debated') {
+            return [...nextPosts].sort((a, b) => {
+                const diffA = Math.abs(a.realScore - a.fakeScore);
+                const diffB = Math.abs(b.realScore - b.fakeScore);
+                return diffA - diffB || (b.realScore + b.fakeScore) - (a.realScore + a.fakeScore);
+            });
+        }
+
+        return nextPosts;
+    }, [categoryFilter, onlyVerified, posts, query, sortMode]);
+
+    const activePost = posts.find((post) => post.id === selectedPostId);
+    const summary = useMemo(() => {
+        const verified = posts.filter((post) => getAuthenticity(post).confidence >= 70).length;
+        const disputed = posts.filter((post) => isDisputed(post)).length;
+        const legendary = posts.filter((post) => post.rarity === 'legendary').length;
+        return { verified, disputed, legendary };
+    }, [posts]);
+
     const handleSendComment = () => {
         if (selectedPostId && commentText.trim()) {
             addComment(selectedPostId, commentText);
-            setCommentText(''); // Очистить поле
+            setCommentText('');
             Keyboard.dismiss();
         }
     };
 
-    // Найти текущий пост для отображения в модалке
-    const activePost = posts.find(p => p.id === selectedPostId);
+    const handleRequireAuth = () => {
+        Alert.alert(
+            'Требуется вход',
+            'Войдите в аккаунт, чтобы лайкать, комментировать и подтверждать автографы.',
+            [
+                { text: 'Отмена', style: 'cancel' },
+                { text: 'Войти', onPress: () => router.push('/auth') },
+            ]
+        );
+    };
 
-    const renderItem = React.useCallback(({ item }: { item: any }) => (
-        <View style={[styles.post, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-            <View style={styles.postHeader}>
-                <View style={[styles.avatar, { backgroundColor: colors.surface }]} />
-                <View style={{ flex: 1 }}>
-                    <Text style={[styles.username, { color: colors.text }]}>@autograph_user</Text>
-                    <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
-                        {new Date(item.timestamp).toLocaleDateString('ru-RU')}
-                    </Text>
+    const renderItem = ({ item }: { item: Post }) => {
+        const authenticity = getAuthenticity(item);
+        const userVote = item.votesByUser[currentUserId];
+        const disputed = isDisputed(item);
+        const isOwnPost = item.ownerId === currentUserId;
+        const votingDisabled = !canInteract || isOwnPost;
+
+        return (
+            <View style={[styles.post, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={styles.postHeader}>
+                    <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
+                        <Ionicons name="person" size={18} color={colors.textSecondary} />
+                    </View>
+                    <View style={styles.headerText}>
+                        <Text style={[styles.username, { color: colors.text }]}>{item.celebrityName || 'Autograph User'}</Text>
+                        <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
+                            {new Date(item.timestamp).toLocaleDateString('ru-RU')}
+                            {item.location ? ` • ${item.location}` : ''}
+                        </Text>
+                    </View>
                 </View>
-            </View>
 
-            <Image source={{ uri: item.uri }} style={styles.postImage} resizeMode="cover" />
-
-            <View style={styles.actions}>
-                <TouchableOpacity
-                    onPress={() => toggleLike(item.id)}
-                    style={styles.actionButton}
-                    activeOpacity={0.7}
-                >
-                    <Text style={styles.actionIcon}>{item.liked ? '❤️' : '🤍'}</Text>
-                    <Text style={[styles.actionText, { color: colors.text }]}>{item.likes}</Text>
+                <TouchableOpacity activeOpacity={0.92} onPress={() => setDetailPost(item)}>
+                    <Image source={{ uri: item.uri }} style={styles.postImage} resizeMode="cover" />
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => openComments(item.id)}
-                    activeOpacity={0.7}
-                >
-                    <Text style={styles.actionIcon}>💬</Text>
-                    <Text style={[styles.actionText, { color: colors.text }]}>{item.comments?.length || 0}</Text>
-                </TouchableOpacity>
-            </View>
+                <View style={styles.actions}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            if (!canInteract) {
+                                handleRequireAuth();
+                                return;
+                            }
+                            toggleLike(item.id);
+                        }}
+                        style={[styles.actionButton, { backgroundColor: colors.surface }]}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={18} color={item.liked ? colors.danger : colors.text} />
+                        <Text style={[styles.actionText, { color: colors.text }]}>{item.likes}</Text>
+                    </TouchableOpacity>
 
-            {item.caption ? (
-                <View style={styles.captionContainer}>
-                    <Text style={[styles.caption, { color: colors.text }]}>
-                        <Text style={{ fontWeight: 'bold' }}>autograph_user </Text>
-                        {item.caption}
-                    </Text>
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: colors.surface }]}
+                        onPress={() => {
+                            if (!canInteract) {
+                                handleRequireAuth();
+                                return;
+                            }
+                            setSelectedPostId(item.id);
+                            setCommentsVisible(true);
+                        }}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name="chatbubble-outline" size={18} color={colors.text} />
+                        <Text style={[styles.actionText, { color: colors.text }]}>{item.comments.length}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: colors.surface }]}
+                        onPress={() => toggleSaved(item.id)}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons
+                            name={item.saved ? 'bookmark' : 'bookmark-outline'}
+                            size={18}
+                            color={item.saved ? colors.primary : colors.text}
+                        />
+                    </TouchableOpacity>
                 </View>
-            ) : null}
-        </View>
-    ), [colors, toggleLike]);
+
+                <View style={styles.metaBlock}>
+                    <Text style={[styles.metaTitle, { color: colors.text }]}>{item.celebrityName || 'Автограф без имени'}</Text>
+                    <Text style={[styles.metaLine, { color: colors.textSecondary }]}>
+                        Автор: {item.ownerName || 'Collector'}
+                    </Text>
+                    <Text style={[styles.metaLine, { color: colors.textSecondary }]}>
+                        Получен: {item.dateReceived || 'Дата не указана'}
+                    </Text>
+                    {item.caption ? <Text style={[styles.caption, { color: colors.text }]}>{item.caption}</Text> : null}
+                </View>
+
+                <View style={styles.badgesRow}>
+                    <Badge label={getCategoryLabel(item.category)} variant="primary" size="sm" />
+                    <Badge label={getRarityLabel(item.rarity)} variant={item.rarity === 'legendary' ? 'warning' : 'default'} size="sm" />
+                    {disputed ? (
+                        <Badge label="Спорный" variant="danger" size="sm" />
+                    ) : null}
+                    {item.evidence.slice(0, 2).map((entry) => (
+                        <Badge key={entry} label={getEvidenceLabel(entry)} variant="default" size="sm" />
+                    ))}
+                </View>
+
+                {item.isAnalyzed ? (
+                    <View style={[styles.aiCard, { backgroundColor: colors.surface }]}>
+                        <View style={styles.aiTitleRow}>
+                            <Ionicons name="sparkles-outline" size={16} color={colors.primary} />
+                            <Text style={[styles.aiTitle, { color: colors.text }]}>Предварительная проверка</Text>
+                        </View>
+                        <Text style={[styles.aiHint, { color: colors.textSecondary }]}>
+                            Возможное совпадение: {item.aiSuggestion || item.celebrityName}
+                            {typeof item.aiConfidence === 'number' ? ` (${item.aiConfidence}% совпадения)` : ''}
+                        </Text>
+                    </View>
+                ) : null}
+
+                <View style={styles.voteSection}>
+                    <View style={styles.voteButtonsRow}>
+                        <VoteButton
+                            label="Подтверждаю"
+                            icon="checkmark-circle"
+                            active={userVote === 'real'}
+                            color={colors.primary}
+                            surface={colors.surface}
+                            text={colors.text}
+                            onPress={() => voteAuthenticity(item.id, 'real')}
+                            disabled={votingDisabled}
+                        />
+                        <VoteButton
+                            label="Фейк"
+                            icon="close-circle"
+                            active={userVote === 'fake'}
+                            color={colors.danger}
+                            surface={colors.surface}
+                            text={colors.text}
+                            onPress={() => voteAuthenticity(item.id, 'fake')}
+                            disabled={votingDisabled}
+                        />
+                    </View>
+
+                    {votingDisabled ? (
+                        <Text style={[styles.interactionHint, { color: colors.textSecondary }]}>
+                            {!canInteract
+                                ? 'Войдите, чтобы лайкать, комментировать и подтверждать автографы.'
+                                : 'За собственный пост голосовать нельзя.'}
+                        </Text>
+                    ) : null}
+
+                    <View style={styles.voteStatsRow}>
+                        <Text style={[styles.voteStatsText, { color: colors.textSecondary }]}>
+                            {item.realVotes} за реальный • {item.fakeVotes} за фейк
+                        </Text>
+                        <Text style={[styles.voteConfidence, { color: colors.text }]}>
+                            {authenticity.totalVotes === 0 ? 'Нет голосов' : `${authenticity.confidence}% достоверности`}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        );
+    };
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
-            {posts.length === 0 ? (
-                <View style={[styles.empty, { backgroundColor: colors.background }]}>
-                    <Text style={{ fontSize: 48, marginBottom: 16 }}>📭</Text>
-                    <Text style={[styles.emptyText, { color: colors.text }]}>Лента пуста</Text>
-                    <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                        Загрузи первый автограф на вкладке Upload
+            <View style={styles.screenHeader}>
+                <View>
+                    <Text style={[styles.screenTitle, { color: colors.text }]}>Коллекция</Text>
+                    <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
+                        Поиск, фильтры и быстрая проверка достоверности
                     </Text>
+                </View>
+                <View style={[styles.userPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Ionicons name="person-circle-outline" size={16} color={colors.primary} />
+                    <Text style={[styles.userPillText, { color: colors.text }]}>{profile.name}</Text>
+                </View>
+            </View>
+
+            <View style={styles.filtersWrap}>
+                <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
+                    <TextInput
+                        style={[styles.searchInput, { color: colors.text }]}
+                        placeholder="Поиск по имени, месту или заметке"
+                        placeholderTextColor={colors.placeholder}
+                        value={query}
+                        onChangeText={setQuery}
+                    />
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterChips}>
+                    <TouchableOpacity
+                        style={[styles.filterChip, { backgroundColor: categoryFilter === 'all' ? colors.primary : colors.surface }]}
+                        onPress={() => setCategoryFilter('all')}
+                    >
+                        <Text style={[styles.filterChipText, { color: categoryFilter === 'all' ? colors.primaryText : colors.text }]}>
+                            Все
+                        </Text>
+                    </TouchableOpacity>
+                    {POST_CATEGORIES.map((item) => {
+                        const active = categoryFilter === item.value;
+                        return (
+                            <TouchableOpacity
+                                key={item.value}
+                                style={[styles.filterChip, { backgroundColor: active ? colors.primary : colors.surface }]}
+                                onPress={() => setCategoryFilter(item.value)}
+                            >
+                                <Text style={[styles.filterChipText, { color: active ? colors.primaryText : colors.text }]}>
+                                    {item.label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                    <TouchableOpacity
+                        style={[styles.filterChip, { backgroundColor: onlyVerified ? colors.primary : colors.surface }]}
+                        onPress={() => setOnlyVerified((prev) => !prev)}
+                    >
+                        <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>
+                            Только подтвержденные
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.filterChip, { backgroundColor: sortMode === 'latest' ? colors.primary : colors.surface }]}
+                        onPress={() => setSortMode('latest')}
+                    >
+                        <Text style={[styles.filterChipText, { color: sortMode === 'latest' ? colors.primaryText : colors.text }]}>
+                            Сначала новые
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.filterChip, { backgroundColor: sortMode === 'trusted' ? colors.primary : colors.surface }]}
+                        onPress={() => setSortMode('trusted')}
+                    >
+                        <Text style={[styles.filterChipText, { color: sortMode === 'trusted' ? colors.primaryText : colors.text }]}>
+                            Самые достоверные
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.filterChip, { backgroundColor: sortMode === 'debated' ? colors.primary : colors.surface }]}
+                        onPress={() => setSortMode('debated')}
+                    >
+                        <Text style={[styles.filterChipText, { color: sortMode === 'debated' ? colors.primaryText : colors.text }]}>
+                            Самые спорные
+                        </Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </View>
+
+            <View style={styles.summaryRow}>
+                <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
+                    <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.verified}</Text>
+                </View>
+                <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Спорных</Text>
+                    <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.disputed}</Text>
+                </View>
+                <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                    <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.legendary}</Text>
+                </View>
+            </View>
+
+            {filteredPosts.length === 0 ? (
+                <View style={styles.emptyWrap}>
+                    <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
+                            <Ionicons name="search-outline" size={28} color={colors.primary} />
+                        </View>
+                        <Text style={[styles.emptyText, { color: colors.text }]}>Ничего не найдено</Text>
+                        <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+                            Попробуйте снять часть фильтров или изменить поисковый запрос.
+                        </Text>
+                    </View>
                 </View>
             ) : (
                 <FlatList
-                    data={posts}
+                    data={filteredPosts}
                     renderItem={renderItem}
-                    keyExtractor={item => item.id}
+                    keyExtractor={(item) => item.id}
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
@@ -121,54 +509,58 @@ export default function FeedScreen() {
                         />
                     }
                     contentContainerStyle={styles.list}
+                    showsVerticalScrollIndicator={false}
                     removeClippedSubviews={Platform.OS === 'android'}
                     windowSize={5}
                 />
             )}
 
-            {/* --- МОДАЛЬНОЕ ОКНО КОММЕНТАРИЕВ --- */}
             <Modal
                 animationType="slide"
                 transparent={false}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
+                visible={commentsVisible}
+                onRequestClose={() => setCommentsVisible(false)}
             >
                 <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-                    {/* Шапка модалки */}
                     <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
                         <Text style={[styles.modalTitle, { color: colors.text }]}>Комментарии</Text>
-                        <TouchableOpacity onPress={() => setModalVisible(false)}>
-                            <Text style={{ fontSize: 24, color: colors.primary, fontWeight: 'bold' }}>✕</Text>
+                        <TouchableOpacity onPress={() => setCommentsVisible(false)} style={styles.closeButton}>
+                            <Ionicons name="close" size={24} color={colors.text} />
                         </TouchableOpacity>
                     </View>
 
-                    {/* Список комментариев */}
                     <FlatList
                         data={activePost?.comments || []}
-                        keyExtractor={item => item.id}
+                        keyExtractor={(item) => item.id}
                         style={{ flex: 1 }}
-                        contentContainerStyle={{ padding: 15, paddingBottom: 80 }}
+                        contentContainerStyle={{ padding: 16, paddingBottom: 88 }}
                         ListEmptyComponent={
                             <Text style={[styles.noComments, { color: colors.textSecondary }]}>
-                                Пока нет комментариев. Будь первым!
+                                Комментариев пока нет. Можно оставить первый.
                             </Text>
                         }
                         renderItem={({ item }) => (
-                            <View style={{ marginBottom: 15 }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                            <View style={[styles.commentCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                <View style={styles.commentRow}>
                                     <Text style={[styles.commentUser, { color: colors.text }]}>@{item.user}</Text>
-                                    <Text style={[styles.commentTime, { color: colors.textSecondary }]}> • {item.timestamp}</Text>
+                                    <Text style={[styles.commentTime, { color: colors.textSecondary }]}>{item.timestamp}</Text>
                                 </View>
                                 <Text style={[styles.commentText, { color: colors.text }]}>{item.text}</Text>
                             </View>
                         )}
                     />
 
-                    {/* Поле ввода комментария */}
                     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                        <View style={[styles.inputContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+                        <View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
                             <TextInput
-                                style={[styles.commentInput, { color: colors.text, borderColor: colors.border }]}
+                                style={[
+                                    styles.commentInput,
+                                    {
+                                        color: colors.text,
+                                        borderColor: colors.border,
+                                        backgroundColor: colors.card,
+                                    },
+                                ]}
                                 placeholder="Написать комментарий..."
                                 placeholderTextColor={colors.placeholder}
                                 value={commentText}
@@ -176,49 +568,399 @@ export default function FeedScreen() {
                                 multiline
                             />
                             <TouchableOpacity
-                                style={[styles.sendButton, { backgroundColor: commentText ? colors.primary : colors.surface }]}
+                                style={[styles.sendButton, { backgroundColor: commentText.trim() ? colors.primary : colors.surface }]}
                                 onPress={handleSendComment}
                                 disabled={!commentText.trim()}
                             >
-                                <Text style={{ color: commentText ? '#fff' : colors.textSecondary, fontWeight: 'bold' }}>➤</Text>
+                                <Ionicons
+                                    name="arrow-up"
+                                    size={18}
+                                    color={commentText.trim() ? colors.primaryText : colors.textSecondary}
+                                />
                             </TouchableOpacity>
                         </View>
                     </KeyboardAvoidingView>
                 </SafeAreaView>
             </Modal>
+
+            <PostDetailModal post={detailPost} visible={Boolean(detailPost)} onClose={() => setDetailPost(null)} onShare={(post) => setSharePost(post)} colors={colors} />
+            <ShareSheet visible={Boolean(sharePost)} postId={sharePost?.id || ''} celebrityName={sharePost?.celebrityName || ''} imageUri={sharePost?.uri} onClose={() => setSharePost(null)} />
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    list: { paddingBottom: 10 },
-    post: { marginBottom: 0, paddingBottom: 12 },
-    postHeader: { flexDirection: 'row', alignItems: 'center', padding: 12 },
-    avatar: { width: 36, height: 36, borderRadius: 18 },
-    username: { fontWeight: '600', fontSize: 14 },
-    timestamp: { fontSize: 11, marginTop: 2 },
-    postImage: { width: '100%', height: 400 },
-    actions: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8 },
-    actionButton: { flexDirection: 'row', alignItems: 'center', marginRight: 24, paddingVertical: 4 },
-    actionIcon: { fontSize: 20, marginRight: 4 },
-    actionText: { fontSize: 13 },
-    captionContainer: { paddingHorizontal: 12, paddingTop: 4 },
-    caption: { fontSize: 14, lineHeight: 20 },
-    empty: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-    emptyText: { fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
-    emptyHint: { fontSize: 14, textAlign: 'center', maxWidth: 250 },
-
-    // Стили Модалки
+    screenHeader: {
+        paddingHorizontal: 18,
+        paddingTop: 8,
+        paddingBottom: 10,
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+    screenTitle: {
+        fontSize: 28,
+        fontWeight: '700',
+    },
+    screenSubtitle: {
+        marginTop: 4,
+        fontSize: 14,
+    },
+    userPill: {
+        borderWidth: 1,
+        borderRadius: 999,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    userPillText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    filtersWrap: {
+        paddingHorizontal: 14,
+        paddingBottom: 8,
+        gap: 10,
+    },
+    searchBox: {
+        borderWidth: 1,
+        borderRadius: 16,
+        minHeight: 48,
+        paddingHorizontal: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+    },
+    filterChips: {
+        gap: 8,
+        paddingRight: 14,
+    },
+    summaryRow: {
+        flexDirection: 'row',
+        gap: 10,
+        paddingHorizontal: 14,
+        paddingBottom: 10,
+    },
+    summaryCard: {
+        flex: 1,
+        borderWidth: 1,
+        borderRadius: 18,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+    },
+    summaryLabel: {
+        fontSize: 12,
+        marginBottom: 6,
+    },
+    summaryValue: {
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    filterChip: {
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+    },
+    filterChipText: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    list: {
+        paddingHorizontal: 14,
+        paddingBottom: 18,
+        gap: 14,
+    },
+    post: {
+        borderWidth: 1,
+        borderRadius: 22,
+        overflow: 'hidden',
+    },
+    postHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 14,
+        paddingTop: 14,
+        paddingBottom: 12,
+    },
+    avatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+    },
+    headerText: {
+        flex: 1,
+    },
+    username: {
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    timestamp: {
+        marginTop: 2,
+        fontSize: 12,
+    },
+    postImage: {
+        width: '100%',
+        height: 340,
+    },
+    actions: {
+        flexDirection: 'row',
+        paddingHorizontal: 14,
+        paddingTop: 12,
+        gap: 10,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        gap: 6,
+    },
+    actionText: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    metaBlock: {
+        paddingHorizontal: 14,
+        paddingTop: 12,
+        paddingBottom: 12,
+        gap: 6,
+    },
+    metaTitle: {
+        fontSize: 17,
+        fontWeight: '700',
+    },
+    metaLine: {
+        fontSize: 13,
+    },
+    caption: {
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    badgesRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        paddingHorizontal: 14,
+        paddingBottom: 12,
+    },
+    badge: {
+        borderRadius: 999,
+        paddingHorizontal: 10,
+        paddingVertical: 7,
+    },
+    badgeText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    aiCard: {
+        marginHorizontal: 14,
+        marginBottom: 12,
+        borderRadius: 16,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        gap: 4,
+    },
+    aiTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    aiTitle: {
+        fontSize: 13,
+        fontWeight: '700',
+    },
+    aiHint: {
+        fontSize: 13,
+        lineHeight: 18,
+    },
+    voteSection: {
+        paddingHorizontal: 14,
+        paddingBottom: 16,
+        gap: 10,
+    },
+    voteButtonsRow: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    voteButton: {
+        flex: 1,
+        borderRadius: 16,
+        minHeight: 42,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 8,
+        paddingHorizontal: 10,
+    },
+    voteButtonText: {
+        fontSize: 13,
+        fontWeight: '700',
+    },
+    interactionHint: {
+        fontSize: 12,
+        lineHeight: 17,
+    },
+    voteStatsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+    voteStatsText: {
+        fontSize: 12,
+        flex: 1,
+    },
+    voteConfidence: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    emptyWrap: {
+        flex: 1,
+        paddingHorizontal: 18,
+        justifyContent: 'center',
+    },
+    emptyCard: {
+        borderWidth: 1,
+        borderRadius: 24,
+        paddingHorizontal: 24,
+        paddingVertical: 28,
+        alignItems: 'center',
+    },
+    emptyIcon: {
+        width: 64,
+        height: 64,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    emptyText: {
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 8,
+    },
+    emptyHint: {
+        fontSize: 14,
+        textAlign: 'center',
+        lineHeight: 20,
+    },
     modalContainer: { flex: 1 },
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 15, borderBottomWidth: 1 },
-    modalTitle: { fontSize: 18, fontWeight: 'bold' },
-    noComments: { textAlign: 'center', marginTop: 50, fontSize: 16 },
-    commentUser: { fontWeight: 'bold', fontSize: 14 },
-    commentTime: { fontSize: 12, marginLeft: 5 },
-    commentText: { fontSize: 15, lineHeight: 20 },
-
-    inputContainer: { flexDirection: 'row', padding: 10, borderTopWidth: 1, alignItems: 'center' },
-    commentInput: { flex: 1, borderWidth: 1, borderRadius: 20, paddingHorizontal: 15, paddingVertical: 8, minHeight: 40, maxHeight: 100 },
-    sendButton: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+    },
+    modalTitle: { fontSize: 19, fontWeight: '700' },
+    headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    headerActionBtn: { padding: 6 },
+    closeButton: {
+        width: 36,
+        height: 36,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    noComments: {
+        textAlign: 'center',
+        marginTop: 56,
+        fontSize: 15,
+    },
+    commentCard: {
+        borderWidth: 1,
+        borderRadius: 18,
+        padding: 14,
+        marginBottom: 12,
+    },
+    commentRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 6,
+    },
+    commentUser: { fontWeight: '700', fontSize: 14 },
+    commentTime: { fontSize: 12 },
+    commentText: { fontSize: 15, lineHeight: 21 },
+    inputContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 12,
+        paddingTop: 10,
+        paddingBottom: 12,
+        borderTopWidth: 1,
+        alignItems: 'flex-end',
+        gap: 10,
+    },
+    commentInput: {
+        flex: 1,
+        borderWidth: 1,
+        borderRadius: 18,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        minHeight: 46,
+        maxHeight: 110,
+        fontSize: 15,
+    },
+    sendButton: {
+        width: 46,
+        height: 46,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    detailScroll: {
+        padding: 16,
+        gap: 16,
+    },
+    detailImage: {
+        width: '100%',
+        aspectRatio: 1,
+        borderRadius: 22,
+    },
+    detailCard: {
+        borderWidth: 1,
+        borderRadius: 22,
+        padding: 16,
+        gap: 10,
+    },
+    detailTitle: {
+        fontSize: 22,
+        fontWeight: '700',
+    },
+    detailMeta: {
+        fontSize: 13,
+        lineHeight: 18,
+    },
+    detailDescription: {
+        fontSize: 15,
+        lineHeight: 21,
+    },
+    detailBadges: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    evidenceTitle: {
+        fontSize: 12,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+    },
+    detailStats: {
+        gap: 6,
+    },
+    detailConfidence: {
+        fontSize: 13,
+        fontWeight: '700',
+    },
 });

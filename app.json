@@ -1,13 +1,19 @@
 {
   "expo": {
-    "name": "autograph-app-v2",
+    "name": "Autograph",
     "slug": "autograph-app-v2",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "autographappv2",
+    "scheme": "autograph",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/af8a68f8-fd0e-4374-b289-3e901daa07fe"
+    },
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -21,8 +27,10 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "windowSoftInputMode": "adjustResize",
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.danilchil.autograph"
     },
     "web": {
       "bundler": "metro",
@@ -35,6 +43,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "af8a68f8-fd0e-4374-b289-3e901daa07fe"
+      }
     }
   }
 }
