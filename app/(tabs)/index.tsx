@@ -1,10 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     FlatList,
-    Image,
     Keyboard,
     Platform,
     RefreshControl,
@@ -16,7 +15,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Badge from '../../components/ui/Badge';
 import {
     POST_CATEGORIES,
     Post,
@@ -26,15 +24,12 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import {
     getAuthenticity,
-    getCategoryLabel,
-    getEvidenceLabel,
-    getRarityLabel,
     isDisputed,
 } from '../../lib/helpers';
 import ShareSheet from '../../components/ShareSheet';
 import PostDetailModal from '../../components/PostDetailModal';
 import CommentsModal from '../../components/CommentsModal';
-import VoteButton from '../../components/ui/VoteButton';
+import FeedPostCard from '../../components/FeedPostCard';
 import { PostCardSkeleton } from '../../components/ui/Skeleton';
 
 export default function FeedScreen() {
@@ -112,173 +107,40 @@ export default function FeedScreen() {
 
     const handleRequireAuth = () => {
         Alert.alert(
-            'Требуется вход',
-            'Войдите в аккаунт, чтобы лайкать, комментировать и подтверждать автографы.',
+            'РўСЂРµР±СѓРµС‚СЃСЏ РІС…РѕРґ',
+            'Р’РѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚, С‡С‚РѕР±С‹ Р»Р°Р№РєР°С‚СЊ, РєРѕРјРјРµРЅС‚РёСЂРѕРІР°С‚СЊ Рё РїРѕРґС‚РІРµСЂР¶РґР°С‚СЊ Р°РІС‚РѕРіСЂР°С„С‹.',
             [
-                { text: 'Отмена', style: 'cancel' },
-                { text: 'Войти', onPress: () => router.push('/auth') },
+                { text: 'РћС‚РјРµРЅР°', style: 'cancel' },
+                { text: 'Р’РѕР№С‚Рё', onPress: () => router.push('/auth') },
             ]
         );
     };
 
-    const renderItem = ({ item }: { item: Post }) => {
-        const authenticity = getAuthenticity(item);
-        const userVote = item.votesByUser[currentUserId];
-        const disputed = isDisputed(item);
-        const isOwnPost = item.ownerId === currentUserId;
-        const votingDisabled = !canInteract || isOwnPost;
-
-        return (
-            <View style={[styles.post, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={styles.postHeader}>
-                    <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
-                        <Ionicons name="person" size={18} color={colors.textSecondary} />
-                    </View>
-                    <View style={styles.headerText}>
-                        <Text style={[styles.username, { color: colors.text }]}>{item.celebrityName || 'Autograph User'}</Text>
-                        <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
-                            {new Date(item.timestamp).toLocaleDateString('ru-RU')}
-                            {item.location ? ` • ${item.location}` : ''}
-                        </Text>
-                    </View>
-                </View>
-
-                <TouchableOpacity activeOpacity={0.92} onPress={() => setDetailPost(item)}>
-                    <Image source={{ uri: item.uri }} style={styles.postImage} resizeMode="cover" />
-                </TouchableOpacity>
-
-                <View style={styles.actions}>
-                    <TouchableOpacity
-                        onPress={() => {
-                            if (!canInteract) {
-                                handleRequireAuth();
-                                return;
-                            }
-                            toggleLike(item.id);
-                        }}
-                        style={[styles.actionButton, { backgroundColor: colors.surface }]}
-                        activeOpacity={0.8}
-                    >
-                        <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={18} color={item.liked ? colors.danger : colors.text} />
-                        <Text style={[styles.actionText, { color: colors.text }]}>{item.likes}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.actionButton, { backgroundColor: colors.surface }]}
-                        onPress={() => {
-                            if (!canInteract) {
-                                handleRequireAuth();
-                                return;
-                            }
-                            setSelectedPostId(item.id);
-                            setCommentsVisible(true);
-                        }}
-                        activeOpacity={0.8}
-                    >
-                        <Ionicons name="chatbubble-outline" size={18} color={colors.text} />
-                        <Text style={[styles.actionText, { color: colors.text }]}>{item.comments.length}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.actionButton, { backgroundColor: colors.surface }]}
-                        onPress={() => toggleSaved(item.id)}
-                        activeOpacity={0.8}
-                    >
-                        <Ionicons
-                            name={item.saved ? 'bookmark' : 'bookmark-outline'}
-                            size={18}
-                            color={item.saved ? colors.primary : colors.text}
-                        />
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.metaBlock}>
-                    <Text style={[styles.metaTitle, { color: colors.text }]}>{item.celebrityName || 'Автограф без имени'}</Text>
-                    <Text style={[styles.metaLine, { color: colors.textSecondary }]}>
-                        Автор: {item.ownerName || 'Collector'}
-                    </Text>
-                    <Text style={[styles.metaLine, { color: colors.textSecondary }]}>
-                        Получен: {item.dateReceived || 'Дата не указана'}
-                    </Text>
-                    {item.caption ? <Text style={[styles.caption, { color: colors.text }]}>{item.caption}</Text> : null}
-                </View>
-
-                <View style={styles.badgesRow}>
-                    <Badge label={getCategoryLabel(item.category)} variant="primary" size="sm" />
-                    <Badge label={getRarityLabel(item.rarity)} variant={item.rarity === 'legendary' ? 'warning' : 'default'} size="sm" />
-                    {disputed ? (
-                        <Badge label="Спорный" variant="danger" size="sm" />
-                    ) : null}
-                    {item.evidence.slice(0, 2).map((entry) => (
-                        <Badge key={entry} label={getEvidenceLabel(entry)} variant="default" size="sm" />
-                    ))}
-                </View>
-
-                {item.isAnalyzed ? (
-                    <View style={[styles.aiCard, { backgroundColor: colors.surface }]}>
-                        <View style={styles.aiTitleRow}>
-                            <Ionicons name="sparkles-outline" size={16} color={colors.primary} />
-                            <Text style={[styles.aiTitle, { color: colors.text }]}>Предварительная проверка</Text>
-                        </View>
-                        <Text style={[styles.aiHint, { color: colors.textSecondary }]}>
-                            Возможное совпадение: {item.aiSuggestion || item.celebrityName}
-                            {typeof item.aiConfidence === 'number' ? ` (${item.aiConfidence}% совпадения)` : ''}
-                        </Text>
-                    </View>
-                ) : null}
-
-                <View style={styles.voteSection}>
-                    <View style={styles.voteButtonsRow}>
-                        <VoteButton
-                            label="Подтверждаю"
-                            icon="checkmark-circle"
-                            active={userVote === 'real'}
-                            color={colors.primary}
-                            surface={colors.surface}
-                            text={colors.text}
-                            onPress={() => voteAuthenticity(item.id, 'real')}
-                            disabled={votingDisabled}
-                        />
-                        <VoteButton
-                            label="Фейк"
-                            icon="close-circle"
-                            active={userVote === 'fake'}
-                            color={colors.danger}
-                            surface={colors.surface}
-                            text={colors.text}
-                            onPress={() => voteAuthenticity(item.id, 'fake')}
-                            disabled={votingDisabled}
-                        />
-                    </View>
-
-                    {votingDisabled ? (
-                        <Text style={[styles.interactionHint, { color: colors.textSecondary }]}>
-                            {!canInteract
-                                ? 'Войдите, чтобы лайкать, комментировать и подтверждать автографы.'
-                                : 'За собственный пост голосовать нельзя.'}
-                        </Text>
-                    ) : null}
-
-                    <View style={styles.voteStatsRow}>
-                        <Text style={[styles.voteStatsText, { color: colors.textSecondary }]}>
-                            {item.realVotes} за реальный • {item.fakeVotes} за фейк
-                        </Text>
-                        <Text style={[styles.voteConfidence, { color: colors.text }]}>
-                            {authenticity.totalVotes === 0 ? 'Нет голосов' : `${authenticity.confidence}% достоверности`}
-                        </Text>
-                    </View>
-                </View>
-            </View>
-        );
-    };
+    const renderItem = ({ item }: { item: Post }) => (
+        <FeedPostCard
+            item={item}
+            colors={colors}
+            currentUserId={currentUserId}
+            canInteract={canInteract}
+            onOpenDetail={(post) => setDetailPost(post)}
+            onToggleLike={toggleLike}
+            onOpenComments={(id) => {
+                setSelectedPostId(id);
+                setCommentsVisible(true);
+            }}
+            onToggleSaved={toggleSaved}
+            onVote={voteAuthenticity}
+            onRequireAuth={handleRequireAuth}
+        />
+    );
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
             <View style={styles.screenHeader}>
                 <View>
-                    <Text style={[styles.screenTitle, { color: colors.text }]}>Коллекция</Text>
+                    <Text style={[styles.screenTitle, { color: colors.text }]}>РљРѕР»Р»РµРєС†РёСЏ</Text>
                     <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
-                        Поиск, фильтры и быстрая проверка достоверности
+                        РџРѕРёСЃРє, С„РёР»СЊС‚СЂС‹ Рё Р±С‹СЃС‚СЂР°СЏ РїСЂРѕРІРµСЂРєР° РґРѕСЃС‚РѕРІРµСЂРЅРѕСЃС‚Рё
                     </Text>
                 </View>
                 <View style={[styles.userPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -292,7 +154,7 @@ export default function FeedScreen() {
                     <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
                     <TextInput
                         style={[styles.searchInput, { color: colors.text }]}
-                        placeholder="Поиск по имени, месту или заметке"
+                        placeholder="РџРѕРёСЃРє РїРѕ РёРјРµРЅРё, РјРµСЃС‚Сѓ РёР»Рё Р·Р°РјРµС‚РєРµ"
                         placeholderTextColor={colors.placeholder}
                         value={query}
                         onChangeText={setQuery}
@@ -305,7 +167,7 @@ export default function FeedScreen() {
                         onPress={() => setCategoryFilter('all')}
                     >
                         <Text style={[styles.filterChipText, { color: categoryFilter === 'all' ? colors.primaryText : colors.text }]}>
-                            Все
+                            Р’СЃРµ
                         </Text>
                     </TouchableOpacity>
                     {POST_CATEGORIES.map((item) => {
@@ -327,7 +189,7 @@ export default function FeedScreen() {
                         onPress={() => setOnlyVerified((prev) => !prev)}
                     >
                         <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>
-                            Только подтвержденные
+                            РўРѕР»СЊРєРѕ РїРѕРґС‚РІРµСЂР¶РґРµРЅРЅС‹Рµ
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -335,7 +197,7 @@ export default function FeedScreen() {
                         onPress={() => setSortMode('latest')}
                     >
                         <Text style={[styles.filterChipText, { color: sortMode === 'latest' ? colors.primaryText : colors.text }]}>
-                            Сначала новые
+                            РЎРЅР°С‡Р°Р»Р° РЅРѕРІС‹Рµ
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -343,7 +205,7 @@ export default function FeedScreen() {
                         onPress={() => setSortMode('trusted')}
                     >
                         <Text style={[styles.filterChipText, { color: sortMode === 'trusted' ? colors.primaryText : colors.text }]}>
-                            Самые достоверные
+                            РЎР°РјС‹Рµ РґРѕСЃС‚РѕРІРµСЂРЅС‹Рµ
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -351,7 +213,7 @@ export default function FeedScreen() {
                         onPress={() => setSortMode('debated')}
                     >
                         <Text style={[styles.filterChipText, { color: sortMode === 'debated' ? colors.primaryText : colors.text }]}>
-                            Самые спорные
+                            РЎР°РјС‹Рµ СЃРїРѕСЂРЅС‹Рµ
                         </Text>
                     </TouchableOpacity>
                 </ScrollView>
@@ -359,15 +221,15 @@ export default function FeedScreen() {
 
             <View style={styles.summaryRow}>
                 <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ</Text>
                     <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.verified}</Text>
                 </View>
                 <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Спорных</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>РЎРїРѕСЂРЅС‹С…</Text>
                     <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.disputed}</Text>
                 </View>
                 <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Р›РµРіРµРЅРґР°СЂРЅС‹С…</Text>
                     <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.legendary}</Text>
                 </View>
             </View>
@@ -384,9 +246,9 @@ export default function FeedScreen() {
                         <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                             <Ionicons name="search-outline" size={28} color={colors.primary} />
                         </View>
-                        <Text style={[styles.emptyText, { color: colors.text }]}>Ничего не найдено</Text>
+                        <Text style={[styles.emptyText, { color: colors.text }]}>РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</Text>
                         <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                            Попробуйте снять часть фильтров или изменить поисковый запрос.
+                            РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅСЏС‚СЊ С‡Р°СЃС‚СЊ С„РёР»СЊС‚СЂРѕРІ РёР»Рё РёР·РјРµРЅРёС‚СЊ РїРѕРёСЃРєРѕРІС‹Р№ Р·Р°РїСЂРѕСЃ.
                         </Text>
                     </View>
                 </View>
@@ -515,139 +377,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         paddingBottom: 18,
         gap: 14,
-    },
-    post: {
-        borderWidth: 1,
-        borderRadius: 22,
-        overflow: 'hidden',
-    },
-    postHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 14,
-        paddingTop: 14,
-        paddingBottom: 12,
-    },
-    avatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 10,
-    },
-    headerText: {
-        flex: 1,
-    },
-    username: {
-        fontSize: 15,
-        fontWeight: '700',
-    },
-    timestamp: {
-        marginTop: 2,
-        fontSize: 12,
-    },
-    postImage: {
-        width: '100%',
-        height: 340,
-    },
-    actions: {
-        flexDirection: 'row',
-        paddingHorizontal: 14,
-        paddingTop: 12,
-        gap: 10,
-    },
-    actionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderRadius: 999,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        gap: 6,
-    },
-    actionText: {
-        fontSize: 13,
-        fontWeight: '600',
-    },
-    metaBlock: {
-        paddingHorizontal: 14,
-        paddingTop: 12,
-        paddingBottom: 12,
-        gap: 6,
-    },
-    metaTitle: {
-        fontSize: 17,
-        fontWeight: '700',
-    },
-    metaLine: {
-        fontSize: 13,
-    },
-    caption: {
-        fontSize: 14,
-        lineHeight: 20,
-    },
-    badgesRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-        paddingHorizontal: 14,
-        paddingBottom: 12,
-    },
-    badge: {
-        borderRadius: 999,
-        paddingHorizontal: 10,
-        paddingVertical: 7,
-    },
-    badgeText: {
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    aiCard: {
-        marginHorizontal: 14,
-        marginBottom: 12,
-        borderRadius: 16,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        gap: 4,
-    },
-    aiTitleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    aiTitle: {
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    aiHint: {
-        fontSize: 13,
-        lineHeight: 18,
-    },
-    voteSection: {
-        paddingHorizontal: 14,
-        paddingBottom: 16,
-        gap: 10,
-    },
-    voteButtonsRow: {
-        flexDirection: 'row',
-        gap: 10,
-    },
-    interactionHint: {
-        fontSize: 12,
-        lineHeight: 17,
-    },
-    voteStatsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 12,
-    },
-    voteStatsText: {
-        fontSize: 12,
-        flex: 1,
-    },
-    voteConfidence: {
-        fontSize: 12,
-        fontWeight: '700',
     },
     emptyWrap: {
         flex: 1,
