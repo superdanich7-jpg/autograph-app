@@ -40,3 +40,16 @@
   - [x] Edge Function: валидация формата base64
   - [x] Rate limiting: уже есть на клиенте (2s между голосами)
   - [x] Deprecated: expo-file-system/legacy (миграция на expo-file-system)
+
+## LOOP-00..40 — релизный цикл MVP (2026-10-05)
+- [x] LOOP-00: Senior DevOps-аудит (tasks/AUDIT-*.md, DEFECTS.md B-01..B-12, MVP-PLAN.md)
+- [x] LOOP-01: Git-гигиена (чистый main, без ключей/gitlink, запушено)
+- [x] LOOP-02: БД — миграция 006 RLS hardening (закрыты дыры 002/004/005), storage.ts (бакет autographs/)
+- [x] LOOP-10: Доставка без QR (README: preview APK, web-стенд, OTA)
+- [x] LOOP-20: UI — удалён мёртвый код (constants/Colors.ts, useSwipeNavigation), TabBar без свайп-конфликта, onboarding FlatList fix, typecheck fixes в PostsContext/profile/CollectionsList
+- [x] LOOP-30: Бэкенд/качество — jest (49/49 тестов), celebrity-database (50+), seed.ts, CI-гейт тестов
+- [x] LOOP-40: Питч-сценарий 3 клика (tasks/LOOP-40-pitch.md)
+- [x] LOOP-B: typecheck PASS, jest 49/49 PASS
+- Валидация финальная: `npm run typecheck` PASS, `npm test` 49/49 PASS
+- Git: 8cf08ba, 9346467, 9f95e51 → origin/main
+- Осталось (требует ручных действий Founder): тег v0.1-mvp, eas build preview APK, превью RLS-миграции 006 на staging Supabase, live WRITE→READ proof
