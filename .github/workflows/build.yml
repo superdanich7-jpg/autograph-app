@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Encoding check (UTF-8, no mojibake/BOM)
+        run: node scripts/check-encoding.js
+
       - name: TypeScript check
         run: npx tsc --noEmit
 

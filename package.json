@@ -9,6 +9,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests=false",
+    "check:encoding": "node scripts/check-encoding.js",
+    "verify": "npm run check:encoding && npm run typecheck && npm test",
     "seed:celebrities": "tsx supabase/seed.ts",
     "seed:local": "tsx supabase/local-seed.ts"
   },
