@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/ui/Button';
+import AnalysisCard, { AnalysisResult } from '../../components/AnalysisCard';
 import {
     EVIDENCE_OPTIONS,
     EvidenceType,
@@ -37,11 +38,6 @@ type UploadFieldProps = {
     placeholder: string;
     colors: ReturnType<typeof useTheme>['colors'];
     multiline?: boolean;
-};
-
-type AnalysisResult = {
-    suggestion: string;
-    confidence: number;
 };
 
 function getTodayLabel() {
@@ -437,28 +433,7 @@ export default function UploadScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        {isAnalyzing ? (
-                            <View style={[styles.analysisCard, { backgroundColor: colors.surface }]}>
-                                <ActivityIndicator color={colors.primary} />
-                                <Text style={[styles.analysisTitle, { color: colors.text }]}>Проверяю подпись...</Text>
-                                <Text style={[styles.analysisHint, { color: colors.textSecondary }]}>
-                                    Выполняю предварительную оценку по фото и доступным признакам.
-                                </Text>
-                            </View>
-                        ) : analysis ? (
-                            <View style={[styles.analysisCard, { backgroundColor: colors.surface }]}>
-                                <View style={styles.analysisHeader}>
-                                    <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
-                                    <Text style={[styles.analysisTitle, { color: colors.text }]}>Предварительная проверка</Text>
-                                </View>
-                                <Text style={[styles.analysisResult, { color: colors.text }]}>
-                                    Возможное совпадение: {analysis.suggestion}
-                                </Text>
-                                <Text style={[styles.analysisHint, { color: colors.textSecondary }]}>
-                                    Уверенность оценки: {analysis.confidence}%
-                                </Text>
-                            </View>
-                        ) : null}
+                        <AnalysisCard analyzing={isAnalyzing} result={analysis} colors={colors} />
                     </View>
 
                     <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -727,30 +702,6 @@ const styles = StyleSheet.create({
     secondaryButtonText: {
         fontSize: 15,
         fontWeight: '600',
-    },
-    analysisCard: {
-        marginTop: 14,
-        borderRadius: 18,
-        paddingHorizontal: 14,
-        paddingVertical: 14,
-        gap: 6,
-    },
-    analysisHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    analysisTitle: {
-        fontSize: 15,
-        fontWeight: '700',
-    },
-    analysisResult: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    analysisHint: {
-        fontSize: 13,
-        lineHeight: 18,
     },
     formCard: {
         borderWidth: 1,
