@@ -28,7 +28,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run tests
-        run: npx jest --passWithNoTests
+        run: npm test -- --ci --coverage=false --passWithNoTests=false
 
   build-android:
     name: Build Android
