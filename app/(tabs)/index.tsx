@@ -34,32 +34,8 @@ import {
 import ShareSheet from '../../components/ShareSheet';
 import PostDetailModal from '../../components/PostDetailModal';
 import CommentsModal from '../../components/CommentsModal';
+import VoteButton from '../../components/ui/VoteButton';
 import { PostCardSkeleton } from '../../components/ui/Skeleton';
-
-type VoteButtonProps = {
-    label: string;
-    icon: 'checkmark-circle' | 'close-circle';
-    active: boolean;
-    disabled?: boolean;
-    color: string;
-    surface: string;
-    text: string;
-    onPress: () => void;
-};
-
-function VoteButton({ label, icon, active, disabled = false, color, surface, text, onPress }: VoteButtonProps) {
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            activeOpacity={0.85}
-            disabled={disabled}
-            style={[styles.voteButton, { backgroundColor: active ? color : surface, opacity: disabled ? 0.55 : 1 }]}
-        >
-            <Ionicons name={icon} size={16} color={active ? '#fff' : text} />
-            <Text style={[styles.voteButtonText, { color: active ? '#fff' : text }]}>{label}</Text>
-        </TouchableOpacity>
-    );
-}
 
 export default function FeedScreen() {
     const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData, syncStatus } = usePosts();
@@ -655,20 +631,6 @@ const styles = StyleSheet.create({
     voteButtonsRow: {
         flexDirection: 'row',
         gap: 10,
-    },
-    voteButton: {
-        flex: 1,
-        borderRadius: 16,
-        minHeight: 42,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
-        gap: 8,
-        paddingHorizontal: 10,
-    },
-    voteButtonText: {
-        fontSize: 13,
-        fontWeight: '700',
     },
     interactionHint: {
         fontSize: 12,
