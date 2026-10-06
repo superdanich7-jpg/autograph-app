@@ -53,3 +53,18 @@
 - Валидация финальная: `npm run typecheck` PASS, `npm test` 49/49 PASS
 - Git: 8cf08ba, 9346467, 9f95e51 → origin/main
 - Осталось (требует ручных действий Founder): тег v0.1-mvp, eas build preview APK, превью RLS-миграции 006 на staging Supabase, live WRITE→READ proof
+
+## LOOP-20-continued — итеративная декомпозиция UI (2026-10-06)
+- [x] Удалён мёртвый hooks/useCloudSync.ts (нигде не импортировался, B-05 закрыт)
+- [x] components/PostDetailModal.tsx — модалка поста вынесена из index.tsx
+- [x] components/CommentsModal.tsx — модалка комментариев вынесена из index.tsx
+- [x] components/ui/VoteButton.tsx — кнопка голосования вынесена из index.tsx
+- [x] components/FeedPostCard.tsx — карточка ленты (renderItem) вынесена из index.tsx
+- [x] components/ProfileModal.tsx — обёртка модалок профиля вынесена из profile.tsx
+- [x] index.tsx: 941(файл screens) -> 412 строк; profile.tsx: 941 -> 902 строк
+- [x] Инцидент: PowerShell Set-Content перекодировал русский текст в UTF-8 mojibake + BOM
+  - Восстановлено из git (git checkout <чистый-commit> -- файл), правки повторены node-скриптами (utf8, без BOM)
+  - Добавлен scripts/check-encoding.js — гейт против mojibake/BOM (запускать: node scripts/check-encoding.js)
+  - ПРАВИЛО: НЕ использовать PowerShell Set-Content/Out-File для исходников; только редактор файла или node fs.writeFileSync(path, text, 'utf8')
+- Валидация: typecheck PASS, jest 49/49 PASS, check-encoding ALL CLEAN
+- Git: abc8c5b, ea9cb8a, 61d4330, 6f0bed1, 660d013 -> origin/main
