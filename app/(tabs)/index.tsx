@@ -1,4 +1,4 @@
-﻿import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -107,11 +107,11 @@ export default function FeedScreen() {
 
     const handleRequireAuth = () => {
         Alert.alert(
-            'РўСЂРµР±СѓРµС‚СЃСЏ РІС…РѕРґ',
-            'Р’РѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚, С‡С‚РѕР±С‹ Р»Р°Р№РєР°С‚СЊ, РєРѕРјРјРµРЅС‚РёСЂРѕРІР°С‚СЊ Рё РїРѕРґС‚РІРµСЂР¶РґР°С‚СЊ Р°РІС‚РѕРіСЂР°С„С‹.',
+            'Требуется вход',
+            'Войдите в аккаунт, чтобы лайкать, комментировать и подтверждать автографы.',
             [
-                { text: 'РћС‚РјРµРЅР°', style: 'cancel' },
-                { text: 'Р’РѕР№С‚Рё', onPress: () => router.push('/auth') },
+                { text: 'Отмена', style: 'cancel' },
+                { text: 'Войти', onPress: () => router.push('/auth') },
             ]
         );
     };
@@ -134,13 +134,14 @@ export default function FeedScreen() {
         />
     );
 
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
             <View style={styles.screenHeader}>
                 <View>
-                    <Text style={[styles.screenTitle, { color: colors.text }]}>РљРѕР»Р»РµРєС†РёСЏ</Text>
+                    <Text style={[styles.screenTitle, { color: colors.text }]}>Коллекция</Text>
                     <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
-                        РџРѕРёСЃРє, С„РёР»СЊС‚СЂС‹ Рё Р±С‹СЃС‚СЂР°СЏ РїСЂРѕРІРµСЂРєР° РґРѕСЃС‚РѕРІРµСЂРЅРѕСЃС‚Рё
+                        Поиск, фильтры и быстрая проверка достоверности
                     </Text>
                 </View>
                 <View style={[styles.userPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -154,7 +155,7 @@ export default function FeedScreen() {
                     <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
                     <TextInput
                         style={[styles.searchInput, { color: colors.text }]}
-                        placeholder="РџРѕРёСЃРє РїРѕ РёРјРµРЅРё, РјРµСЃС‚Сѓ РёР»Рё Р·Р°РјРµС‚РєРµ"
+                        placeholder="Поиск по имени, месту или заметке"
                         placeholderTextColor={colors.placeholder}
                         value={query}
                         onChangeText={setQuery}
@@ -167,7 +168,7 @@ export default function FeedScreen() {
                         onPress={() => setCategoryFilter('all')}
                     >
                         <Text style={[styles.filterChipText, { color: categoryFilter === 'all' ? colors.primaryText : colors.text }]}>
-                            Р’СЃРµ
+                            Все
                         </Text>
                     </TouchableOpacity>
                     {POST_CATEGORIES.map((item) => {
@@ -189,7 +190,7 @@ export default function FeedScreen() {
                         onPress={() => setOnlyVerified((prev) => !prev)}
                     >
                         <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>
-                            РўРѕР»СЊРєРѕ РїРѕРґС‚РІРµСЂР¶РґРµРЅРЅС‹Рµ
+                            Только подтвержденные
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -197,7 +198,7 @@ export default function FeedScreen() {
                         onPress={() => setSortMode('latest')}
                     >
                         <Text style={[styles.filterChipText, { color: sortMode === 'latest' ? colors.primaryText : colors.text }]}>
-                            РЎРЅР°С‡Р°Р»Р° РЅРѕРІС‹Рµ
+                            Сначала новые
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -205,7 +206,7 @@ export default function FeedScreen() {
                         onPress={() => setSortMode('trusted')}
                     >
                         <Text style={[styles.filterChipText, { color: sortMode === 'trusted' ? colors.primaryText : colors.text }]}>
-                            РЎР°РјС‹Рµ РґРѕСЃС‚РѕРІРµСЂРЅС‹Рµ
+                            Самые достоверные
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -213,7 +214,7 @@ export default function FeedScreen() {
                         onPress={() => setSortMode('debated')}
                     >
                         <Text style={[styles.filterChipText, { color: sortMode === 'debated' ? colors.primaryText : colors.text }]}>
-                            РЎР°РјС‹Рµ СЃРїРѕСЂРЅС‹Рµ
+                            Самые спорные
                         </Text>
                     </TouchableOpacity>
                 </ScrollView>
@@ -221,15 +222,15 @@ export default function FeedScreen() {
 
             <View style={styles.summaryRow}>
                 <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
                     <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.verified}</Text>
                 </View>
                 <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>РЎРїРѕСЂРЅС‹С…</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Спорных</Text>
                     <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.disputed}</Text>
                 </View>
                 <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Р›РµРіРµРЅРґР°СЂРЅС‹С…</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Легендарных</Text>
                     <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.legendary}</Text>
                 </View>
             </View>
@@ -246,9 +247,9 @@ export default function FeedScreen() {
                         <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                             <Ionicons name="search-outline" size={28} color={colors.primary} />
                         </View>
-                        <Text style={[styles.emptyText, { color: colors.text }]}>РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</Text>
+                        <Text style={[styles.emptyText, { color: colors.text }]}>Ничего не найдено</Text>
                         <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                            РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅСЏС‚СЊ С‡Р°СЃС‚СЊ С„РёР»СЊС‚СЂРѕРІ РёР»Рё РёР·РјРµРЅРёС‚СЊ РїРѕРёСЃРєРѕРІС‹Р№ Р·Р°РїСЂРѕСЃ.
+                            Попробуйте снять часть фильтров или изменить поисковый запрос.
                         </Text>
                     </View>
                 </View>
