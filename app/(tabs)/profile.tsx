@@ -21,16 +21,15 @@ import Card from '../../components/ui/Card';
 import { Collection, Post, usePosts } from '../../context/PostsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
-import { showToast } from '../../components/Toast';
 import CollectionsList from '../../components/CollectionsList';
 
 import ProfileModal from '../../components/ProfileModal';
+import ProfilePostModal from '../../components/ProfilePostModal';
 
 export default function ProfileScreen() {
     const {
         posts,
-        collections,
-        profile,
+            profile,
         reputation,
         isAuthenticated,
         authUserEmail,
@@ -41,8 +40,7 @@ export default function ProfileScreen() {
         setNotificationsEnabled,
         clearPosts,
         signOut,
-        addPostToCollection,
-    } = usePosts();
+        } = usePosts();
     const { colors, toggleTheme, theme } = useTheme();
     const router = useRouter();
 
@@ -437,66 +435,7 @@ export default function ProfileScreen() {
             <CollectionsList visible={collectionsVisible} onClose={() => setCollectionsVisible(false)} />
 
             <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || 'Автограф'} colors={colors} onClose={() => setSelectedPost(null)}>
-                {selectedPost ? (
-                    <ScrollView style={styles.modalPostScroll} contentContainerStyle={styles.modalPostContent}>
-                        <Image source={{ uri: selectedPost.uri }} style={styles.modalPostImage} resizeMode="cover" />
-                        <View style={[styles.modalPostCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                            <Text style={[styles.modalPostTitle, { color: colors.text }]}>{selectedPost.celebrityName || 'Без имени'}</Text>
-                            <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                                {selectedPost.location || 'Место не указано'} • {selectedPost.dateReceived || 'Дата не указана'}
-                            </Text>
-                            <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                                {getCategoryLabel(selectedPost.category)} • {getRarityLabel(selectedPost.rarity)}
-                            </Text>
-                            {selectedPost.caption ? (
-                                <Text style={[styles.modalPostCaption, { color: colors.text }]}>{selectedPost.caption}</Text>
-                            ) : null}
-
-                            <View style={styles.fullStatsRow}>
-                                <View style={[styles.fullStat, { backgroundColor: colors.surface }]}>
-                                    <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
-                                    <Text style={[styles.fullStatText, { color: colors.text }]}>
-                                        {selectedPost.realVotes} подтверждений
-                                    </Text>
-                                </View>
-                                <View style={[styles.fullStat, { backgroundColor: colors.surface }]}>
-                                    <Ionicons name="close-circle" size={16} color={colors.danger} />
-                                    <Text style={[styles.fullStatText, { color: colors.text }]}>
-                                        {selectedPost.fakeVotes} фейк-меток
-                                    </Text>
-                                </View>
-                            </View>
-
-                            <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                                Достоверность: {getAuthenticityPercent(selectedPost)}%
-                            </Text>
-
-                            <View style={styles.modalActionsRow}>
-                                <TouchableOpacity
-                                    style={[styles.modalActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                                    onPress={() => {
-                                        if (collections.length === 0) {
-                                            Alert.alert('Нет подборок', 'Сначала создайте подборку в профиле.');
-                                            return;
-                                        }
-                                        const options = collections.map((c) => ({
-                                            text: c.name,
-                                            onPress: () => {
-                                                addPostToCollection(c.id, selectedPost.id);
-                                                showToast('Добавлено в подборку', 'success');
-                                            },
-                                        }));
-                                        options.push({ text: 'Отмена', onPress: () => {} });
-                                        Alert.alert('Добавить в подборку', 'Выберите подборку:', options, { cancelable: true });
-                                    }}
-                                >
-                                    <Ionicons name="albums-outline" size={18} color={colors.text} />
-                                    <Text style={[styles.modalActionText, { color: colors.text }]}>В подборку</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </ScrollView>
-                ) : null}
+                <ProfilePostModal post={selectedPost} colors={colors} onClose={() => setSelectedPost(null)} />
             </ProfileModal>
         </SafeAreaView>
     );
@@ -839,64 +778,5 @@ const styles = StyleSheet.create({
     settingButtonText: {
         fontSize: 15,
         fontWeight: '600',
-    },
-    modalPostScroll: {
-        flex: 1,
-    },
-    modalPostContent: {
-        padding: 16,
-        gap: 16,
-    },
-    modalPostImage: {
-        width: '100%',
-        aspectRatio: 1,
-        borderRadius: 22,
-    },
-    modalPostCard: {
-        borderWidth: 1,
-        borderRadius: 22,
-        padding: 16,
-        gap: 10,
-    },
-    modalPostTitle: {
-        fontSize: 22,
-        fontWeight: '700',
-    },
-    modalPostMeta: {
-        fontSize: 13,
-        lineHeight: 18,
-    },
-    modalPostCaption: {
-        fontSize: 15,
-        lineHeight: 21,
-    },
-    fullStatsRow: {
-        flexDirection: 'row',
-        gap: 10,
-        flexWrap: 'wrap',
-    },
-    fullStat: {
-        borderRadius: 14,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    fullStatText: {
-        fontSize: 13,
-        fontWeight: '600',
-    },
-    modalActionsRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
-    modalActionBtn: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 8,
-        borderWidth: 1,
-        borderRadius: 16,
-        paddingVertical: 12,
-        paddingHorizontal: 10,
     },
 });
