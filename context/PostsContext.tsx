@@ -321,8 +321,16 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
     const [collections, setCollections] = useState<Collection[]>([]);
     const isHydrated = useRef(false);
+    const mountedRef = useRef(true);
     const profileRef = useRef(profile);
     const authUserIdRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         profileRef.current = profile;
@@ -377,10 +385,10 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         saveTimerRef.current = setTimeout(async () => {
             try {
-                const state: StoredState = { posts, profile, lastSyncedAt };
+                const state: StoredState = { posts, profile, collections, lastSyncedAt };
                 await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             } catch (error) {
-                showToast(error?.message || 'Ошибка при сохранении данных', 'error');
+                showToast(error instanceof Error ? error.message : 'Ошибка при сохранении данных', 'error');
             }
         }, 500);
 
@@ -443,6 +451,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
             const { error } = await supabase.from('autograph_posts').upsert(rows);
 
+            if (!mountedRef.current) return;
             if (error) {
                 setSyncStatus('error');
                 setSyncError(error.message);
@@ -455,6 +464,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setSyncStatus('ready');
             }
         } catch (e) {
+            if (!mountedRef.current) return;
             showToast('Ошибка синхронизации. Попробуйте позже.', 'error');
             for (const post of batch.values()) {
                 postQueueRef.current.set(post.id, post);
@@ -533,11 +543,6 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             setPosts(nextPosts);
             setLastSyncedAt(new Date().toISOString());
             setSyncStatus('ready');
-            } catch (error) {
-                showToast(error?.message || 'Не удалось загрузить локальную коллекцию.', 'error');
-                setSyncStatus('error');
-                setSyncError('Не удалось загрузить локальную коллекцию.');
-            }
         } catch (error) {
             showToast(error instanceof Error ? error.message : 'Не удалось загрузить данные из облака.', 'error');
             setSyncStatus('error');

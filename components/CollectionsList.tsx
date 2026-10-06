@@ -58,7 +58,7 @@ type Props = {
 
 export default function CollectionsList({ visible, onClose }: Props) {
   const { colors } = useTheme();
-  const { collections, posts, createCollection, deleteCollection, updateCollection, addPostToCollection, removePostFromCollection, sharePost } =
+  const { collections, posts, createCollection, deleteCollection, updateCollection, addPostToCollection, removePostFromCollection } =
     usePosts();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);

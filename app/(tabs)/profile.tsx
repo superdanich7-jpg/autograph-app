@@ -509,7 +509,7 @@ export default function ProfileScreen() {
                                                 showToast('Добавлено в подборку', 'success');
                                             },
                                         }));
-                                        options.push({ text: 'Отмена', style: 'cancel' });
+                                        options.push({ text: 'Отмена', onPress: () => {} });
                                         Alert.alert('Добавить в подборку', 'Выберите подборку:', options, { cancelable: true });
                                     }}
                                 >

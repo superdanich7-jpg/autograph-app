@@ -85,7 +85,7 @@ function UploadField({
 }
 
 export default function UploadScreen() {
-    const { addPost, posts, authUserEmail } = usePosts();
+    const { addPost, posts, authUserEmail, currentUserId } = usePosts();
     const { colors } = useTheme();
 
     const [imageUri, setImageUri] = useState<string | null>(null);
@@ -278,7 +278,7 @@ export default function UploadScreen() {
         setIsAnalyzing(false);
     };
 
-    const handlePublish = () => {
+    const handlePublish = async () => {
         if (!imageUri) {
             Alert.alert('Ошибка', 'Сначала выберите фотографию автографа.');
             return;
@@ -290,11 +290,18 @@ export default function UploadScreen() {
         }
 
         setLoading(true);
-        setTimeout(() => {
-            if (!isMounted.current) return;
+        try {
+            // LOOP-31: фото → Supabase Storage, в пост пишем публичный URL (не file://)
+            let finalUri = imageUri;
+            try {
+                const { uploadAutographPhoto } = await import('../../lib/storage');
+                finalUri = await uploadAutographPhoto(imageUri, String(currentUserId ?? 'guest'));
+            } catch (uploadError) {
+                console.warn('Storage upload failed, fallback to local uri:', uploadError);
+            }
 
             addPost({
-                uri: imageUri,
+                uri: finalUri,
                 caption,
                 celebrityName,
                 location: location.trim() || 'Место не указано',
@@ -324,7 +331,10 @@ export default function UploadScreen() {
 
             resetForm();
             setLoading(false);
-        }, 500);
+        } catch (error) {
+            console.warn(error);
+            setLoading(false);
+        }
     };
 
     return (

@@ -6,7 +6,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Dimensions,
     StyleSheet,
@@ -53,7 +53,6 @@ export default function OnboardingScreen({ onComplete }: Props) {
   const { colors } = useTheme();
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
@@ -79,7 +78,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.skipContainer}>
-        <TouchableOpacity onPress={handleSkip}>
+        <TouchableOpacity onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Пропустить обучение">
           <Text style={[styles.skipText, { color: colors.textSecondary }]}>Пропустить</Text>
         </TouchableOpacity>
       </View>
@@ -120,6 +119,8 @@ export default function OnboardingScreen({ onComplete }: Props) {
         style={[styles.button, { backgroundColor: colors.primary }]}
         onPress={handleNext}
         activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={currentIndex === slides.length - 1 ? 'Начать пользоваться приложением' : 'Следующий шаг обучения'}
       >
         <Text style={[styles.buttonText, { color: colors.primaryText }]}>
           {currentIndex === slides.length - 1 ? 'Начать' : 'Далее'}
@@ -133,9 +134,6 @@ export default function OnboardingScreen({ onComplete }: Props) {
     </SafeAreaView>
   );
 }
-
-// Need to import FlatList
-import { FlatList } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
