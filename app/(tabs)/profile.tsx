@@ -1,10 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
     Alert,
     Image,
-    Modal,
     ScrollView,
     StyleSheet,
     Switch,
@@ -24,30 +23,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
 import { showToast } from '../../components/Toast';
 import CollectionsList from '../../components/CollectionsList';
-
-type ProfileModalProps = {
-    visible: boolean;
-    title: string;
-    colors: ReturnType<typeof useTheme>['colors'];
-    onClose: () => void;
-    children: React.ReactNode;
-};
-
-function ProfileModal({ visible, title, colors, onClose, children }: ProfileModalProps) {
-    return (
-        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
-            <SafeAreaView style={[styles.modalSafeArea, { backgroundColor: colors.background }]}>
-                <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                    <Text style={[styles.modalTitle, { color: colors.text }]}>{title}</Text>
-                    <TouchableOpacity onPress={onClose} style={styles.modalCloseButton}>
-                        <Ionicons name="close" size={24} color={colors.text} />
-                    </TouchableOpacity>
-                </View>
-                {children}
-            </SafeAreaView>
-        </Modal>
-    );
-}
+import ProfileModal from '../../components/ProfileModal';
 
 export default function ProfileScreen() {
     const {
@@ -93,7 +69,7 @@ export default function ProfileScreen() {
         .slice(0, 3);
 
     const favoriteCategory = useMemo(() => {
-        if (posts.length === 0) return 'Пока не определена';
+        if (posts.length === 0) return 'РџРѕРєР° РЅРµ РѕРїСЂРµРґРµР»РµРЅР°';
         const counts = posts.reduce<Record<string, number>>((acc, post) => {
             acc[post.category] = (acc[post.category] || 0) + 1;
             return acc;
@@ -115,22 +91,22 @@ export default function ProfileScreen() {
     const handleClearCache = () => {
         clearPosts();
         setSettingsVisible(false);
-        Alert.alert('Кэш очищен', 'Локальная коллекция очищена.');
+        Alert.alert('РљСЌС€ РѕС‡РёС‰РµРЅ', 'Р›РѕРєР°Р»СЊРЅР°СЏ РєРѕР»Р»РµРєС†РёСЏ РѕС‡РёС‰РµРЅР°.');
     };
 
     const handleSignOut = () => {
         signOut();
         setSettingsVisible(false);
-        Alert.alert('Выход выполнен', 'Локальный профиль сброшен.');
+        Alert.alert('Р’С‹С…РѕРґ РІС‹РїРѕР»РЅРµРЅ', 'Р›РѕРєР°Р»СЊРЅС‹Р№ РїСЂРѕС„РёР»СЊ СЃР±СЂРѕС€РµРЅ.');
     };
 
     const syncStatusLabel = useMemo(() => {
-        if (syncStatus === 'syncing') return 'Автоматически загружаю данные...';
-        if (syncStatus === 'loading') return 'Загрузка локальных данных...';
-        if (syncStatus === 'offline') return 'Облачная синхронизация не подключена';
-        if (syncStatus === 'error') return 'Нужно проверить подключение';
-        if (lastSyncedAt) return `Автосохранение активно • ${new Date(lastSyncedAt).toLocaleString('ru-RU')}`;
-        return isAuthenticated ? 'Автосохранение активно' : 'Гостевой режим: только просмотр';
+        if (syncStatus === 'syncing') return 'РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё Р·Р°РіСЂСѓР¶Р°СЋ РґР°РЅРЅС‹Рµ...';
+        if (syncStatus === 'loading') return 'Р—Р°РіСЂСѓР·РєР° Р»РѕРєР°Р»СЊРЅС‹С… РґР°РЅРЅС‹С…...';
+        if (syncStatus === 'offline') return 'РћР±Р»Р°С‡РЅР°СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РЅРµ РїРѕРґРєР»СЋС‡РµРЅР°';
+        if (syncStatus === 'error') return 'РќСѓР¶РЅРѕ РїСЂРѕРІРµСЂРёС‚СЊ РїРѕРґРєР»СЋС‡РµРЅРёРµ';
+        if (lastSyncedAt) return `РђРІС‚РѕСЃРѕС…СЂР°РЅРµРЅРёРµ Р°РєС‚РёРІРЅРѕ вЂў ${new Date(lastSyncedAt).toLocaleString('ru-RU')}`;
+        return isAuthenticated ? 'РђРІС‚РѕСЃРѕС…СЂР°РЅРµРЅРёРµ Р°РєС‚РёРІРЅРѕ' : 'Р“РѕСЃС‚РµРІРѕР№ СЂРµР¶РёРј: С‚РѕР»СЊРєРѕ РїСЂРѕСЃРјРѕС‚СЂ';
     }, [isAuthenticated, lastSyncedAt, syncStatus]);
 
     return (
@@ -141,7 +117,7 @@ export default function ProfileScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <Card variant="elevated" padding="lg" style={{ alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => Alert.alert('Аватар', 'Смена фото появится позже.')}>
+                    <TouchableOpacity onPress={() => Alert.alert('РђРІР°С‚Р°СЂ', 'РЎРјРµРЅР° С„РѕС‚Рѕ РїРѕСЏРІРёС‚СЃСЏ РїРѕР·Р¶Рµ.')}>
                         <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
                             <Ionicons name="person" size={44} color={colors.primary} />
                         </View>
@@ -154,7 +130,7 @@ export default function ProfileScreen() {
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.badgeTitle, { color: colors.text }]}>{reputation.label}</Text>
                             <Text style={[styles.badgeSubtitle, { color: colors.textSecondary }]}>
-                                {reputation.score} очков доверия
+                                {reputation.score} РѕС‡РєРѕРІ РґРѕРІРµСЂРёСЏ
                             </Text>
                         </View>
                     </View>
@@ -166,39 +142,39 @@ export default function ProfileScreen() {
                     <View style={[styles.statsContainer, { backgroundColor: colors.surface }]}>
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalPosts}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Постов</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>РџРѕСЃС‚РѕРІ</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalRealVotes}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{legendaryCount}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Р›РµРіРµРЅРґР°СЂРЅС‹С…</Text>
                         </View>
                     </View>
                 </Card>
 
                 <View style={styles.insightsRow}>
                     <View style={[styles.insightCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>Уникальных имен</Text>
+                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>РЈРЅРёРєР°Р»СЊРЅС‹С… РёРјРµРЅ</Text>
                         <Text style={[styles.insightValue, { color: colors.text }]}>{uniqueCelebrities}</Text>
                     </View>
                     <View style={[styles.insightCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>Любимая категория</Text>
+                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>Р›СЋР±РёРјР°СЏ РєР°С‚РµРіРѕСЂРёСЏ</Text>
                         <Text style={[styles.insightValue, { color: colors.text }]}>{favoriteCategory}</Text>
                     </View>
                 </View>
 
                 <View style={[styles.goalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.goalHeader}>
-                        <Text style={[styles.goalTitle, { color: colors.text }]}>Цель месяца</Text>
+                        <Text style={[styles.goalTitle, { color: colors.text }]}>Р¦РµР»СЊ РјРµСЃСЏС†Р°</Text>
                         <Text style={[styles.goalProgress, { color: colors.textSecondary }]}>{verifiedGoalCount}/3</Text>
                     </View>
                     <Text style={[styles.goalHint, { color: colors.textSecondary }]}>
-                        Собрать 3 подтвержденных автографа с доверием сообщества 70% и выше.
+                        РЎРѕР±СЂР°С‚СЊ 3 РїРѕРґС‚РІРµСЂР¶РґРµРЅРЅС‹С… Р°РІС‚РѕРіСЂР°С„Р° СЃ РґРѕРІРµСЂРёРµРј СЃРѕРѕР±С‰РµСЃС‚РІР° 70% Рё РІС‹С€Рµ.
                     </Text>
                     <View style={[styles.goalBar, { backgroundColor: colors.surface }]}>
                         <View
@@ -217,7 +193,7 @@ export default function ProfileScreen() {
 
                 <View style={styles.actions}>
                     <Button
-                        title="Редактировать"
+                        title="Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ"
                         onPress={() => {
                             setDraftName(profile.name);
                             setDraftBio(profile.bio);
@@ -228,21 +204,21 @@ export default function ProfileScreen() {
                         icon="create-outline"
                     />
                     <Button
-                        title="Подборки"
+                        title="РџРѕРґР±РѕСЂРєРё"
                         onPress={() => setCollectionsVisible(true)}
                         variant="secondary"
                         size="sm"
                         icon="albums-outline"
                     />
                     <Button
-                        title="Настройки"
+                        title="РќР°СЃС‚СЂРѕР№РєРё"
                         onPress={() => setSettingsVisible(true)}
                         variant="secondary"
                         size="sm"
                         icon="settings-outline"
                     />
                     <Button
-                        title={theme === 'light' ? 'Тёмная' : 'Светлая'}
+                        title={theme === 'light' ? 'РўС‘РјРЅР°СЏ' : 'РЎРІРµС‚Р»Р°СЏ'}
                         onPress={toggleTheme}
                         variant="ghost"
                         size="sm"
@@ -256,7 +232,7 @@ export default function ProfileScreen() {
 
                 {savedPosts.length > 0 ? (
                     <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Избранное</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>РР·Р±СЂР°РЅРЅРѕРµ</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedRow}>
                             {savedPosts.slice(0, 5).map((post) => (
                                 <TouchableOpacity
@@ -267,7 +243,7 @@ export default function ProfileScreen() {
                                     <Image source={{ uri: post.uri }} style={styles.savedImage} resizeMode="cover" />
                                     <View style={styles.savedFooter}>
                                         <Text style={[styles.savedTitle, { color: colors.text }]} numberOfLines={1}>
-                                            {post.celebrityName || 'Без имени'}
+                                            {post.celebrityName || 'Р‘РµР· РёРјРµРЅРё'}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -278,7 +254,7 @@ export default function ProfileScreen() {
 
                 {topShowcase.length > 0 ? (
                     <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Витрина лучших</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Р’РёС‚СЂРёРЅР° Р»СѓС‡С€РёС…</Text>
                         {topShowcase.map((post) => (
                             <TouchableOpacity
                                 key={post.id}
@@ -288,13 +264,13 @@ export default function ProfileScreen() {
                                 <Image source={{ uri: post.uri }} style={styles.showcaseImage} resizeMode="cover" />
                                 <View style={styles.showcaseBody}>
                                     <Text style={[styles.showcaseTitle, { color: colors.text }]} numberOfLines={1}>
-                                        {post.celebrityName || 'Без имени'}
+                                        {post.celebrityName || 'Р‘РµР· РёРјРµРЅРё'}
                                     </Text>
                                     <Text style={[styles.showcaseMeta, { color: colors.textSecondary }]} numberOfLines={1}>
-                                        {getCategoryLabel(post.category)} • {getRarityLabel(post.rarity)}
+                                        {getCategoryLabel(post.category)} вЂў {getRarityLabel(post.rarity)}
                                     </Text>
                                     <Text style={[styles.showcaseScore, { color: colors.text }]}>
-                                        {getAuthenticityPercent(post)}% доверия
+                                        {getAuthenticityPercent(post)}% РґРѕРІРµСЂРёСЏ
                                     </Text>
                                 </View>
                             </TouchableOpacity>
@@ -303,16 +279,16 @@ export default function ProfileScreen() {
                 ) : null}
 
                 <View style={styles.section}>
-                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Моя коллекция</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>РњРѕСЏ РєРѕР»Р»РµРєС†РёСЏ</Text>
 
                     {posts.length === 0 ? (
                         <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
                             <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                                 <Ionicons name="albums-outline" size={28} color={colors.primary} />
                             </View>
-                            <Text style={[styles.emptyText, { color: colors.text }]}>Коллекция еще не заполнена</Text>
+                            <Text style={[styles.emptyText, { color: colors.text }]}>РљРѕР»Р»РµРєС†РёСЏ РµС‰Рµ РЅРµ Р·Р°РїРѕР»РЅРµРЅР°</Text>
                             <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                                Когда добавите первый автограф, здесь появится компактная галерея.
+                                РљРѕРіРґР° РґРѕР±Р°РІРёС‚Рµ РїРµСЂРІС‹Р№ Р°РІС‚РѕРіСЂР°С„, Р·РґРµСЃСЊ РїРѕСЏРІРёС‚СЃСЏ РєРѕРјРїР°РєС‚РЅР°СЏ РіР°Р»РµСЂРµСЏ.
                             </Text>
                         </View>
                     ) : (
@@ -326,10 +302,10 @@ export default function ProfileScreen() {
                                     <Image source={{ uri: post.uri }} style={styles.gridImage} resizeMode="cover" />
                                     <View style={styles.gridFooter}>
                                         <Text style={[styles.gridTitle, { color: colors.text }]} numberOfLines={1}>
-                                            {post.celebrityName || 'Без имени'}
+                                            {post.celebrityName || 'Р‘РµР· РёРјРµРЅРё'}
                                         </Text>
                                         <Text style={[styles.gridSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                                            {getCategoryLabel(post.category)} • {getRarityLabel(post.rarity)}
+                                            {getCategoryLabel(post.category)} вЂў {getRarityLabel(post.rarity)}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -339,18 +315,18 @@ export default function ProfileScreen() {
                 </View>
             </ScrollView>
 
-            <ProfileModal visible={editVisible} title="Редактировать профиль" colors={colors} onClose={() => setEditVisible(false)}>
+            <ProfileModal visible={editVisible} title="Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РїСЂРѕС„РёР»СЊ" colors={colors} onClose={() => setEditVisible(false)}>
                 <View style={styles.modalContent}>
-                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Имя</Text>
+                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>РРјСЏ</Text>
                     <TextInput
                         style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
                         value={draftName}
                         onChangeText={setDraftName}
-                        placeholder="Ваше имя"
+                        placeholder="Р’Р°С€Рµ РёРјСЏ"
                         placeholderTextColor={colors.placeholder}
                     />
 
-                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Био</Text>
+                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Р‘РёРѕ</Text>
                     <TextInput
                         style={[
                             styles.fieldInput,
@@ -359,25 +335,25 @@ export default function ProfileScreen() {
                         ]}
                         value={draftBio}
                         onChangeText={setDraftBio}
-                        placeholder="Коротко о вашей коллекции"
+                        placeholder="РљРѕСЂРѕС‚РєРѕ Рѕ РІР°С€РµР№ РєРѕР»Р»РµРєС†РёРё"
                         placeholderTextColor={colors.placeholder}
                         multiline
                         textAlignVertical="top"
                     />
 
                     <TouchableOpacity style={[styles.modalAction, { backgroundColor: colors.primary }]} onPress={saveProfile}>
-                        <Text style={[styles.modalActionText, { color: colors.primaryText }]}>Сохранить</Text>
+                        <Text style={[styles.modalActionText, { color: colors.primaryText }]}>РЎРѕС…СЂР°РЅРёС‚СЊ</Text>
                     </TouchableOpacity>
                 </View>
             </ProfileModal>
 
-            <ProfileModal visible={settingsVisible} title="Настройки" colors={colors} onClose={() => setSettingsVisible(false)}>
+            <ProfileModal visible={settingsVisible} title="РќР°СЃС‚СЂРѕР№РєРё" colors={colors} onClose={() => setSettingsVisible(false)}>
                 <View style={styles.modalContent}>
                     <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.settingTitle, { color: colors.text }]}>Уведомления</Text>
+                            <Text style={[styles.settingTitle, { color: colors.text }]}>РЈРІРµРґРѕРјР»РµРЅРёСЏ</Text>
                             <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
-                                Напоминания о новых голосах и активности
+                                РќР°РїРѕРјРёРЅР°РЅРёСЏ Рѕ РЅРѕРІС‹С… РіРѕР»РѕСЃР°С… Рё Р°РєС‚РёРІРЅРѕСЃС‚Рё
                             </Text>
                         </View>
                         <Switch
@@ -390,9 +366,9 @@ export default function ProfileScreen() {
 
                     <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.settingTitle, { color: colors.text }]}>Спорные автографы</Text>
+                            <Text style={[styles.settingTitle, { color: colors.text }]}>РЎРїРѕСЂРЅС‹Рµ Р°РІС‚РѕРіСЂР°С„С‹</Text>
                             <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
-                                Сейчас {disputedCount} карточек с почти равным доверием сообщества.
+                                РЎРµР№С‡Р°СЃ {disputedCount} РєР°СЂС‚РѕС‡РµРє СЃ РїРѕС‡С‚Рё СЂР°РІРЅС‹Рј РґРѕРІРµСЂРёРµРј СЃРѕРѕР±С‰РµСЃС‚РІР°.
                             </Text>
                         </View>
                     </View>
@@ -408,7 +384,7 @@ export default function ProfileScreen() {
                             </View>
                             <View style={{ flex: 1 }}>
                                 <Text style={[styles.settingTitle, { color: colors.text }]}>
-                                    {isAuthenticated ? 'Облачная синхронизация' : 'Гостевой доступ'}
+                                    {isAuthenticated ? 'РћР±Р»Р°С‡РЅР°СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ' : 'Р“РѕСЃС‚РµРІРѕР№ РґРѕСЃС‚СѓРї'}
                                 </Text>
                                 <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
                                     {syncStatusLabel}
@@ -432,7 +408,7 @@ export default function ProfileScreen() {
                                 }}
                             >
                                 <Ionicons name="log-in-outline" size={18} color={colors.text} />
-                                <Text style={[styles.authButtonText, { color: colors.text }]}>Войти или зарегистрироваться</Text>
+                                <Text style={[styles.authButtonText, { color: colors.text }]}>Р’РѕР№С‚Рё РёР»Рё Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊСЃСЏ</Text>
                             </TouchableOpacity>
                         ) : null}
                     </View>
@@ -442,7 +418,7 @@ export default function ProfileScreen() {
                         onPress={handleClearCache}
                     >
                         <Ionicons name="trash-outline" size={18} color={colors.text} />
-                        <Text style={[styles.settingButtonText, { color: colors.text }]}>Очистить кэш</Text>
+                        <Text style={[styles.settingButtonText, { color: colors.text }]}>РћС‡РёСЃС‚РёС‚СЊ РєСЌС€</Text>
                     </TouchableOpacity>
 
                     {isAuthenticated ? (
@@ -451,7 +427,7 @@ export default function ProfileScreen() {
                             onPress={handleSignOut}
                         >
                             <Ionicons name="log-out-outline" size={18} color={colors.danger} />
-                            <Text style={[styles.settingButtonText, { color: colors.danger }]}>Выйти</Text>
+                            <Text style={[styles.settingButtonText, { color: colors.danger }]}>Р’С‹Р№С‚Рё</Text>
                         </TouchableOpacity>
                     ) : null}
                 </View>
@@ -459,17 +435,17 @@ export default function ProfileScreen() {
 
             <CollectionsList visible={collectionsVisible} onClose={() => setCollectionsVisible(false)} />
 
-            <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || 'Автограф'} colors={colors} onClose={() => setSelectedPost(null)}>
+            <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || 'РђРІС‚РѕРіСЂР°С„'} colors={colors} onClose={() => setSelectedPost(null)}>
                 {selectedPost ? (
                     <ScrollView style={styles.modalPostScroll} contentContainerStyle={styles.modalPostContent}>
                         <Image source={{ uri: selectedPost.uri }} style={styles.modalPostImage} resizeMode="cover" />
                         <View style={[styles.modalPostCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                            <Text style={[styles.modalPostTitle, { color: colors.text }]}>{selectedPost.celebrityName || 'Без имени'}</Text>
+                            <Text style={[styles.modalPostTitle, { color: colors.text }]}>{selectedPost.celebrityName || 'Р‘РµР· РёРјРµРЅРё'}</Text>
                             <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                                {selectedPost.location || 'Место не указано'} • {selectedPost.dateReceived || 'Дата не указана'}
+                                {selectedPost.location || 'РњРµСЃС‚Рѕ РЅРµ СѓРєР°Р·Р°РЅРѕ'} вЂў {selectedPost.dateReceived || 'Р”Р°С‚Р° РЅРµ СѓРєР°Р·Р°РЅР°'}
                             </Text>
                             <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                                {getCategoryLabel(selectedPost.category)} • {getRarityLabel(selectedPost.rarity)}
+                                {getCategoryLabel(selectedPost.category)} вЂў {getRarityLabel(selectedPost.rarity)}
                             </Text>
                             {selectedPost.caption ? (
                                 <Text style={[styles.modalPostCaption, { color: colors.text }]}>{selectedPost.caption}</Text>
@@ -479,19 +455,19 @@ export default function ProfileScreen() {
                                 <View style={[styles.fullStat, { backgroundColor: colors.surface }]}>
                                     <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
                                     <Text style={[styles.fullStatText, { color: colors.text }]}>
-                                        {selectedPost.realVotes} подтверждений
+                                        {selectedPost.realVotes} РїРѕРґС‚РІРµСЂР¶РґРµРЅРёР№
                                     </Text>
                                 </View>
                                 <View style={[styles.fullStat, { backgroundColor: colors.surface }]}>
                                     <Ionicons name="close-circle" size={16} color={colors.danger} />
                                     <Text style={[styles.fullStatText, { color: colors.text }]}>
-                                        {selectedPost.fakeVotes} фейк-меток
+                                        {selectedPost.fakeVotes} С„РµР№Рє-РјРµС‚РѕРє
                                     </Text>
                                 </View>
                             </View>
 
                             <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                                Достоверность: {getAuthenticityPercent(selectedPost)}%
+                                Р”РѕСЃС‚РѕРІРµСЂРЅРѕСЃС‚СЊ: {getAuthenticityPercent(selectedPost)}%
                             </Text>
 
                             <View style={styles.modalActionsRow}>
@@ -499,22 +475,22 @@ export default function ProfileScreen() {
                                     style={[styles.modalActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                                     onPress={() => {
                                         if (collections.length === 0) {
-                                            Alert.alert('Нет подборок', 'Сначала создайте подборку в профиле.');
+                                            Alert.alert('РќРµС‚ РїРѕРґР±РѕСЂРѕРє', 'РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°Р№С‚Рµ РїРѕРґР±РѕСЂРєСѓ РІ РїСЂРѕС„РёР»Рµ.');
                                             return;
                                         }
                                         const options = collections.map((c) => ({
                                             text: c.name,
                                             onPress: () => {
                                                 addPostToCollection(c.id, selectedPost.id);
-                                                showToast('Добавлено в подборку', 'success');
+                                                showToast('Р”РѕР±Р°РІР»РµРЅРѕ РІ РїРѕРґР±РѕСЂРєСѓ', 'success');
                                             },
                                         }));
-                                        options.push({ text: 'Отмена', onPress: () => {} });
-                                        Alert.alert('Добавить в подборку', 'Выберите подборку:', options, { cancelable: true });
+                                        options.push({ text: 'РћС‚РјРµРЅР°', onPress: () => {} });
+                                        Alert.alert('Р”РѕР±Р°РІРёС‚СЊ РІ РїРѕРґР±РѕСЂРєСѓ', 'Р’С‹Р±РµСЂРёС‚Рµ РїРѕРґР±РѕСЂРєСѓ:', options, { cancelable: true });
                                     }}
                                 >
                                     <Ionicons name="albums-outline" size={18} color={colors.text} />
-                                    <Text style={[styles.modalActionText, { color: colors.text }]}>В подборку</Text>
+                                    <Text style={[styles.modalActionText, { color: colors.text }]}>Р’ РїРѕРґР±РѕСЂРєСѓ</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -750,22 +726,6 @@ const styles = StyleSheet.create({
     },
     gridSubtitle: {
         fontSize: 12,
-    },
-    modalSafeArea: { flex: 1 },
-    modalHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        borderBottomWidth: 1,
-    },
-    modalTitle: { fontSize: 19, fontWeight: '700' },
-    modalCloseButton: {
-        width: 36,
-        height: 36,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     modalContent: {
         padding: 16,
