@@ -47,7 +47,7 @@
 - [x] LOOP-02: БД — миграция 006 RLS hardening (закрыты дыры 002/004/005), storage.ts (бакет autographs/)
 - [x] LOOP-10: Доставка без QR (README: preview APK, web-стенд, OTA)
 - [x] LOOP-20: UI — удалён мёртвый код (constants/Colors.ts, useSwipeNavigation), TabBar без свайп-конфликта, onboarding FlatList fix, typecheck fixes в PostsContext/profile/CollectionsList
-- [x] LOOP-30: Бэкенд/качество — jest (49/49 тестов), celebrity-database (50+), seed.ts, CI-гейт тестов
+- [x] LOOP-30: Бэкенд/качество — jest (65/65 тестов), celebrity-database (50+), seed.ts, CI-гейт тестов
 - [x] LOOP-40: Питч-сценарий 3 клика (tasks/LOOP-40-pitch.md)
 - [x] LOOP-B: typecheck PASS, jest 49/49 PASS
 - Валидация финальная: `npm run typecheck` PASS, `npm test` 49/49 PASS
@@ -63,8 +63,22 @@
 - [x] components/ProfileModal.tsx — обёртка модалок профиля вынесена из profile.tsx
 - [x] index.tsx: 941(файл screens) -> 412 строк; profile.tsx: 941 -> 902 строк
 - [x] Инцидент: PowerShell Set-Content перекодировал русский текст в UTF-8 mojibake + BOM
+- [x] Качество кода: unit-тесты lib/helpers.ts (достоверность, спорность, лейблы категорий/редкости/доказательств, generateId) — 65/65 PASS (дополнительный мок @react-native-async-storage/async-storage в jest.setup.js)
   - Восстановлено из git (git checkout <чистый-commit> -- файл), правки повторены node-скриптами (utf8, без BOM)
   - Добавлен scripts/check-encoding.js — гейт против mojibake/BOM (запускать: node scripts/check-encoding.js)
   - ПРАВИЛО: НЕ использовать PowerShell Set-Content/Out-File для исходников; только редактор файла или node fs.writeFileSync(path, text, 'utf8')
-- Валидация: typecheck PASS, jest 49/49 PASS, check-encoding ALL CLEAN
+- Валидация: typecheck PASS, jest 65/65 PASS (включая lib/helpers.ts — достоверность, спорность, категории), check-encoding ALL CLEAN
 - Git: abc8c5b, ea9cb8a, 61d4330, 6f0bed1, 660d013 -> origin/main
+
+## LOOP-CEO-01 — Система достижений (2026-10-06)
+- [x] lib/achievements.ts — полноценная Supabase-система (getAllAchievements, getUserAchievements, checkAndAwardAchievements, updateUserStats, стрики, уровни, rarity-цвета)
+- [x] components/AchievementsSection.tsx — сетка достижений в профиле (полученные + доступные, прогресс)
+- [x] app/(tabs)/profile.tsx — <AchievementsSection userId=... /> встроена
+- [x] app/(tabs)/upload.tsx — при публикации: updateUserStats -> checkAndAwardAchievements -> Toast о новом бейдже
+- [x] Дуб-фикс: в PostsContext.tsx ошибочно добавлены локальные Achievement/ACHIEVEMENTS (дважды) + проброс функций в value без типа — УДАЛЕНО (вся логика централизована в lib/achievements.ts и импортируется напрямую)
+- [x] Валидация: typecheck PASS, jest 65/65 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-01-fix — дедуп достижений (2026-10-06)
+- [x] Устранены ошибки компиляции TS2300/TS2451/TS2353 в context/PostsContext.tsx (Duplicate Achievement/ACHIEVEMENTS, проброс checkAndAwardAchievements/getUserAchievements без объявления в PostsContextType)
+- [x] Настоящая система достижений остаётся в lib/achievements.ts + components/AchievementsSection.tsx (импортируются напрямую)
+- [x] Валидация: typecheck PASS, jest 65/65 PASS, check-encoding ALL CLEAN

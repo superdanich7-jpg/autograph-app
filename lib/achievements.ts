@@ -159,6 +159,31 @@ export async function updateUserStats(
   return data;
 }
 
+/** Получить количество постов в коллекциях пользователя */
+async function getCollectedPostCount(userId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('collections')
+    .select('post_ids')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.warn('Failed to load collections:', error);
+    return 0;
+  }
+
+  if (!data || data.length === 0) return 0;
+
+  // Считаем уникальные посты во всех коллекциях
+  const allPostIds = new Set<string>();
+  for (const collection of data) {
+    if (collection.post_ids && Array.isArray(collection.post_ids)) {
+      collection.post_ids.forEach((id: string) => allPostIds.add(id));
+    }
+  }
+
+  return allPostIds.size;
+}
+
 /** Проверить и выдать достижения */
 export async function checkAndAwardAchievements(userId: string): Promise<Achievement[]> {
   const stats = await getUserStats(userId);
@@ -186,8 +211,30 @@ export async function checkAndAwardAchievements(userId: string): Promise<Achieve
         currentValue = stats.total_comments;
         break;
       case 'collection':
-        // Пока не реализовано — требует запроса к постам
-        continue;
+        // Коллекционер: 10 постов в коллекции
+        const collectedPosts = await getCollectedPostCount(userId);
+        if (collectedPosts >= 10) {
+          // Выдаём достижение
+          const { error } = await supabase
+            .from('user_achievements')
+            .insert({
+              user_id: userId,
+              achievement_id: achievement.id,
+            });
+          if (!error) {
+            newlyEarned.push(achievement);
+            // Начисляем очки
+            const points = achievement.points * RARITY_MULTIPLIER[achievement.rarity] || achievement.points;
+            await supabase
+              .from('user_stats')
+              .update({
+                total_points: stats.total_points + points,
+                level: calculateLevel(stats.total_points + points),
+              })
+              .eq('user_id', userId);
+          }
+        }
+        break;
       case 'general':
         currentValue = stats.streak_days;
         break;
