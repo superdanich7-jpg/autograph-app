@@ -4,12 +4,12 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post } from '../context/PostsContext';
 import { useTheme } from '../context/ThemeContext';
 import {
-    getAuthenticity,
     getCategoryLabel,
     getEvidenceLabel,
     getRarityLabel,
     isDisputed,
 } from '../lib/helpers';
+import { getAuthenticityVerdict } from '../lib/authenticity';
 import Badge from './ui/Badge';
 import VoteButton from './ui/VoteButton';
 
@@ -38,7 +38,7 @@ export default function FeedPostCard({
     onVote: (id: string, vote: 'real' | 'fake') => void;
     onRequireAuth: () => void;
 }) {
-    const authenticity = getAuthenticity(item);
+    const verdict = getAuthenticityVerdict(item);
     const userVote = item.votesByUser[currentUserId];
     const disputed = isDisputed(item);
     const isOwnPost = item.ownerId === currentUserId;
@@ -178,9 +178,46 @@ export default function FeedPostCard({
                     <Text style={[styles.voteStatsText, { color: colors.textSecondary }]}>
                         {item.realVotes} за реальный • {item.fakeVotes} за фейк
                     </Text>
-                    <Text style={[styles.voteConfidence, { color: colors.text }]}>
-                        {authenticity.totalVotes === 0 ? 'Нет голосов' : `${authenticity.confidence}% достоверности`}
-                    </Text>
+                    <View
+                        style={[
+                            styles.verdictPill,
+                            {
+                                backgroundColor: verdict.colorHint === 'success' ? colors.successLight
+                                    : verdict.colorHint === 'danger' ? colors.dangerLight
+                                        : verdict.colorHint === 'warning' ? colors.warningLight
+                                            : colors.infoLight,
+                            },
+                        ]}
+                    >
+                        <Ionicons
+                            name={
+                                verdict.verdict === 'genuine' ? 'shield-checkmark'
+                                    : verdict.verdict === 'likely-fake' ? 'warning'
+                                        : verdict.verdict === 'disputed' ? 'help-buoy'
+                                            : 'help-circle-outline'
+                            }
+                            size={13}
+                            color={
+                                verdict.colorHint === 'success' ? colors.success
+                                    : verdict.colorHint === 'danger' ? colors.danger
+                                        : verdict.colorHint === 'warning' ? colors.warning
+                                            : colors.info
+                            }
+                        />
+                        <Text
+                            style={[
+                                styles.verdictPillText,
+                                {
+                                    color: verdict.colorHint === 'success' ? colors.success
+                                        : verdict.colorHint === 'danger' ? colors.danger
+                                            : verdict.colorHint === 'warning' ? colors.warning
+                                                : colors.info,
+                                },
+                            ]}
+                        >
+                            {verdict.label} · {verdict.score}%
+                        </Text>
+                    </View>
                 </View>
             </View>
         </View>
@@ -310,6 +347,19 @@ const styles = StyleSheet.create({
     },
     voteConfidence: {
         fontSize: 12,
+        fontWeight: '700',
+        flex: 1,
+    },
+    verdictPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        borderRadius: 999,
+        paddingHorizontal: 9,
+        paddingVertical: 4,
+    },
+    verdictPillText: {
+        fontSize: 11,
         fontWeight: '700',
     },
 });

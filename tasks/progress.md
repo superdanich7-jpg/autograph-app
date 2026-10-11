@@ -82,3 +82,13 @@
 - [x] Устранены ошибки компиляции TS2300/TS2451/TS2353 в context/PostsContext.tsx (Duplicate Achievement/ACHIEVEMENTS, проброс checkAndAwardAchievements/getUserAchievements без объявления в PostsContextType)
 - [x] Настоящая система достижений остаётся в lib/achievements.ts + components/AchievementsSection.tsx (импортируются напрямую)
 - [x] Валидация: typecheck PASS, jest 65/65 PASS, check-encoding ALL CLEAN
+
+
+## LOOP-CEO-02 — Сертификаты подлинности + вердикт (2026-10-06)
+- [x] lib/authenticity.ts — движок вердикта «AI + сообщество + доказательства» (getAuthenticityVerdict, getEvidenceScore, buildCertificateData, formatCertificateShareText)
+- [x] components/AuthenticityVerdictCard.tsx — витрина вердикта с разбивкой по 3 сигналам (AI/сообщество/доказательства)
+- [x] PostDetailModal — заменили старый «% достоверности» на карточку вердикта + кнопка шейринга сертификата (deep-link)
+- [x] FeedPostCard — цветной вердикт-пилюля в ленте (иконка + label + score%)
+- [x] lib/__tests__/authenticity.test.ts — 16 unit-тестов на логику вердикта
+- [x] УТП: бесплатный сертификат vs платная AI-аутентификация конкурентов (Relic Roster / SignaSure $10-20)
+- [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN

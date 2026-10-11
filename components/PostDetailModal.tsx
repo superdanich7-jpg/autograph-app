@@ -12,7 +12,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Post } from '../context/PostsContext';
 import { useTheme } from '../context/ThemeContext';
-import { getAuthenticity, getCategoryLabel, getEvidenceLabel, getRarityLabel } from '../lib/helpers';
+import { getCategoryLabel, getEvidenceLabel, getRarityLabel } from '../lib/helpers';
+import AuthenticityVerdictCard from './AuthenticityVerdictCard';
+import { showToast } from './Toast';
+import { formatCertificateShareText, getAuthenticityVerdict } from '../lib/authenticity';
+import { getPostDeepLink } from '../lib/sharing';
+import * as Sharing from 'expo-sharing';
 
 type Colors = ReturnType<typeof useTheme>['colors'];
 
@@ -31,7 +36,21 @@ export default function PostDetailModal({
 }) {
     if (!post) return null;
 
-    const authenticity = getAuthenticity(post);
+    const handleShareCertificate = async () => {
+        try {
+            const url = getPostDeepLink(post.id);
+            const text = formatCertificateShareText(post, url);
+            await Sharing.shareAsync(text, {
+                mimeType: 'text/plain',
+                dialogTitle: 'Поделиться сертификатом подлинности',
+            });
+        } catch (error) {
+            console.warn('[Certificate] Share failed:', error);
+            showToast('Не удалось поделиться сертификатом', 'error');
+        }
+    };
+
+    const verdict = getAuthenticityVerdict(post);
 
     return (
         <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
@@ -39,6 +58,9 @@ export default function PostDetailModal({
                 <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
                     <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={1}>{post.celebrityName}</Text>
                     <View style={styles.headerActions}>
+                        <TouchableOpacity onPress={handleShareCertificate} style={styles.headerActionBtn}>
+                            <Ionicons name="ribbon-outline" size={22} color={colors.primary} />
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => onShare?.(post)} style={styles.headerActionBtn}>
                             <Ionicons name="share-outline" size={22} color={colors.primary} />
                         </TouchableOpacity>
@@ -76,24 +98,17 @@ export default function PostDetailModal({
                             ))}
                         </View>
 
-                        <View style={styles.detailStats}>
-                            <Text style={[styles.detailMeta, { color: colors.textSecondary }]}>
-                                {post.realVotes} за реальный • {post.fakeVotes} за фейк
-                            </Text>
-                            <Text style={[styles.detailConfidence, { color: colors.text }]}>
-                                {authenticity.totalVotes === 0 ? 'Нет голосов' : `${authenticity.confidence}% достоверности`}
-                            </Text>
-                        </View>
+                        <AuthenticityVerdictCard post={post} verdict={verdict} />
 
-                        {post.isAnalyzed ? (
+                        {post.isAnalyzed && post.aiSuggestion ? (
                             <View style={[styles.aiCard, { backgroundColor: colors.surface }]}>
                                 <View style={styles.aiTitleRow}>
                                     <Ionicons name="sparkles-outline" size={16} color={colors.primary} />
-                                    <Text style={[styles.aiTitle, { color: colors.text }]}>Предварительная проверка</Text>
+                                    <Text style={[styles.aiTitle, { color: colors.text }]}>Распознанная личность</Text>
                                 </View>
                                 <Text style={[styles.aiHint, { color: colors.textSecondary }]}>
-                                    Возможное совпадение: {post.aiSuggestion || post.celebrityName}
-                                    {typeof post.aiConfidence === 'number' ? ` (${post.aiConfidence}% совпадения)` : ''}
+                                    {post.aiSuggestion}
+                                    {typeof post.aiConfidence === 'number' ? ` · ${post.aiConfidence}% совпадения` : ''}
                                 </Text>
                             </View>
                         ) : null}
