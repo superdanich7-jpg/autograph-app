@@ -107,3 +107,8 @@
 - [x] Haptic-отклик: лайк=hapticLight, голос/дабл-тап=hapticMedium (expo-haptics@~15.0.8 подтверждён)
 - [x] Защита: гость -> onRequireAuth; лайк только если ещё не лайкнут; cleanup таймера в useEffect
 - [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-05 — Empty-states с CTA (2026-10)
+- [x] CEO-идея #10: лента различает "коллекция пуста" (CTA "Добавить автограф" -> /upload) и "фильтры ничего не нашли"
+- [x] Обнаружено: #4 тёмная тема и #3 экспорт (ExportCollection) уже реализованы ранее — в план внесены правки
+- [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN

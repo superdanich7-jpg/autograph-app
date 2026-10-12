@@ -245,12 +245,26 @@ export default function FeedScreen() {
                 <View style={styles.emptyWrap}>
                     <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
-                            <Ionicons name="search-outline" size={28} color={colors.primary} />
+                            <Ionicons name={posts.length === 0 ? 'sparkles-outline' : 'search-outline'} size={28} color={colors.primary} />
                         </View>
-                        <Text style={[styles.emptyText, { color: colors.text }]}>Ничего не найдено</Text>
-                        <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                            Попробуйте снять часть фильтров или изменить поисковый запрос.
+                        <Text style={[styles.emptyText, { color: colors.text }]}>
+                            {posts.length === 0 ? 'Коллекция пока пуста' : 'Ничего не найдено'}
                         </Text>
+                        <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+                            {posts.length === 0
+                                ? 'Загрузите первый автограф — сообщество проверит его подлинность.'
+                                : 'Попробуйте снять часть фильтров или изменить поисковый запрос.'}
+                        </Text>
+                        {posts.length === 0 ? (
+                            <TouchableOpacity
+                                style={[styles.emptyCta, { backgroundColor: colors.primary }]}
+                                onPress={() => router.push('/(tabs)/upload')}
+                                activeOpacity={0.85}
+                            >
+                                <Ionicons name="add-circle" size={18} color={colors.primaryText} />
+                                <Text style={[styles.emptyCtaText, { color: colors.primaryText }]}>Добавить автограф</Text>
+                            </TouchableOpacity>
+                        ) : null}
                     </View>
                 </View>
             ) : (
@@ -408,5 +422,18 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         lineHeight: 20,
+    },
+    emptyCta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginTop: 18,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 16,
+    },
+    emptyCtaText: {
+        fontSize: 15,
+        fontWeight: '700',
     },
 });
