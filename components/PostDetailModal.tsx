@@ -16,8 +16,10 @@ import { getCategoryLabel, getEvidenceLabel, getRarityLabel } from '../lib/helpe
 import AuthenticityVerdictCard from './AuthenticityVerdictCard';
 import { showToast } from './Toast';
 import { formatCertificateShareText, getAuthenticityVerdict } from '../lib/authenticity';
+import { buildCertificateSvg } from '../lib/certificate';
 import { getPostDeepLink } from '../lib/sharing';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system/legacy';
 
 type Colors = ReturnType<typeof useTheme>['colors'];
 
@@ -39,6 +41,26 @@ export default function PostDetailModal({
     const handleShareCertificate = async () => {
         try {
             const url = getPostDeepLink(post.id);
+            // Пытаемся поделиться визуальным SVG-сертификатом с QR (паттерн PSA/Relic).
+            const cert = buildCertificateSvg(post, url);
+            try {
+                const fileUri = `${FileSystem.cacheDirectory}${cert.fileName}`;
+                await FileSystem.writeAsStringAsync(fileUri, cert.svg, {
+                    encoding: FileSystem.EncodingType.UTF8,
+                });
+                const canShare = await Sharing.isAvailableAsync();
+                if (canShare) {
+                    await Sharing.shareAsync(fileUri, {
+                        mimeType: 'image/svg+xml',
+                        dialogTitle: 'Поделиться сертификатом подлинности',
+                        UTI: 'public.svg-image',
+                    });
+                    return;
+                }
+            } catch (svgError) {
+                console.warn('[Certificate] SVG share fallback to text:', svgError);
+            }
+            // Фолбэк: текстовый сертификат, если файловый шейринг недоступен.
             const text = formatCertificateShareText(post, url);
             await Sharing.shareAsync(text, {
                 mimeType: 'text/plain',

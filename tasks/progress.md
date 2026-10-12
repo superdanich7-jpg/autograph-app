@@ -151,3 +151,8 @@
 - [x] CEO-идея #6: движок рекомендаций lib/recommendations.ts (категория+достоверность+редкость+свежесть)
 - [x] Карусель Вам может понравиться (RecommendedRail) как ListHeaderComponent ленты
 - [x] 10 unit-тестов; валидация: typecheck PASS, jest 122/122 PASS, encoding ALL CLEAN
+
+## LOOP-CEO-11 — Визуальный сертификат с QR (2026-10)
+- [x] CEO-идея #7: SVG-сертификат lib/certificate.ts (рамка, вердикт, QR через qrcode-generator)
+- [x] PostDetailModal шерит SVG-файл с текстовым фолбэком
+- [x] 9 unit-тестов; валидация: typecheck PASS, jest 131/131 PASS, encoding ALL CLEAN
