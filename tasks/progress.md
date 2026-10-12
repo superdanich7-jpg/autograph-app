@@ -100,3 +100,10 @@
 - [x] Уже было (не дублируем): badge Спорный, sortMode=debated, секция в community.tsx, вердикт help-buoy
 - [x] CEO-IMPROVEMENTS: добавлена Фаза 3 (рисерч рынка) — streaks, empty-states CTA, share-статистика, trust-скоринг, haptics
 - [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-04 — Микро-взаимодействия: haptics + двойной тап = лайк (2026-10)
+- [x] CEO-идея #13: Instagram-паттерн "двойной тап по фото = лайк" + анимированное сердечко (Animated, native driver)
+- [x] Дебаунс одиночного тапа (260мс): 1 тап -> детали, 2 тапа -> лайк (чтобы не открывать модалку при лайке)
+- [x] Haptic-отклик: лайк=hapticLight, голос/дабл-тап=hapticMedium (expo-haptics@~15.0.8 подтверждён)
+- [x] Защита: гость -> onRequireAuth; лайк только если ещё не лайкнут; cleanup таймера в useEffect
+- [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN

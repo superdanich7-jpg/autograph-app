@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post } from '../context/PostsContext';
 import { useTheme } from '../context/ThemeContext';
+import { hapticLight, hapticMedium } from '../lib/haptics';
 import {
     getCategoryLabel,
     getEvidenceLabel,
@@ -44,6 +45,47 @@ export default function FeedPostCard({
     const isOwnPost = item.ownerId === currentUserId;
     const votingDisabled = !canInteract || isOwnPost;
 
+    // Instagram-style double-tap to like: heart overlay + haptic + auth guard.
+    // Single tap opens detail, but is debounced so a following tap completes the like.
+    const heartAnim = useRef(new Animated.Value(0)).current;
+    const singleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        heartAnim.setValue(0);
+    }, [heartAnim, item.id]);
+
+    useEffect(() => () => {
+        if (singleTapTimer.current) clearTimeout(singleTapTimer.current);
+    }, []);
+
+    const runLike = () => {
+        if (!canInteract) {
+            onRequireAuth();
+            return;
+        }
+        if (!item.liked) {
+            onToggleLike(item.id);
+        }
+        hapticMedium();
+        Animated.sequence([
+            Animated.spring(heartAnim, { toValue: 1, useNativeDriver: true, friction: 3 }),
+            Animated.timing(heartAnim, { toValue: 0, delay: 500, duration: 400, useNativeDriver: true }),
+        ]).start();
+    };
+
+    const handleImagePress = () => {
+        if (singleTapTimer.current) {
+            clearTimeout(singleTapTimer.current);
+            singleTapTimer.current = null;
+            runLike();
+            return;
+        }
+        singleTapTimer.current = setTimeout(() => {
+            singleTapTimer.current = null;
+            onOpenDetail(item);
+        }, 260);
+    };
+
     return (
         <View style={[styles.post, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.postHeader}>
@@ -59,8 +101,22 @@ export default function FeedPostCard({
                 </View>
             </View>
 
-            <TouchableOpacity activeOpacity={0.92} onPress={() => onOpenDetail(item)}>
+            <TouchableOpacity activeOpacity={0.92} onPress={handleImagePress}>
                 <Image source={{ uri: item.uri }} style={styles.postImage} resizeMode="cover" />
+                <Animated.View
+                    pointerEvents="none"
+                    style={[
+                        styles.heartOverlay,
+                        {
+                            opacity: heartAnim,
+                            transform: [
+                                { scale: heartAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1.15] }) },
+                            ],
+                        },
+                    ]}
+                >
+                    <Ionicons name="heart" size={96} color="#ffffff" />
+                </Animated.View>
             </TouchableOpacity>
 
             <View style={styles.actions}>
@@ -71,6 +127,7 @@ export default function FeedPostCard({
                             return;
                         }
                         onToggleLike(item.id);
+                        hapticLight();
                     }}
                     style={[styles.actionButton, { backgroundColor: colors.surface }]}
                     activeOpacity={0.8}
@@ -174,7 +231,7 @@ export default function FeedPostCard({
                         color={colors.primary}
                         surface={colors.surface}
                         text={colors.text}
-                        onPress={() => onVote(item.id, 'real')}
+                        onPress={() => { onVote(item.id, 'real'); hapticMedium(); }}
                         disabled={votingDisabled}
                     />
                     <VoteButton
@@ -184,7 +241,7 @@ export default function FeedPostCard({
                         color={colors.danger}
                         surface={colors.surface}
                         text={colors.text}
-                        onPress={() => onVote(item.id, 'fake')}
+                        onPress={() => { onVote(item.id, 'fake'); hapticMedium(); }}
                         disabled={votingDisabled}
                     />
                 </View>
@@ -282,6 +339,15 @@ const styles = StyleSheet.create({
     postImage: {
         width: '100%',
         height: 340,
+    },
+    heartOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     actions: {
         flexDirection: 'row',
