@@ -156,3 +156,8 @@
 - [x] CEO-идея #7: SVG-сертификат lib/certificate.ts (рамка, вердикт, QR через qrcode-generator)
 - [x] PostDetailModal шерит SVG-файл с текстовым фолбэком
 - [x] 9 unit-тестов; валидация: typecheck PASS, jest 131/131 PASS, encoding ALL CLEAN
+
+## LOOP-CEO-12 — Оценка стоимости коллекции (2026-10)
+- [x] CEO-идея #8: эвристика lib/valuation.ts (редкость x категория x подтвержденность)
+- [x] Вирусная карточка Моя коллекция стоит ~ (CollectionValueCard) в профиле
+- [x] 8 unit-тестов; валидация: typecheck PASS, jest 139/139 PASS, encoding ALL CLEAN

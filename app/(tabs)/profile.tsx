@@ -25,6 +25,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
 import { getDayStreak } from '../../lib/stats-share';
 import CollectionsList from '../../components/CollectionsList';
+import CollectionValueCard from '../../components/CollectionValueCard';
 
 import ProfileModal from '../../components/ProfileModal';
 import ProfilePostModal from '../../components/ProfilePostModal';
@@ -175,6 +176,8 @@ export default function ProfileScreen() {
                         <Text style={[styles.insightValue, { color: colors.text }]}>{favoriteCategory}</Text>
                     </View>
                 </View>
+
+                <CollectionValueCard posts={posts} colors={colors} />
 
                 <View style={[styles.goalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.goalHeader}>
