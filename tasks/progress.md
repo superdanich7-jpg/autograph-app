@@ -112,3 +112,10 @@
 - [x] CEO-идея #10: лента различает "коллекция пуста" (CTA "Добавить автограф" -> /upload) и "фильтры ничего не нашли"
 - [x] Обнаружено: #4 тёмная тема и #3 экспорт (ExportCollection) уже реализованы ранее — в план внесены правки
 - [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-06 — Виральная карточка "Моя статистика" (2026-10)
+- [x] CEO-идея #11: Spotify-Wrapped стиль — share личных достижений = органический охват
+- [x] lib/stats-share.ts: getCollectorTitle + buildCollectorStatsSummary (титул, автографы, имена, подтверждения, легендарные, категория, репутация, deep-link)
+- [x] components/ShareStatsCard.tsx: карточка в профиле через expo-sharing + haptics + toast
+- [x] 8 unit-тестов (stats-share.test.ts) — титулы, состав строк, deep-link, нулевые значения
+- [x] Валидация: typecheck PASS, jest 89/89 PASS, check-encoding ALL CLEAN
