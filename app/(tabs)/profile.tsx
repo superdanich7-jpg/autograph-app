@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     Image,
@@ -26,6 +26,7 @@ import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../
 import { getDayStreak } from '../../lib/stats-share';
 import CollectionsList from '../../components/CollectionsList';
 import CollectionValueCard from '../../components/CollectionValueCard';
+import { scheduleStreakReminderIfNeeded } from '../../lib/streak-reminder';
 
 import ProfileModal from '../../components/ProfileModal';
 import ProfilePostModal from '../../components/ProfilePostModal';
@@ -112,6 +113,25 @@ export default function ProfileScreen() {
         if (lastSyncedAt) return `Автосохранение активно • ${new Date(lastSyncedAt).toLocaleString('ru-RU')}`;
         return isAuthenticated ? 'Автосохранение активно' : 'Гостевой режим: только просмотр';
     }, [isAuthenticated, lastSyncedAt, syncStatus]);
+
+    // CEO-идея #9: при открытии профиля планируем push-напоминание о серии
+    // (только если уведомления включены, разрешение выдано и сегодня ещё не было активности).
+    useEffect(() => {
+        if (!profile.notificationsEnabled || posts.length === 0) return;
+        (async () => {
+            try {
+                const { requestNotificationPermission } = await import('../../lib/notifications');
+                const granted = await requestNotificationPermission();
+                await scheduleStreakReminderIfNeeded({
+                    timestamps: posts.map((p) => p.timestamp),
+                    notificationsEnabled: profile.notificationsEnabled,
+                    hasPermission: granted,
+                });
+            } catch {
+                // Тихо игнорируем: напоминание — не критичный путь.
+            }
+        })();
+    }, [posts, profile.notificationsEnabled]);
 
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
