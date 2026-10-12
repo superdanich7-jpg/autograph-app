@@ -129,6 +129,29 @@ export default function FeedPostCard({
                 ))}
             </View>
 
+            {disputed ? (
+                <TouchableOpacity
+                    style={[styles.debateBanner, { backgroundColor: colors.warningLight, borderColor: colors.warning }]}
+                    onPress={() => {
+                        if (!canInteract) {
+                            onRequireAuth();
+                            return;
+                        }
+                        onOpenComments(item.id);
+                    }}
+                    activeOpacity={0.85}
+                >
+                    <Ionicons name="help-buoy" size={20} color={colors.warning} />
+                    <View style={styles.debateBannerBody}>
+                        <Text style={[styles.debateBannerTitle, { color: colors.text }]}>Спорный автограф</Text>
+                        <Text style={[styles.debateBannerHint, { color: colors.textSecondary }]}>
+                            Сообщество разделилось — присоединиться к дискуссии
+                        </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.warning} />
+                </TouchableOpacity>
+            ) : null}
+
             {item.isAnalyzed ? (
                 <View style={[styles.aiCard, { backgroundColor: colors.surface }]}>
                     <View style={styles.aiTitleRow}>
@@ -301,6 +324,29 @@ const styles = StyleSheet.create({
         gap: 8,
         paddingHorizontal: 14,
         paddingBottom: 12,
+    },
+    debateBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginHorizontal: 14,
+        marginBottom: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        borderRadius: 16,
+        borderWidth: 1,
+    },
+    debateBannerBody: {
+        flex: 1,
+    },
+    debateBannerTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    debateBannerHint: {
+        fontSize: 12,
+        lineHeight: 17,
+        marginTop: 2,
     },
     aiCard: {
         marginHorizontal: 14,

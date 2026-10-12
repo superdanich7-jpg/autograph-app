@@ -92,3 +92,11 @@
 - [x] lib/__tests__/authenticity.test.ts — 16 unit-тестов на логику вердикта
 - [x] УТП: бесплатный сертификат vs платная AI-аутентификация конкурентов (Relic Roster / SignaSure $10-20)
 - [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-03 — Спорные дискуссии (2026-10)
+- [x] CEO-идея #2: спорный контент как драйвер вовлечённости (как Reddit/дискуссии)
+- [x] FeedPostCard: мёртвая переменная `disputed` оживлена — баннер CTA "Присоединиться к дискуссии" (debateBanner)
+- [x] Тап: гость -> onRequireAuth, участник -> onOpenComments (петля "увидел спор -> зашёл в дискуссию")
+- [x] Уже было (не дублируем): badge Спорный, sortMode=debated, секция в community.tsx, вердикт help-buoy
+- [x] CEO-IMPROVEMENTS: добавлена Фаза 3 (рисерч рынка) — streaks, empty-states CTA, share-статистика, trust-скоринг, haptics
+- [x] Валидация: typecheck PASS, jest 81/81 PASS, check-encoding ALL CLEAN
