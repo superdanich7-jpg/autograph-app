@@ -146,3 +146,8 @@
 - [x] Все CEO-улучшения Фазы 1 выполнены и запушены: #2,#3,#4,#9,#10,#11,#12,#13 (+ ранее #1,#7)
 - [x] Финальная валидация: typecheck PASS, jest 112/112 PASS, check-encoding ALL CLEAN
 - [x] CEO-IMPROVEMENTS.md — статус "Фаза 1 завершена", остаток вынесен в Фазу 2
+
+## LOOP-CEO-10 — Персональные рекомендации (2026-10)
+- [x] CEO-идея #6: движок рекомендаций lib/recommendations.ts (категория+достоверность+редкость+свежесть)
+- [x] Карусель Вам может понравиться (RecommendedRail) как ListHeaderComponent ленты
+- [x] 10 unit-тестов; валидация: typecheck PASS, jest 122/122 PASS, encoding ALL CLEAN

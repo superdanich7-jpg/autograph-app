@@ -26,6 +26,8 @@ import {
     getAuthenticity,
     isDisputed,
 } from '../../lib/helpers';
+import { getFavoriteCategory, recommendPosts, Recommendation } from '../../lib/recommendations';
+import RecommendedRail from '../../components/RecommendedRail';
 import ShareSheet from '../../components/ShareSheet';
 import PostDetailModal from '../../components/PostDetailModal';
 import CommentsModal from '../../components/CommentsModal';
@@ -96,6 +98,21 @@ export default function FeedScreen() {
         const legendary = posts.filter((post) => post.rarity === 'legendary').length;
         return { verified, disputed, legendary };
     }, [posts]);
+
+    const recommendations = useMemo<Recommendation[]>(
+        () =>
+            posts.length > 2
+                ? recommendPosts(
+                    posts,
+                    {
+                        currentUserId,
+                        favoriteCategory: getFavoriteCategory(posts.filter((p) => p.ownerId === currentUserId)),
+                    },
+                    6
+                )
+                : [],
+        [posts, currentUserId]
+    );
 
     const handleSendComment = () => {
         if (selectedPostId && commentText.trim()) {
@@ -272,6 +289,15 @@ export default function FeedScreen() {
                     data={filteredPosts}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
+                    ListHeaderComponent={
+                        recommendations.length > 0 ? (
+                            <RecommendedRail
+                                recommendations={recommendations}
+                                colors={colors}
+                                onOpenDetail={(post) => setDetailPost(post)}
+                            />
+                        ) : null
+                    }
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
