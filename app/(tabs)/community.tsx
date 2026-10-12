@@ -8,6 +8,7 @@ import Card from '../../components/ui/Card';
 import { usePosts } from '../../context/PostsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent } from '../../lib/helpers';
+import { getTrustTier } from '../../lib/trust';
 
 export default function CommunityScreen() {
     const { posts, profile, reputation, communityCollectors, toggleFollowCollector } = usePosts();
@@ -99,6 +100,11 @@ export default function CommunityScreen() {
                                     <Text style={[styles.boardHint, { color: colors.textSecondary }]}>
                                         {item.specialty} • {item.featuredCelebrity}
                                     </Text>
+                                    <View style={[styles.trustChip, { backgroundColor: colors.surface }]}>
+                                        <Text style={styles.trustChipText}>
+                                            {getTrustTier(item.score).icon} {getTrustTier(item.score).label}
+                                        </Text>
+                                    </View>
                                 </View>
                             </View>
                         );
@@ -316,6 +322,17 @@ const styles = StyleSheet.create({
     boardHint: {
         marginTop: 2,
         fontSize: 12,
+    },
+    trustChip: {
+        alignSelf: 'flex-start',
+        marginTop: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 999,
+    },
+    trustChipText: {
+        fontSize: 11,
+        fontWeight: '700',
     },
     boardScore: {
         fontSize: 16,

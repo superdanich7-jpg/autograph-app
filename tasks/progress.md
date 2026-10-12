@@ -119,3 +119,10 @@
 - [x] components/ShareStatsCard.tsx: карточка в профиле через expo-sharing + haptics + toast
 - [x] 8 unit-тестов (stats-share.test.ts) — титулы, состав строк, deep-link, нулевые значения
 - [x] Валидация: typecheck PASS, jest 89/89 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-07 — Trust-скоринг участников (2026-10)
+- [x] CEO-идея #12: видимые уровни доверия (как Reddit/StackOverflow) — social proof
+- [x] lib/trust.ts: getTrustTier(score) -> Авторитет👑/Эксперт🥇/Проверенный✅/Новичок🌱 (пороги 90/70/40)
+- [x] community.tsx: чип уровня доверия у каждого коллекционера в лидерборде (по реальному score)
+- [x] 6 unit-тестов (trust.test.ts) — границы, пороги, иконка/цвет
+- [x] Валидация: typecheck PASS, jest 95/95 PASS, check-encoding ALL CLEAN
