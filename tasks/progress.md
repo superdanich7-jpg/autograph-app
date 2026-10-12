@@ -141,3 +141,8 @@
 - [x] 10 unit-тестов (collection-io.test.ts)
 - [x] Ограничение честно: изображения только если в JSON; без expo-document-picker (нет в package.json) — Фаза 2
 - [x] Валидация: typecheck PASS, jest 112/112 PASS, check-encoding ALL CLEAN
+
+## ФИНАЛ CEO-ФАЗЫ 1 (2026-10)
+- [x] Все CEO-улучшения Фазы 1 выполнены и запушены: #2,#3,#4,#9,#10,#11,#12,#13 (+ ранее #1,#7)
+- [x] Финальная валидация: typecheck PASS, jest 112/112 PASS, check-encoding ALL CLEAN
+- [x] CEO-IMPROVEMENTS.md — статус "Фаза 1 завершена", остаток вынесен в Фазу 2
