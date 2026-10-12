@@ -22,6 +22,7 @@ import Card from '../../components/ui/Card';
 import { Collection, Post, usePosts } from '../../context/PostsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
+import { getDayStreak } from '../../lib/stats-share';
 import CollectionsList from '../../components/CollectionsList';
 
 import ProfileModal from '../../components/ProfileModal';
@@ -58,6 +59,7 @@ export default function ProfileScreen() {
     const disputedCount = posts.filter((post) => post.realScore + post.fakeScore >= 2 && Math.abs(post.realScore - post.fakeScore) <= 1).length;
     const uniqueCelebrities = new Set(posts.map((post) => post.celebrityName.trim()).filter(Boolean)).size;
     const legendaryCount = posts.filter((post) => post.rarity === 'legendary').length;
+    const dayStreak = getDayStreak(posts.map((post) => post.timestamp));
     const savedPosts = posts.filter((post) => post.saved);
     const verifiedGoalCount = posts.filter((post) => getAuthenticityPercent(post) >= 70).length;
     const topShowcase = [...posts]
@@ -153,6 +155,11 @@ export default function ProfileScreen() {
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{legendaryCount}</Text>
                             <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                        </View>
+                        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statNumber, { color: colors.text }]}>{dayStreak > 0 ? `🔥 ${dayStreak}` : '—'}</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Дней серией</Text>
                         </View>
                     </View>
                 </Card>

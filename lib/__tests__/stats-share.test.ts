@@ -6,6 +6,7 @@
 import {
     buildCollectorStatsSummary,
     getCollectorTitle,
+    getDayStreak,
     CollectorStatsInput,
 } from '../stats-share';
 
@@ -79,5 +80,44 @@ describe('buildCollectorStatsSummary', () => {
         expect(s.lines.some((l) => l.includes('Легендарных'))).toBe(false);
         expect(s.lines.some((l) => l.includes('Уникальных имён'))).toBe(false);
         expect(s.lines.some((l) => l.includes('Любимая категория: Кино'))).toBe(true);
+    });
+});
+
+describe('getDayStreak', () => {
+    const today = new Date(2026, 9, 12); // 12 октября 2026 (локально)
+    const iso = (d: Date) => d.toISOString();
+    const daysAgo = (n: number) => {
+        const d = new Date(today);
+        d.setDate(d.getDate() - n);
+        return d;
+    };
+
+    test('пусто -> 0', () => {
+        expect(getDayStreak([], today)).toBe(0);
+    });
+
+    test('активность только сегодня -> 1', () => {
+        expect(getDayStreak([iso(today)], today)).toBe(1);
+    });
+
+    test('три дня подряд включая сегодня -> 3', () => {
+        expect(getDayStreak([iso(today), iso(daysAgo(1)), iso(daysAgo(2))], today)).toBe(3);
+    });
+
+    test('нет активности сегодня, но была вчера -> считаем от вчера', () => {
+        expect(getDayStreak([iso(daysAgo(1)), iso(daysAgo(2))], today)).toBe(2);
+    });
+
+    test('разрыв в серии -> обрывается', () => {
+        // вчера есть (1), позавчера нет -> серия = 1
+        expect(getDayStreak([iso(daysAgo(1)), iso(daysAgo(4))], today)).toBe(1);
+    });
+
+    test('нет активности ни сегодня, ни вчера -> 0', () => {
+        expect(getDayStreak([iso(daysAgo(5))], today)).toBe(0);
+    });
+
+    test('несколько постов в один день не увеличивают серию', () => {
+        expect(getDayStreak([iso(today), iso(today), iso(daysAgo(1)), iso(daysAgo(1))], today)).toBe(2);
     });
 });

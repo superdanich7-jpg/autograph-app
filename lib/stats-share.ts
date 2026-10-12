@@ -62,3 +62,34 @@ export function buildCollectorStatsSummary(stats: CollectorStatsInput): Collecto
 
   return { headline, lines, text };
 }
+
+/**
+ * Стрик (серия) активности по дням — количество подряд идущих дней
+ * (включая сегодня, если была активность), в которые пользователь
+ * добавлял автографы. Рисерч: Duolingo/BeReal — стрики повышают D30 retention.
+ *
+ * Чистая функция: принимает ISO-строки timestamp'ов постов.
+ */
+export function getDayStreak(timestamps: string[], today: Date = new Date()): number {
+  if (timestamps.length === 0) return 0;
+
+  const toDayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  const dayKeys = new Set(timestamps.map((t) => toDayKey(new Date(t))));
+
+  const cursor = new Date(today);
+  cursor.setHours(0, 0, 0, 0);
+
+  // Если сегодня не было активности — серия считается от вчера (чтобы не показывать 0 сразу).
+  if (!dayKeys.has(toDayKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!dayKeys.has(toDayKey(cursor))) return 0;
+  }
+
+  let streak = 0;
+  while (dayKeys.has(toDayKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+

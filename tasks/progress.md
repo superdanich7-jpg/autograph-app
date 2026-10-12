@@ -126,3 +126,10 @@
 - [x] community.tsx: чип уровня доверия у каждого коллекционера в лидерборде (по реальному score)
 - [x] 6 unit-тестов (trust.test.ts) — границы, пороги, иконка/цвет
 - [x] Валидация: typecheck PASS, jest 95/95 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-08 — Streaks (серия дней) 🔥 (2026-10)
+- [x] CEO-идея #9: оффлайн-стрик по датам постов (getDayStreak) + "огонёк" 🔥 в профиле
+- [x] Серия сохраняется если была активность вчера; дубли за день не считаются
+- [x] 7 unit-тестов на getDayStreak
+- [x] Инцидент: TS18007 (запятая вместо массива в style) — поймано ревью, исправлено
+- [x] Валидация: typecheck PASS, jest 102/102 PASS, check-encoding ALL CLEAN
