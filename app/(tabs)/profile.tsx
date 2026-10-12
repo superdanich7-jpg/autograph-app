@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AchievementsSection from '../../components/AchievementsSection';
 import AdvancedSearch from '../../components/AdvancedSearch';
 import ExportCollection from '../../components/ExportCollection';
+import ImportCollection from '../../components/ImportCollection';
 import ShareStatsCard from '../../components/ShareStatsCard';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -234,6 +235,8 @@ export default function ProfileScreen() {
                 </View>
 
                 <ExportCollection />
+
+                <ImportCollection />
 
                 <ShareStatsCard />
 

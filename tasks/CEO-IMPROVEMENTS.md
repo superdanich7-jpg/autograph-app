@@ -17,10 +17,11 @@
 - [x] Использовать существующую `isDisputed()` из `lib/helpers.ts`
 - [ ] (Фаза 2) Сортировка «Сначала спорные» + живой счётчик активных дискуссий
 
-### 3. Импорт/экспорт коллекций
-- [ ] `components/ImportExportModal.tsx` — импорт CSV/JSON, экспорт
-- [ ] Добавить в `context/PostsContext.tsx` — функции импорта/экспорта
-- [ ] Кнопка в профиле: «Экспортировать коллекцию»
+### 3. Импорт/экспорт коллекций ✅ (LOOP-CEO-09 / ранее)
+- [x] Экспорт JSON (`components/ExportCollection.tsx`) — был реализован ранее
+- [x] Импорт JSON (round-trip): `lib/collection-io.ts` (`parseCollectionImport`) + `components/ImportCollection.tsx` (модалка вставки + предпросмотр) + 10 тестов
+- [ ] (Фаза 2) Файловый пикер (`expo-document-picker`) вместо вставки текста
+- [ ] (Фаза 2) Полный перенос изображений (base64/file в экспорте)
 
 ### 4. Тёмная тема (system dark mode)
 - [ ] Использовать существующий `lib/theme.ts`

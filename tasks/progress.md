@@ -133,3 +133,11 @@
 - [x] 7 unit-тестов на getDayStreak
 - [x] Инцидент: TS18007 (запятая вместо массива в style) — поймано ревью, исправлено
 - [x] Валидация: typecheck PASS, jest 102/102 PASS, check-encoding ALL CLEAN
+
+## LOOP-CEO-09 — Импорт коллекции (round-trip) (2026-10)
+- [x] CEO-идея #3: экспорт был, добавили импорт — перенос/бэкап коллекции между устройствами
+- [x] lib/collection-io.ts: parseCollectionImport (валидация+нормализация, без исключений, {posts:[]} и голый массив)
+- [x] components/ImportCollection.tsx: модалка вставки JSON + живой предпросмотр + addPost каждой записи
+- [x] 10 unit-тестов (collection-io.test.ts)
+- [x] Ограничение честно: изображения только если в JSON; без expo-document-picker (нет в package.json) — Фаза 2
+- [x] Валидация: typecheck PASS, jest 112/112 PASS, check-encoding ALL CLEAN
