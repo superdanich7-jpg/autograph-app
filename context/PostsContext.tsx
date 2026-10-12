@@ -3,6 +3,16 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { generateId } from '../lib/helpers';
 import { showToast } from '../components/Toast';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import {
+    Community,
+    CommunityCategory,
+    approveMember as approveCommunityMember,
+    createCommunity as buildCommunity,
+    leaveCommunity as leaveCommunityFn,
+    rejectMember as rejectCommunityMember,
+    requestJoin as requestJoinFn,
+} from '../lib/communities';
+import { hapticLight } from '../lib/haptics';
 
 export type Comment = {
     id: string;
@@ -153,6 +163,12 @@ type PostsContextType = {
     deleteCollection: (id: string) => void;
     addPostToCollection: (collectionId: string, postId: string) => void;
     removePostFromCollection: (collectionId: string, postId: string) => void;
+    communities: Community[];
+    createCommunity: (data: { name: string; description: string; category: CommunityCategory; isPrivate: boolean; emoji: string }) => Community;
+    requestJoinCommunity: (communityId: string) => void;
+    approveCommunityJoin: (communityId: string, userId: string) => void;
+    rejectCommunityJoin: (communityId: string, userId: string) => void;
+    leaveCommunity: (communityId: string) => void;
     refreshCloudData: () => Promise<void>;
     clearPosts: () => void;
     signOut: () => void;
@@ -263,6 +279,7 @@ type StoredState = {
     posts: Post[];
     profile: UserProfile;
     collections: Collection[];
+    communities: Community[];
     lastSyncedAt: string | null;
 };
 
@@ -320,6 +337,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [syncError, setSyncError] = useState<string | null>(null);
     const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
     const [collections, setCollections] = useState<Collection[]>([]);
+    const [communities, setCommunities] = useState<Community[]>([]);
     const isHydrated = useRef(false);
     const mountedRef = useRef(true);
     const profileRef = useRef(profile);
@@ -359,6 +377,9 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     if (storedState.lastSyncedAt) {
                         setLastSyncedAt(storedState.lastSyncedAt);
                     }
+                    if (Array.isArray(storedState.communities)) {
+                        setCommunities(storedState.communities);
+                    }
                 }
                 setSyncStatus(isSupabaseConfigured ? 'ready' : 'offline');
             } catch (error) {
@@ -385,7 +406,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         saveTimerRef.current = setTimeout(async () => {
             try {
-                const state: StoredState = { posts, profile, collections, lastSyncedAt };
+                const state: StoredState = { posts, profile, collections, communities, lastSyncedAt };
                 await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             } catch (error) {
                 showToast(error instanceof Error ? error.message : 'Ошибка при сохранении данных', 'error');
@@ -397,7 +418,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 clearTimeout(saveTimerRef.current);
             }
         };
-    }, [lastSyncedAt, posts, profile]);
+    }, [lastSyncedAt, posts, profile, collections, communities]);
 
     const persistProfileToCloud = useCallback(async (nextProfile: UserProfile, userId = authUserIdRef.current) => {
         if (!isSupabaseConfigured || !userId) return;
@@ -821,6 +842,30 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         );
     };
 
+    const createCommunity = (data: { name: string; description: string; category: CommunityCategory; isPrivate: boolean; emoji: string }): Community => {
+        const newCommunity = buildCommunity(data, currentUserId, generateId());
+        setCommunities((prev) => [newCommunity, ...prev]);
+        hapticLight();
+        showToast(newCommunity.isPrivate ? 'Приватное сообщество создано' : 'Сообщество создано', 'success');
+        return newCommunity;
+    };
+
+    const requestJoinCommunity = (communityId: string) => {
+        setCommunities((prev) => prev.map((c) => (c.id === communityId ? requestJoinFn(c, currentUserId) : c)));
+    };
+
+    const approveCommunityJoin = (communityId: string, userId: string) => {
+        setCommunities((prev) => prev.map((c) => (c.id === communityId ? approveCommunityMember(c, userId) : c)));
+    };
+
+    const rejectCommunityJoin = (communityId: string, userId: string) => {
+        setCommunities((prev) => prev.map((c) => (c.id === communityId ? rejectCommunityMember(c, userId) : c)));
+    };
+
+    const leaveCommunity = (communityId: string) => {
+        setCommunities((prev) => prev.map((c) => (c.id === communityId ? leaveCommunityFn(c, currentUserId) : c)));
+    };
+
     const signOut = async () => {
         if (isSupabaseConfigured) {
             try { await supabase.auth.signOut(); } catch (e) { showToast('Ошибка при выходе', 'error'); }
@@ -864,6 +909,12 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 deleteCollection,
                 addPostToCollection,
                 removePostFromCollection,
+                communities,
+                createCommunity,
+                requestJoinCommunity,
+                approveCommunityJoin,
+                rejectCommunityJoin,
+                leaveCommunity,
                 refreshCloudData,
                 clearPosts,
                 signOut,

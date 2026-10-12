@@ -30,11 +30,12 @@
 
 ## Фаза 2 — Требует бэкенда (но можно начать)
 
-### 5. Приватные сообщества
-- [ ] `app/(tabs)/communities.tsx` — экран сообществ
-- [ ] Создание/вступление в сообщества по темам (спорт, автографы, карточки)
-- [ ] Чат внутри сообщества
-- [ ] Supabase: таблица `communities`, `community_members`, `community_posts`
+### 5. Приватные сообщества ✅ (LOOP-CEO-14)
+- [x] Модель + логика членства (`lib/communities.ts`): публичные/приватные, заявки, одобрение
+- [x] Offline-first состояние в PostsContext (persist в AsyncStorage) + UI `CommunitiesList` (создание/вступление/выход/одобрение)
+- [x] Supabase-миграция `007_communities.sql` (communities, community_members, community_requests) с RLS + триггер member_count
+- [x] 17 unit-тестов
+- [ ] (Фаза 3) Синхронизация участников + чат внутри сообщества (нужен Supabase realtime)
 
 ### 6. AI-рекомендации ✅ (LOOP-CEO-10)
 - [x] Персональная лента: «Вам может понравиться» (`lib/recommendations.ts` + `RecommendedRail`)

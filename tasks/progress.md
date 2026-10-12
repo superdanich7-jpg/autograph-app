@@ -161,3 +161,14 @@
 - [x] CEO-идея #8: эвристика lib/valuation.ts (редкость x категория x подтвержденность)
 - [x] Вирусная карточка Моя коллекция стоит ~ (CollectionValueCard) в профиле
 - [x] 8 unit-тестов; валидация: typecheck PASS, jest 139/139 PASS, encoding ALL CLEAN
+
+## LOOP-CEO-13 — Push-напоминание о серии (2026-10)
+- [x] CEO-идея #9: lib/streak-reminder.ts (computeStreak, shouldRemindStreak, планировщик на expo-notifications)
+- [x] profile.tsx useEffect планирует напоминание, уважает notificationsEnabled
+- [x] 10 unit-тестов; валидация: typecheck PASS, jest 149/149 PASS, encoding ALL CLEAN
+
+## LOOP-CEO-14 — Приватные сообщества (2026-10)
+- [x] CEO-идея #5: lib/communities.ts (модель членства, публичные/приватные, заявки) + 17 тестов
+- [x] Supabase 007_communities.sql (RLS + member_count триггер); offline-first в PostsContext
+- [x] UI CommunitiesList (создание/вступление/выход/одобрение) + кнопка в профиле
+- [x] Валидация: typecheck PASS, jest 166/166 PASS, encoding ALL CLEAN
