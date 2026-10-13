@@ -22,6 +22,13 @@ import {
     removeFriend as removeFriendFn,
     sendFriendRequest as sendFriendReq,
 } from '../lib/friends';
+import {
+    ChatMessage,
+    appendMessage,
+    createMessage as createMsg,
+    getThread,
+    markThreadRead as markThreadReadFn,
+} from '../lib/chat';
 import { hapticLight } from '../lib/haptics';
 
 export type Comment = {
@@ -191,6 +198,10 @@ type PostsContextType = {
     declineFriendRequest: (otherId: string) => void;
     cancelFriendRequest: (otherId: string) => void;
     removeFriend: (otherId: string) => void;
+    messages: ChatMessage[];
+    getThreadWith: (peerId: string) => ChatMessage[];
+    sendMessage: (peerId: string, text: string) => void;
+    markChatRead: (peerId: string) => void;
     refreshCloudData: () => Promise<void>;
     clearPosts: () => void;
     signOut: () => void;
@@ -312,6 +323,13 @@ const SEED_FRIEND_REQUESTS: FriendRequest[] = [
     { id: 'seed-req-2', fromId: 'guest-user', toId: 'cinema-buff', createdAt: new Date(Date.now() - 5 * 3600000).toISOString() },
 ];
 
+// Seed-переписка для демо (чтобы чат не был пустым при первом запуске).
+const SEED_MESSAGES: ChatMessage[] = [
+    { id: 'seed-msg-1', fromId: 'arena-hunter', toId: 'guest-user', text: 'Привет! Видел твою коллекцию — огонь 🔥', timestamp: new Date(Date.now() - 3 * 3600000).toISOString(), read: false },
+    { id: 'seed-msg-2', fromId: 'guest-user', toId: 'arena-hunter', text: 'Спасибо! Давно коллекционирую.', timestamp: new Date(Date.now() - 2.5 * 3600000).toISOString(), read: true },
+    { id: 'seed-msg-3', fromId: 'arena-hunter', toId: 'guest-user', text: 'Есть автограф Месси с финала ЛЧ?', timestamp: new Date(Date.now() - 2 * 3600000).toISOString(), read: false },
+];
+
 type StoredState = {
     posts: Post[];
     profile: UserProfile;
@@ -319,6 +337,7 @@ type StoredState = {
     communities: Community[];
     friends: Friend[];
     friendRequests: FriendRequest[];
+    messages: ChatMessage[];
     lastSyncedAt: string | null;
 };
 
@@ -379,6 +398,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [communities, setCommunities] = useState<Community[]>([]);
     const [friends, setFriends] = useState<Friend[]>([]);
     const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const isHydrated = useRef(false);
     const mountedRef = useRef(true);
     const profileRef = useRef(profile);
@@ -432,6 +452,12 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     } else {
                         setFriendRequests(SEED_FRIEND_REQUESTS);
                     }
+                    // Сообщения: если сохранено — грузим; иначе seed.
+                    if (Array.isArray(storedState.messages)) {
+                        setMessages(storedState.messages);
+                    } else {
+                        setMessages(SEED_MESSAGES);
+                    }
                 }
                 setSyncStatus(isSupabaseConfigured ? 'ready' : 'offline');
             } catch (error) {
@@ -458,7 +484,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         saveTimerRef.current = setTimeout(async () => {
             try {
-                const state: StoredState = { posts, profile, collections, communities, friends, friendRequests, lastSyncedAt };
+                const state: StoredState = { posts, profile, collections, communities, friends, friendRequests, messages, lastSyncedAt };
                 await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             } catch (error) {
                 showToast(error instanceof Error ? error.message : 'Ошибка при сохранении данных', 'error');
@@ -905,6 +931,24 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         [friends, friendIds]
     );
 
+    // ─── Chat (DM, offline-first) ─────────────────
+    const getThreadWith = (peerId: string) => getThread(messages, currentUserId, peerId);
+
+    const sendMessage = (peerId: string, text: string) => {
+        const trimmed = text.trim();
+        if (!canInteract || !trimmed) return;
+        hapticLight();
+        const message = createMsg(
+            { fromId: currentUserId, toId: peerId, text: trimmed },
+            `msg-${currentUserId}-${peerId}-${Date.now()}`
+        );
+        setMessages(appendMessage(messages, message));
+    };
+
+    const markChatRead = (peerId: string) => {
+        setMessages(markThreadReadFn(messages, currentUserId, peerId));
+    };
+
     const createCollection = (data: { name: string; description: string; color: string }): Collection => {
         const newCollection: Collection = {
             id: generateId(),
@@ -1023,6 +1067,10 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 declineFriendRequest,
                 cancelFriendRequest,
                 removeFriend,
+                messages,
+                getThreadWith,
+                sendMessage,
+                markChatRead,
                 refreshCloudData,
                 clearPosts,
                 signOut,
