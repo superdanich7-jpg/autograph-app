@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -29,6 +29,8 @@ import {
 } from '../../context/PostsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { checkAndAwardAchievements, updateUserStats } from '../../lib/achievements';
+import { hapticLight } from '../../lib/haptics';
+import { radii } from '../../lib/theme';
 import { quickMatch } from '../../lib/signature-analyzer';
 
 type UploadFieldProps = {
@@ -95,21 +97,20 @@ export default function UploadScreen() {
     const [loading, setLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+    // E1: 3-шаговый визард — Фото → Детали → Проверка
+    const [step, setStep] = useState(0);
+
+    const steps = [
+        { key: 'photo', label: 'Фото', icon: 'camera-outline' as const },
+        { key: 'details', label: 'Детали', icon: 'create-outline' as const },
+        { key: 'verify', label: 'Проверка', icon: 'shield-checkmark-outline' as const },
+    ];
+
+    const canProceedFromPhoto = Boolean(imageUri);
+    const canProceedFromDetails = Boolean(celebrityName.trim());
 
     const isPickerOpen = useRef(false);
     const isMounted = useRef(true);
-
-    const checklist = useMemo(
-        () => [
-            { id: 'photo', label: 'Фото', done: Boolean(imageUri) },
-            { id: 'name', label: 'Имя', done: Boolean(celebrityName.trim()) },
-            { id: 'origin', label: 'Место или дата', done: Boolean(location.trim() || dateReceived.trim()) },
-            { id: 'proof', label: 'Доказательства', done: evidence.length > 0 },
-        ],
-        [celebrityName, dateReceived, evidence.length, imageUri, location]
-    );
-
-    const completion = Math.round((checklist.filter((item) => item.done).length / checklist.length) * 100);
 
     useEffect(() => {
         const fillLocation = async () => {
@@ -349,46 +350,61 @@ export default function UploadScreen() {
                     <View style={styles.header}>
                         <Text style={[styles.title, { color: colors.text }]}>Новый автограф</Text>
                         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                            Добавьте фото, укажите происхождение и соберите пакет доказательств.
+                            {steps[step].label}: {step === 0 ? 'сфотографируйте подпись' : step === 1 ? 'укажите детали' : 'проверьте и опубликуйте'}.
                         </Text>
                     </View>
 
-                    <View style={[styles.readinessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <View style={styles.readinessHeader}>
-                            <Text style={[styles.readinessTitle, { color: colors.text }]}>Готовность карточки</Text>
-                            <Text style={[styles.readinessPercent, { color: colors.textSecondary }]}>{completion}%</Text>
-                        </View>
-                        <View style={[styles.readinessBar, { backgroundColor: colors.surface }]}>
-                            <View style={[styles.readinessFill, { backgroundColor: colors.primary, width: `${completion}%` }]} />
-                        </View>
-                        <View style={styles.checklistRow}>
-                            {checklist.map((item) => (
-                                <View
-                                    key={item.id}
-                                    style={[
-                                        styles.checkItem,
-                                        { backgroundColor: item.done ? colors.primary : colors.surface },
-                                    ]}
+                    {/* E1: индикатор шагов */}
+                    <View style={styles.stepsRow}>
+                        {steps.map((s, index) => {
+                            const active = index === step;
+                            const done = index < step;
+                            return (
+                                <TouchableOpacity
+                                    key={s.key}
+                                    style={styles.stepItem}
+                                    onPress={() => {
+                                        if (index < step) {
+                                            hapticLight();
+                                            setStep(index);
+                                        }
+                                    }}
+                                    activeOpacity={index < step ? 0.7 : 1}
+                                    disabled={index > step}
                                 >
-                                    <Ionicons
-                                        name={item.done ? 'checkmark-circle' : 'ellipse-outline'}
-                                        size={14}
-                                        color={item.done ? colors.primaryText : colors.textSecondary}
-                                    />
-                                    <Text
+                                    <View
                                         style={[
-                                            styles.checkItemText,
-                                            { color: item.done ? colors.primaryText : colors.textSecondary },
+                                            styles.stepDot,
+                                            {
+                                                backgroundColor: active ? colors.accent : done ? colors.primary : colors.surface,
+                                                borderColor: active ? colors.accent : colors.border,
+                                            },
                                         ]}
                                     >
-                                        {item.label}
+                                        <Ionicons
+                                            name={done ? 'checkmark' : (s.icon as keyof typeof Ionicons.glyphMap)}
+                                            size={16}
+                                            color={active || done ? colors.primaryText : colors.textTertiary}
+                                        />
+                                    </View>
+                                    <Text
+                                        style={[
+                                            styles.stepLabel,
+                                            { color: active ? colors.text : colors.textTertiary, fontWeight: active ? '700' : '500' },
+                                        ]}
+                                    >
+                                        {s.label}
                                     </Text>
-                                </View>
-                            ))}
-                        </View>
+                                    {index < steps.length - 1 ? (
+                                        <View style={[styles.stepConnector, { backgroundColor: done ? colors.primary : colors.border }]} />
+                                    ) : null}
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
 
-                    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    {step === 0 ? (
+                        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         {imageUri ? (
                             <View style={[styles.previewContainer, { borderColor: colors.border }]}>
                                 <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
@@ -435,7 +451,9 @@ export default function UploadScreen() {
 
                         <AnalysisCard analyzing={isAnalyzing} result={analysis} colors={colors} />
                     </View>
+                    ) : null}
 
+                    {step === 1 ? (
                     <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <UploadField
                             label="Чей автограф"
@@ -466,7 +484,11 @@ export default function UploadScreen() {
                             colors={colors}
                             multiline
                         />
+                    </View>
+                    ) : null}
 
+                    {step === 2 ? (
+                    <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <Text style={[styles.blockLabel, { color: colors.textSecondary }]}>Категория</Text>
                         <View style={styles.chipsRow}>
                             {POST_CATEGORIES.map((item) => {
@@ -536,17 +558,52 @@ export default function UploadScreen() {
                             })}
                         </View>
                     </View>
+                    ) : null}
 
-                    <Button
-                        title={loading ? 'Публикация...' : 'Опубликовать'}
-                        onPress={handlePublish}
-                        variant="primary"
-                        size="lg"
-                        icon="cloud-upload-outline"
-                        loading={loading}
-                        disabled={!imageUri}
-                        fullWidth
-                    />
+                    {/* E1: навигация визарда в thumb-зоне */}
+                    <View style={styles.navRow}>
+                        {step > 0 ? (
+                            <TouchableOpacity
+                                style={[styles.navBack, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                                onPress={() => {
+                                    hapticLight();
+                                    setStep((prev) => Math.max(0, prev - 1));
+                                }}
+                                activeOpacity={0.85}
+                            >
+                                <Ionicons name="arrow-back" size={20} color={colors.text} />
+                                <Text style={[styles.navBackText, { color: colors.text }]}>Назад</Text>
+                            </TouchableOpacity>
+                        ) : null}
+
+                        {step < 2 ? (
+                            <Button
+                                title="Далее"
+                                onPress={() => {
+                                    hapticLight();
+                                    setStep((prev) => Math.min(2, prev + 1));
+                                }}
+                                variant="primary"
+                                size="lg"
+                                icon="arrow-forward"
+                                disabled={step === 0 ? !canProceedFromPhoto : !canProceedFromDetails}
+                                fullWidth
+                                style={styles.navNext}
+                            />
+                        ) : (
+                            <Button
+                                title={loading ? 'Публикация...' : 'Опубликовать'}
+                                onPress={handlePublish}
+                                variant="primary"
+                                size="lg"
+                                icon="cloud-upload-outline"
+                                loading={loading}
+                                disabled={!imageUri}
+                                fullWidth
+                                style={styles.navNext}
+                            />
+                        )}
+                    </View>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -764,5 +821,60 @@ const styles = StyleSheet.create({
     publishButtonText: {
         fontSize: 16,
         fontWeight: '700',
+    },
+    // E1: wizard step indicator
+    stepsRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 20,
+        paddingHorizontal: 4,
+    },
+    stepItem: {
+        flex: 1,
+        alignItems: 'center',
+        gap: 8,
+        position: 'relative',
+    },
+    stepDot: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    stepLabel: {
+        fontSize: 12,
+    },
+    stepConnector: {
+        position: 'absolute',
+        top: 19,
+        left: '60%',
+        right: '-40%',
+        height: 2,
+        zIndex: -1,
+    },
+    navRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginTop: 8,
+    },
+    navBack: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        minHeight: 52,
+        paddingHorizontal: 20,
+        borderRadius: radii.lg,
+        borderWidth: 1,
+    },
+    navBackText: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    navNext: {
+        flex: 1,
     },
 });
