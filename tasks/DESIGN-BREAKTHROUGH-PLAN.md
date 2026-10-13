@@ -11,21 +11,21 @@
 - ✅ B1 Табы «Для вас / Подписки» (SegmentedControl, sticky)
 - ✅ B2 Hero-карточка: edge-to-edge фото 4:3, вердикт-оверлей на фото, trust-бейдж у аватара, compact actions 48
 - ✅ B3 «Вы всё посмотрели» + pull-to-refresh с +N новых + haptic
-- B4 FeedSkeleton (shimmer) + memo + getItemLayout
-- B5 RecommendedRail уже есть — вставить между 3 и 4 постом
+- ✅ B4 FeedSkeleton (shimmer) + memo + getItemLayout
+- ✅ B5 RecommendedRail уже есть — вставить между 3 и 4 постом
 
 ## Волна C — Шиты вместо модалок
-- C1 Компонент Sheet: 3 высоты, свайп-вниз закрыть, scrim, haptic на пороге
-- C2 PostDetail → Sheet(full), Comments → Sheet(half), ProfilePost → Sheet(half)
+- ✅ C1 Компонент Sheet: 3 высоты, свайп-вниз закрыть, scrim, haptic на пороге
+-  C2 PostDetail → Sheet(full), Comments → Sheet(half), ProfilePost → Sheet(half) (PostDetail✅; Comments/ProfilePost ⏳)
 - C3 RequireAuth → Sheet(peek) с CTA входа
 
 ## Волна D — Первый запуск за 60 сек
-- D1 Онбординг: FlatList paging свайп + прогресс + анимация иконки
-- D2 Последний слайд CTA «Добавить первый автограф» → upload
-- D3 Демо-коллекция: 3 демо-поста если лента пустая + EmptyState с CTA
+-  D1 Онбординг: FlatList paging свайп + прогресс + анимация иконки (прогресс+spring✅; FlatList-paging ⏳ — слайды через state)
+- ✅ D2 Последний слайд CTA «Добавить первый автограф» → upload
+-  D3 Демо-коллекция: 3 демо-поста если лента пустая + EmptyState с CTA
 
 ## Волна E — Upload-визард
-- E1 3 шага: Фото → Детали → Проверка, прогресс-бар, Back/Next в thumb-зоне
+- ✅ E1 3 шага: Фото → Детали → Проверка, прогресс-бар, Back/Next в thumb-зоне
 - E2 Inline AI-подсказка + авто-категория
 - E3 Черновик-индикатор «Сохранено • 12:40»
 

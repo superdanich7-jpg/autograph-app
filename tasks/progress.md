@@ -172,3 +172,12 @@
 - [x] Supabase 007_communities.sql (RLS + member_count триггер); offline-first в PostsContext
 - [x] UI CommunitiesList (создание/вступление/выход/одобрение) + кнопка в профиле
 - [x] Валидация: typecheck PASS, jest 166/166 PASS, encoding ALL CLEAN
+
+## LOOP-UI-02..07 — Design Breakthrough Ink&Gold 2.0 (2026-10)
+- [x] LOOP-UI-02: SegmentedControl + EmptyState + вердикт-оверлей на фото + Вы всё посмотрели
+- [x] LOOP-UI-03: профиль hero — gold-ring аватар + @handle
+- [x] LOOP-UI-04: Onboarding 2.0 value-first (3 слайда, прогресс, spring, CTA->upload) + автопоказ
+- [x] LOOP-UI-05: Upload-визард 3 шага (Фото->Детали->Проверка), nav Back/Next, haptic
+- [x] LOOP-UI-06: PostDetail -> bottom-sheet(full) свайп-вниз + scrim + haptic
+- [x] LOOP-UI-07: RecommendedRail в ленте между 3 и 4 постом
+- Каждый шаг: typecheck PASS + 166/166 тестов + encoding ALL CLEAN + push в main
