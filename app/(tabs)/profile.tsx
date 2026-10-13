@@ -27,6 +27,7 @@ import { getDayStreak } from '../../lib/stats-share';
 import CollectionsList from '../../components/CollectionsList';
 import CollectionValueCard from '../../components/CollectionValueCard';
 import CommunitiesList from '../../components/CommunitiesList';
+import FriendsSheet from '../../components/FriendsSheet';
 import { scheduleStreakReminderIfNeeded } from '../../lib/streak-reminder';
 
 import ProfileModal from '../../components/ProfileModal';
@@ -54,6 +55,7 @@ export default function ProfileScreen() {
     const [settingsVisible, setSettingsVisible] = useState(false);
     const [collectionsVisible, setCollectionsVisible] = useState(false);
     const [communitiesVisible, setCommunitiesVisible] = useState(false);
+    const [friendsVisible, setFriendsVisible] = useState(false);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [draftName, setDraftName] = useState(profile.name);
     const [draftBio, setDraftBio] = useState(profile.bio);
@@ -254,6 +256,20 @@ export default function ProfileScreen() {
                         variant="secondary"
                         size="sm"
                         icon="people-outline"
+                    />
+                    <Button
+                        title="Друзья"
+                        onPress={() => setFriendsVisible(true)}
+                        variant="secondary"
+                        size="sm"
+                        icon="person-add-outline"
+                    />
+                    <Button
+                        title="Сообщения"
+                        onPress={() => router.push('/chat')}
+                        variant="secondary"
+                        size="sm"
+                        icon="chatbubbles-outline"
                     />
                     <Button
                         title="Настройки"
@@ -485,6 +501,15 @@ export default function ProfileScreen() {
             <CollectionsList visible={collectionsVisible} onClose={() => setCollectionsVisible(false)} />
 
             <CommunitiesList visible={communitiesVisible} onClose={() => setCommunitiesVisible(false)} />
+
+            <FriendsSheet
+                visible={friendsVisible}
+                onClose={() => setFriendsVisible(false)}
+                onOpenChat={(friendId, friendName) => {
+                    setFriendsVisible(false);
+                    router.push('/chat');
+                }}
+            />
 
             <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || 'Автограф'} colors={colors} onClose={() => setSelectedPost(null)}>
                 <ProfilePostModal post={selectedPost} colors={colors} onClose={() => setSelectedPost(null)} />
