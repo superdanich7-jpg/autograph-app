@@ -6,9 +6,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-    Dimensions,
+    Animated,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -16,32 +16,26 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
-import { radii, shadows, spacing } from '../lib/theme';
+import { hapticLight } from '../lib/haptics';
+import { motion, radii, shadows, spacing, typography } from '../lib/theme';
 
-const { width } = Dimensions.get('window');
-
-const ONBOARDING_KEY = 'autograph.onboarding.v1';
+export const ONBOARDING_KEY = 'autograph.onboarding.v2';
 
 const slides = [
   {
     icon: 'camera-outline',
-    title: 'Фотографируйте автографы',
-    description: 'Сделайте фото подписи — наш AI поможет определить, чей это автограф.',
+    title: 'Сфотографируйте автограф',
+    description: 'Сделайте снимок подписи — ИИ подскажет, чей это автограф.',
   },
   {
     icon: 'shield-checkmark-outline',
-    title: 'Подтверждайте подлинность',
-    description: 'Сообщество голосует за подлинность. Чем больше голосов — тем выше доверие.',
+    title: 'Сообщество проверит подлинность',
+    description: 'Коллекционеры голосуют за подлинность. Больше голосов — выше доверие.',
   },
   {
     icon: 'trophy-outline',
-    title: 'Собирайте достижения',
-    description: 'Получайте бейджи за активность, коллекции и редкие находки.',
-  },
-  {
-    icon: 'people-outline',
-    title: 'Делитесь с друзьями',
-    description: 'Экспортируйте коллекцию, шарьте посты и обменивайтесь автографами.',
+    title: 'Собирайте и делитесь',
+    description: 'Копите редкие находки, следите за ценой коллекции и получайте бейджи.',
   },
 ];
 
@@ -53,14 +47,19 @@ export default function OnboardingScreen({ onComplete }: Props) {
   const { colors } = useTheme();
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const iconAnim = useRef(new Animated.Value(0)).current;
 
-  const handleNext = () => {
-    if (currentIndex < slides.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      handleComplete();
-    }
-  };
+  useEffect(() => {
+    iconAnim.setValue(0);
+    Animated.spring(iconAnim, {
+      toValue: 1,
+      friction: 5,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  }, [currentIndex, iconAnim]);
+
+  const isLast = currentIndex === slides.length - 1;
 
   const handleComplete = async () => {
     try {
@@ -68,33 +67,65 @@ export default function OnboardingScreen({ onComplete }: Props) {
     } catch (e) {
       console.warn('Failed to save onboarding state:', e);
     }
-    onComplete?.();
+    // D2: последний слайд ведёт сразу к ценному действию (value-first).
+    if (onComplete) {
+      onComplete();
+    } else {
+      router.replace('/(tabs)/upload');
+    }
+  };
+
+  const handleNext = () => {
+    hapticLight();
+    if (isLast) {
+      handleComplete();
+    } else {
+      setCurrentIndex((prev) => prev + 1);
+    }
   };
 
   const handleSkip = () => {
+    hapticLight();
     handleComplete();
   };
 
+  const iconScale = iconAnim.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] });
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.skipContainer}>
+      <View style={styles.topRow}>
         <TouchableOpacity onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Пропустить обучение">
-          <Text style={[styles.skipText, { color: colors.textSecondary }]}>Пропустить</Text>
+          <Text style={[typography.bodyMedium, { color: colors.textSecondary }]}>Пропустить</Text>
         </TouchableOpacity>
+        <Text style={[typography.label, { color: colors.textTertiary }]}>
+          {currentIndex + 1} / {slides.length}
+        </Text>
+      </View>
+
+      <View style={[styles.progressTrack, { backgroundColor: colors.surface }]}>
+        <View
+          style={[
+            styles.progressFill,
+            { backgroundColor: colors.accent, width: `${((currentIndex + 1) / slides.length) * 100}%` },
+          ]}
+        />
       </View>
 
       <View style={styles.slideContainer}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.primaryLight }]}>
+        <Animated.View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: colors.accentLight, transform: [{ scale: iconScale }] },
+          ]}
+        >
           <Ionicons
             name={slides[currentIndex].icon as keyof typeof Ionicons.glyphMap}
-            size={64}
-            color={colors.primary}
+            size={68}
+            color={colors.accent}
           />
-        </View>
+        </Animated.View>
 
-        <Text style={[styles.title, { color: colors.text }]}>
-          {slides[currentIndex].title}
-        </Text>
+        <Text style={[styles.title, { color: colors.text }]}>{slides[currentIndex].title}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>
           {slides[currentIndex].description}
         </Text>
@@ -107,7 +138,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
             style={[
               styles.dot,
               {
-                backgroundColor: index === currentIndex ? colors.primary : colors.surface,
+                backgroundColor: index === currentIndex ? colors.accent : colors.border,
                 width: index === currentIndex ? 32 : 10,
               },
             ]}
@@ -116,20 +147,16 @@ export default function OnboardingScreen({ onComplete }: Props) {
       </View>
 
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: colors.primary }]}
+        style={[styles.button, { backgroundColor: isLast ? colors.accent : colors.primary }, shadows.lg]}
         onPress={handleNext}
         activeOpacity={0.85}
         accessibilityRole="button"
-        accessibilityLabel={currentIndex === slides.length - 1 ? 'Начать пользоваться приложением' : 'Следующий шаг обучения'}
+        accessibilityLabel={isLast ? 'Добавить первый автограф' : 'Следующий шаг обучения'}
       >
         <Text style={[styles.buttonText, { color: colors.primaryText }]}>
-          {currentIndex === slides.length - 1 ? 'Начать' : 'Далее'}
+          {isLast ? 'Добавить первый автограф' : 'Далее'}
         </Text>
-        <Ionicons
-          name={currentIndex === slides.length - 1 ? 'checkmark' : 'arrow-forward'}
-          size={20}
-          color={colors.primaryText}
-        />
+        <Ionicons name={isLast ? 'camera' : 'arrow-forward'} size={20} color={colors.primaryText} />
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -140,13 +167,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: spacing.xxl,
   },
-  skipContainer: {
-    alignItems: 'flex-end',
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  skipText: {
-    fontSize: 15,
-    fontWeight: '600',
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   slideContainer: {
     flex: 1,
@@ -155,20 +190,18 @@ const styles = StyleSheet.create({
     gap: spacing.xxl,
   },
   iconContainer: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: 148,
+    height: 148,
+    borderRadius: 74,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
+    ...typography.h1,
     textAlign: 'center',
-    lineHeight: 34,
   },
   description: {
-    fontSize: 16,
+    ...typography.body,
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: spacing.lg,
@@ -192,9 +225,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
     marginBottom: spacing.xxl,
-    ...shadows.md,
   },
   buttonText: {
+    ...typography.bodyMedium,
     fontSize: 17,
     fontWeight: '700',
   },
