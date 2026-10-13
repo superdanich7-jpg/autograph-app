@@ -136,22 +136,31 @@ export default function FeedScreen() {
         );
     };
 
-    const renderItem = ({ item }: { item: Post }) => (
-        <FeedPostCard
-            item={item}
-            colors={colors}
-            currentUserId={currentUserId}
-            canInteract={canInteract}
-            onOpenDetail={(post) => setDetailPost(post)}
-            onToggleLike={toggleLike}
-            onOpenComments={(id) => {
-                setSelectedPostId(id);
-                setCommentsVisible(true);
-            }}
-            onToggleSaved={toggleSaved}
-            onVote={voteAuthenticity}
-            onRequireAuth={handleRequireAuth}
-        />
+    const renderItem = ({ item, index }: { item: Post; index: number }) => (
+        <View>
+            {index === 3 && recommendations.length > 0 ? (
+                <RecommendedRail
+                    recommendations={recommendations}
+                    colors={colors}
+                    onOpenDetail={(post) => setDetailPost(post)}
+                />
+            ) : null}
+            <FeedPostCard
+                item={item}
+                colors={colors}
+                currentUserId={currentUserId}
+                canInteract={canInteract}
+                onOpenDetail={(post) => setDetailPost(post)}
+                onToggleLike={toggleLike}
+                onOpenComments={(id) => {
+                    setSelectedPostId(id);
+                    setCommentsVisible(true);
+                }}
+                onToggleSaved={toggleSaved}
+                onVote={voteAuthenticity}
+                onRequireAuth={handleRequireAuth}
+            />
+        </View>
     );
 
 
@@ -271,15 +280,6 @@ export default function FeedScreen() {
                     data={filteredPosts}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
-                    ListHeaderComponent={
-                        recommendations.length > 0 ? (
-                            <RecommendedRail
-                                recommendations={recommendations}
-                                colors={colors}
-                                onOpenDetail={(post) => setDetailPost(post)}
-                            />
-                        ) : null
-                    }
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
