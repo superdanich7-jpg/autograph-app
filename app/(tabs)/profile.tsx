@@ -144,11 +144,16 @@ export default function ProfileScreen() {
             >
                 <Card variant="elevated" padding="lg" style={{ alignItems: 'center' }}>
                     <TouchableOpacity onPress={() => Alert.alert('Аватар', 'Смена фото появится позже.')}>
-                        <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
-                            <Ionicons name="person" size={44} color={colors.primary} />
+                        <View style={[styles.avatarRing, { borderColor: colors.accent }]}>
+                            <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
+                                <Ionicons name="person" size={44} color={colors.primary} />
+                            </View>
                         </View>
                     </TouchableOpacity>
                     <Text style={[styles.name, { color: colors.text }]}>{profile.name}</Text>
+                    <Text style={[styles.handle, { color: colors.textTertiary }]}>
+                        @{(profile.name || 'collector').toLowerCase().replace(/\s+/g, '')}
+                    </Text>
                     <Text style={[styles.bio, { color: colors.textSecondary }]}>{profile.bio}</Text>
 
                     <View style={[styles.badgeRow, { backgroundColor: colors.surface }]}>
@@ -506,7 +511,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 16,
     },
-    name: { fontSize: 24, fontWeight: '700', marginBottom: 6 },
+    avatarRing: {
+        width: 120,
+        height: 120,
+        borderRadius: 34,
+        borderWidth: 3,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    name: { fontSize: 24, fontWeight: '700', marginBottom: 2 },
+    handle: { fontSize: 14, fontWeight: '600', marginBottom: 6 },
     bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 18 },
     badgeRow: {
         width: '100%',
