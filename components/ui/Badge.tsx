@@ -8,7 +8,7 @@ import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { radii, spacing, typography } from '../../lib/theme';
 
-type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'gold';
 type BadgeSize = 'sm' | 'md' | 'lg';
 
 type Props = {
@@ -54,6 +54,12 @@ export default function Badge({
         return {
           container: { backgroundColor: colors.infoLight },
           text: { color: colors.info },
+        };
+      // A4: gold — вердикты подлинности и легендарная редкость (Ink&Gold)
+      case 'gold':
+        return {
+          container: { backgroundColor: colors.accentLight },
+          text: { color: colors.accent },
         };
       default:
         return {

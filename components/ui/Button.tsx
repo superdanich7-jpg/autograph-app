@@ -90,19 +90,20 @@ export default function Button({
     switch (size) {
       case 'sm':
         return {
-          container: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
+          // A4: даже sm — min 48 по высоте (WCAG 2.2 AA)
+          container: { minHeight: 48, paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
           text: typography.bodySmall,
           iconSize: 16,
         };
       case 'md':
         return {
-          container: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
+          container: { minHeight: 52, paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
           text: typography.bodyMedium,
           iconSize: 18,
         };
       case 'lg':
         return {
-          container: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xxl },
+          container: { minHeight: 56, paddingVertical: spacing.lg, paddingHorizontal: spacing.xxl },
           text: typography.body,
           iconSize: 20,
         };

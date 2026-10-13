@@ -10,7 +10,7 @@ import { radii, shadows, spacing } from '../../lib/theme';
 
 type Props = {
   children: React.ReactNode;
-  variant?: 'default' | 'elevated' | 'outlined';
+  variant?: 'default' | 'elevated' | 'outlined' | 'hero';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   style?: ViewStyle;
 };
@@ -22,6 +22,24 @@ export default function Card({
   style,
 }: Props) {
   const { colors } = useTheme();
+
+  // A4: hero — edge-to-edge карточка с глубокой тенью (лента 2.0)
+  if (variant === 'hero') {
+    return (
+      <View
+        style={[
+          styles.base,
+          styles.hero,
+          { backgroundColor: colors.card },
+          shadows.lg,
+          paddingStyles[padding],
+          style,
+        ]}
+      >
+        {children}
+      </View>
+    );
+  }
 
   const containerStyle = [
     styles.base,
@@ -48,5 +66,9 @@ const paddingStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   base: {
     borderRadius: radii.xl,
+  },
+  hero: {
+    borderRadius: radii.xxl,
+    overflow: 'hidden',
   },
 });

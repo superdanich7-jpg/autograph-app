@@ -1,11 +1,22 @@
 /**
- * Design System — современная система дизайна.
- * Следует принципам Material Design 3 и Apple HIG:
- * - Единая палитра цветов
- * - Масштабы типографики
- * - Пространственные токены
- * - Тени и радиусы
+ * Design System 2.0 «Ink & Gold» — единый источник токенов.
+ * Бренд: чернила (ink) + бумага (paper) + золото (gold).
+ * context/ThemeContext.tsx реэкспортит палитры отсюда (A1).
  */
+
+// ─── Brand Palette ─────────────────────────────
+
+export const brandColors = {
+  ink900: '#0B1220',
+  ink700: '#1E293B',
+  ink500: '#475569',
+  paper50: '#FAF8F4',
+  paper100: '#F3EFE7',
+  paper200: '#E7E0D2',
+  gold300: '#E7C873',
+  gold500: '#C9A227',
+  gold700: '#8A6D15',
+};
 
 // ─── Color Palette ─────────────────────────────
 
@@ -53,25 +64,30 @@ const palette = {
 // ─── Light Theme ───────────────────────────────
 
 export const lightTheme = {
-  // Backgrounds
-  background: palette.gray50,
-  surface: palette.gray100,
+  // Backgrounds (paper)
+  background: brandColors.paper50,
+  surface: brandColors.paper100,
   card: '#FFFFFF',
 
-  // Text
-  text: palette.gray900,
-  textSecondary: palette.gray500,
+  // Text (ink)
+  text: brandColors.ink900,
+  textSecondary: brandColors.ink500,
   textTertiary: palette.gray400,
   placeholder: palette.gray400,
 
   // Borders
-  border: palette.gray200,
-  borderLight: palette.gray100,
+  border: brandColors.paper200,
+  borderLight: brandColors.paper100,
 
-  // Primary
-  primary: palette.blue600,
-  primaryLight: palette.blue100,
+  // Primary (ink — премиальный, не generic-синий)
+  primary: brandColors.ink900,
+  primaryLight: brandColors.paper200,
   primaryText: '#FFFFFF',
+
+  // Accent (gold — редкость/подлинность)
+  accent: brandColors.gold500,
+  accentLight: '#FAF3DD',
+  accentText: '#FFFFFF',
 
   // Semantic
   success: palette.green500,
@@ -82,6 +98,13 @@ export const lightTheme = {
   warningLight: '#FEF3C7',
   info: palette.blue500,
   infoLight: palette.blue50,
+
+  // Overlay / scrim / skeleton (A2 — системные токены оверлеев)
+  overlay: 'rgba(11, 18, 32, 0.55)',
+  scrim: 'rgba(11, 18, 32, 0.35)',
+  skeleton: brandColors.paper200,
+  shimmer: '#FFFFFF',
+  glass: 'rgba(255, 255, 255, 0.72)',
 
   // Shadows (iOS)
   shadowColor: '#000000',
@@ -111,10 +134,15 @@ export const darkTheme = {
   border: palette.gray700,
   borderLight: palette.gray800,
 
-  // Primary
-  primary: palette.blue500,
-  primaryLight: palette.blue700,
-  primaryText: '#FFFFFF',
+  // Primary (в тёмной — светлая бумага для контраста)
+  primary: '#F8FAFC',
+  primaryLight: palette.gray700,
+  primaryText: brandColors.ink900,
+
+  // Accent (gold светится в тёмной)
+  accent: brandColors.gold300,
+  accentLight: '#3A2E0A',
+  accentText: brandColors.ink900,
 
   // Semantic
   success: palette.green500,
@@ -125,6 +153,13 @@ export const darkTheme = {
   warningLight: '#422006',
   info: palette.blue400,
   infoLight: '#172554',
+
+  // Overlay / scrim / skeleton (A2 — тёмная: gold-шуммер светится)
+  overlay: 'rgba(2, 6, 23, 0.68)',
+  scrim: 'rgba(2, 6, 23, 0.45)',
+  skeleton: palette.gray800,
+  shimmer: brandColors.gold300,
+  glass: 'rgba(30, 41, 59, 0.72)',
 
   // Shadows
   shadowColor: '#000000',
@@ -235,7 +270,20 @@ export const radii = {
   full: 9999,
 } as const;
 
-// ─── Shadows ───────────────────────────────────
+// ─── Motion (Design System 2.0) ────────────────
+
+export const motion = {
+  durationFast: 150,
+  durationBase: 250,
+  durationSlow: 350,
+  pressScale: 0.97,
+} as const;
+
+// ─── Touch targets (WCAG 2.2 AA) ───────────────
+
+export const minTouch = 48;
+
+export type ThemeColors = typeof lightTheme;
 
 export const shadows = {
   sm: {
