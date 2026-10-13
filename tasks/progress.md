@@ -181,3 +181,10 @@
 - [x] LOOP-UI-06: PostDetail -> bottom-sheet(full) свайп-вниз + scrim + haptic
 - [x] LOOP-UI-07: RecommendedRail в ленте между 3 и 4 постом
 - Каждый шаг: typecheck PASS + 166/166 тестов + encoding ALL CLEAN + push в main
+
+## LOOP-SOC-01..03 — Друзья + Чат (DM) (2026-10)
+- [x] LOOP-SOC-01: система друзей (lib/friends.ts, presence, requests, suggestions) + 15 тестов + миграция 008 (RLS, авто-friendship триггер)
+- [x] LOOP-SOC-02: чат DM (lib/chat.ts, группировка по дням, unread, read receipts) + 13 тестов + миграция 009 (RLS + realtime)
+- [x] LOOP-SOC-03: UI — FriendsSheet (друзья/заявки/для вас) + ChatScreen (список диалогов + пузыри + presence) + вход из профиля
+- Рисерч соцсетей 2026: DM + friends + presence = core loop удержания
+- Интеграция PostsContext: offline-first + seed-демо (друзья, заявки, переписка)

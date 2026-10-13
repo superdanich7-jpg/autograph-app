@@ -61,17 +61,28 @@ export default function CollectorProfileScreen() {
                     </Text>
                     <Text style={[styles.bio, { color: colors.textSecondary }]}>{collector.bio}</Text>
 
-                    <TouchableOpacity
-                        style={[
-                            styles.followButton,
-                            { backgroundColor: isFollowing ? colors.surface : colors.primary, borderColor: colors.border },
-                        ]}
-                        onPress={() => toggleFollowCollector(collector.id)}
-                    >
-                        <Text style={[styles.followText, { color: isFollowing ? colors.text : colors.primaryText }]}>
-                            {isFollowing ? 'Вы подписаны' : 'Подписаться'}
-                        </Text>
-                    </TouchableOpacity>
+                    <View style={styles.actionRow}>
+                        <TouchableOpacity
+                            style={[
+                                styles.followButton,
+                                { backgroundColor: isFollowing ? colors.surface : colors.primary, borderColor: colors.border },
+                            ]}
+                            onPress={() => toggleFollowCollector(collector.id)}
+                        >
+                            <Text style={[styles.followText, { color: isFollowing ? colors.text : colors.primaryText }]}>
+                                {isFollowing ? 'Вы подписаны' : 'Подписаться'}
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.messageButton, { backgroundColor: colors.accentLight, borderColor: colors.border }]}
+                            onPress={() => router.push('/chat')}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Написать ${collector.name}`}
+                        >
+                            <Ionicons name="chatbubble-ellipses" size={18} color={colors.accent} />
+                            <Text style={[styles.followText, { color: colors.accent }]}>Написать</Text>
+                        </TouchableOpacity>
+                    </View>
 
                     <View style={[styles.statsRow, { backgroundColor: colors.surface }]}>
                         <View style={styles.stat}>
@@ -164,12 +175,30 @@ const styles = StyleSheet.create({
         lineHeight: 20,
         textAlign: 'center',
     },
-    followButton: {
+    actionRow: {
+        flexDirection: 'row',
+        gap: 10,
         marginTop: 16,
+    },
+    followButton: {
+        flex: 1,
         minHeight: 48,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 6,
+        paddingHorizontal: 18,
+        borderWidth: 1,
+    },
+    messageButton: {
+        flex: 1,
+        minHeight: 48,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 6,
         paddingHorizontal: 18,
         borderWidth: 1,
     },
