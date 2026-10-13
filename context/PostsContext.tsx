@@ -12,6 +12,16 @@ import {
     rejectMember as rejectCommunityMember,
     requestJoin as requestJoinFn,
 } from '../lib/communities';
+import {
+    Friend,
+    FriendRequest,
+    acceptFriendRequest as acceptFriendReq,
+    getFriendIds,
+    getFriendship,
+    getIncomingRequests,
+    removeFriend as removeFriendFn,
+    sendFriendRequest as sendFriendReq,
+} from '../lib/friends';
 import { hapticLight } from '../lib/haptics';
 
 export type Comment = {
@@ -169,6 +179,18 @@ type PostsContextType = {
     approveCommunityJoin: (communityId: string, userId: string) => void;
     rejectCommunityJoin: (communityId: string, userId: string) => void;
     leaveCommunity: (communityId: string) => void;
+    friends: Friend[];
+    friendRequests: FriendRequest[];
+    friendIds: string[];
+    friendList: Friend[];
+    incomingFriendRequests: FriendRequest[];
+    getFriendById: (friendId: string) => Friend | undefined;
+    getFriendshipStatus: (otherId: string) => import('../lib/friends').Friendship;
+    sendFriendRequest: (toId: string) => void;
+    acceptFriendRequest: (otherId: string) => void;
+    declineFriendRequest: (otherId: string) => void;
+    cancelFriendRequest: (otherId: string) => void;
+    removeFriend: (otherId: string) => void;
     refreshCloudData: () => Promise<void>;
     clearPosts: () => void;
     signOut: () => void;
@@ -275,11 +297,28 @@ const COMMUNITY_COLLECTORS: CommunityCollector[] = [
 
 const PostsContext = createContext<PostsContextType | undefined>(undefined);
 
+// Seed-друзья для гостевого режима (offline-first демо). Соцграф на базе
+// сообщества коллекционеров. presence/lastSeen фиксированы для детерминизма тестов.
+const SEED_FRIENDS: Friend[] = [
+    { id: 'arena-hunter', name: 'Arena Hunter', handle: 'arenahunter', avatar: '🥇', online: true, lastSeen: new Date().toISOString(), specialty: 'Спорт', mutualCount: 3 },
+    { id: 'vinyl-girl', name: 'Vinyl Girl', handle: 'vinylgirl', avatar: '🎸', online: false, lastSeen: new Date(Date.now() - 12 * 60000).toISOString(), specialty: 'Музыка', mutualCount: 5 },
+    { id: 'cinema-buff', name: 'Cinema Buff', handle: 'cinemabuff', avatar: '🎬', online: true, lastSeen: new Date().toISOString(), specialty: 'Кино', mutualCount: 2 },
+    { id: 'rookie-sig', name: 'Rookie Sig', handle: 'rookiesig', avatar: '🌱', online: false, lastSeen: new Date(Date.now() - 3 * 3600000).toISOString(), specialty: 'Другое', mutualCount: 1 },
+];
+
+// Заявки в друзья для seed (чтобы были входящие и подтверждённые).
+const SEED_FRIEND_REQUESTS: FriendRequest[] = [
+    { id: 'seed-req-1', fromId: 'vinyl-girl', toId: 'guest-user', createdAt: new Date(Date.now() - 2 * 3600000).toISOString() },
+    { id: 'seed-req-2', fromId: 'guest-user', toId: 'cinema-buff', createdAt: new Date(Date.now() - 5 * 3600000).toISOString() },
+];
+
 type StoredState = {
     posts: Post[];
     profile: UserProfile;
     collections: Collection[];
     communities: Community[];
+    friends: Friend[];
+    friendRequests: FriendRequest[];
     lastSyncedAt: string | null;
 };
 
@@ -338,6 +377,8 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
     const [collections, setCollections] = useState<Collection[]>([]);
     const [communities, setCommunities] = useState<Community[]>([]);
+    const [friends, setFriends] = useState<Friend[]>([]);
+    const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
     const isHydrated = useRef(false);
     const mountedRef = useRef(true);
     const profileRef = useRef(profile);
@@ -380,6 +421,17 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     if (Array.isArray(storedState.communities)) {
                         setCommunities(storedState.communities);
                     }
+                    // Друзья: если сохранено — грузим; иначе seed для демо.
+                    if (Array.isArray(storedState.friends)) {
+                        setFriends(storedState.friends);
+                    } else {
+                        setFriends(SEED_FRIENDS);
+                    }
+                    if (Array.isArray(storedState.friendRequests)) {
+                        setFriendRequests(storedState.friendRequests);
+                    } else {
+                        setFriendRequests(SEED_FRIEND_REQUESTS);
+                    }
                 }
                 setSyncStatus(isSupabaseConfigured ? 'ready' : 'offline');
             } catch (error) {
@@ -406,7 +458,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         saveTimerRef.current = setTimeout(async () => {
             try {
-                const state: StoredState = { posts, profile, collections, communities, lastSyncedAt };
+                const state: StoredState = { posts, profile, collections, communities, friends, friendRequests, lastSyncedAt };
                 await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             } catch (error) {
                 showToast(error instanceof Error ? error.message : 'Ошибка при сохранении данных', 'error');
@@ -809,6 +861,50 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return COMMUNITY_COLLECTORS.find((collector) => collector.id === collectorId);
     };
 
+    // ─── Friends (соцграф, offline-first) ──────────
+    const getFriendById = (friendId: string) => friends.find((f) => f.id === friendId);
+
+    const sendFriendRequest = (toId: string) => {
+        if (!canInteract) return;
+        hapticLight();
+        const next = sendFriendReq(friendRequests, currentUserId, toId, `req-${currentUserId}-${toId}-${Date.now()}`);
+        setFriendRequests(next);
+    };
+
+    const acceptFriendRequest = (otherId: string) => {
+        if (!canInteract) return;
+        hapticLight();
+        const next = acceptFriendReq(friendRequests, currentUserId, otherId);
+        setFriendRequests(next);
+    };
+
+    const declineFriendRequest = (otherId: string) => {
+        hapticLight();
+        // Удаляем встречную (входящую) заявку.
+        const next = friendRequests.filter((r) => !(r.fromId === otherId && r.toId === currentUserId));
+        setFriendRequests(next);
+    };
+
+    const cancelFriendRequest = (otherId: string) => {
+        hapticLight();
+        const next = friendRequests.filter((r) => !(r.fromId === currentUserId && r.toId === otherId));
+        setFriendRequests(next);
+    };
+
+    const removeFriend = (otherId: string) => {
+        hapticLight();
+        setFriendRequests(removeFriendFn(friendRequests, currentUserId, otherId));
+    };
+
+    // Производные: id друзей, входящие заявки, friendship-статус.
+    const friendIds = useMemo(() => getFriendIds(friendRequests, currentUserId), [friendRequests, currentUserId]);
+    const incomingFriendRequests = useMemo(() => getIncomingRequests(friendRequests, currentUserId), [friendRequests, currentUserId]);
+    const getFriendshipStatus = (otherId: string) => getFriendship(friendRequests, currentUserId, otherId);
+    const friendList = useMemo(
+        () => friends.filter((f) => friendIds.includes(f.id)),
+        [friends, friendIds]
+    );
+
     const createCollection = (data: { name: string; description: string; color: string }): Collection => {
         const newCollection: Collection = {
             id: generateId(),
@@ -915,6 +1011,18 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 approveCommunityJoin,
                 rejectCommunityJoin,
                 leaveCommunity,
+                friends,
+                friendRequests,
+                friendIds,
+                friendList,
+                incomingFriendRequests,
+                getFriendById,
+                getFriendshipStatus,
+                sendFriendRequest,
+                acceptFriendRequest,
+                declineFriendRequest,
+                cancelFriendRequest,
+                removeFriend,
                 refreshCloudData,
                 clearPosts,
                 signOut,
