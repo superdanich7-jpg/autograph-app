@@ -33,6 +33,9 @@ import PostDetailModal from '../../components/PostDetailModal';
 import CommentsModal from '../../components/CommentsModal';
 import FeedPostCard from '../../components/FeedPostCard';
 import { PostCardSkeleton } from '../../components/ui/Skeleton';
+import { EmptyState, SegmentedControl } from '../../components/ui/primitives';
+import { hapticLight } from '../../lib/haptics';
+import { typography } from '../../lib/theme';
 
 export default function FeedScreen() {
     const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData, syncStatus } = usePosts();
@@ -210,31 +213,23 @@ export default function FeedScreen() {
                             Только подтвержденные
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.filterChip, { backgroundColor: sortMode === 'latest' ? colors.primary : colors.surface }]}
-                        onPress={() => setSortMode('latest')}
-                    >
-                        <Text style={[styles.filterChipText, { color: sortMode === 'latest' ? colors.primaryText : colors.text }]}>
-                            Сначала новые
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.filterChip, { backgroundColor: sortMode === 'trusted' ? colors.primary : colors.surface }]}
-                        onPress={() => setSortMode('trusted')}
-                    >
-                        <Text style={[styles.filterChipText, { color: sortMode === 'trusted' ? colors.primaryText : colors.text }]}>
-                            Самые достоверные
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.filterChip, { backgroundColor: sortMode === 'debated' ? colors.primary : colors.surface }]}
-                        onPress={() => setSortMode('debated')}
-                    >
-                        <Text style={[styles.filterChipText, { color: sortMode === 'debated' ? colors.primaryText : colors.text }]}>
-                            Самые спорные
-                        </Text>
-                    </TouchableOpacity>
                 </ScrollView>
+            </View>
+
+            {/* B1: сегментированный контроль сортировки вместо 3 перегружающих чипов */}
+            <View style={styles.segmentWrap}>
+                <SegmentedControl
+                    segments={[
+                        { key: 'latest', label: 'Новые', icon: 'time-outline' },
+                        { key: 'trusted', label: 'Достоверные', icon: 'shield-checkmark-outline' },
+                        { key: 'debated', label: 'Спорные', icon: 'help-buoy' },
+                    ]}
+                    activeKey={sortMode}
+                    onChange={(key) => {
+                        hapticLight();
+                        setSortMode(key as 'latest' | 'trusted' | 'debated');
+                    }}
+                />
             </View>
 
             <View style={styles.summaryRow}>
@@ -259,31 +254,18 @@ export default function FeedScreen() {
                     <PostCardSkeleton />
                 </View>
             ) : filteredPosts.length === 0 ? (
-                <View style={styles.emptyWrap}>
-                    <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
-                            <Ionicons name={posts.length === 0 ? 'sparkles-outline' : 'search-outline'} size={28} color={colors.primary} />
-                        </View>
-                        <Text style={[styles.emptyText, { color: colors.text }]}>
-                            {posts.length === 0 ? 'Коллекция пока пуста' : 'Ничего не найдено'}
-                        </Text>
-                        <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                            {posts.length === 0
-                                ? 'Загрузите первый автограф — сообщество проверит его подлинность.'
-                                : 'Попробуйте снять часть фильтров или изменить поисковый запрос.'}
-                        </Text>
-                        {posts.length === 0 ? (
-                            <TouchableOpacity
-                                style={[styles.emptyCta, { backgroundColor: colors.primary }]}
-                                onPress={() => router.push('/(tabs)/upload')}
-                                activeOpacity={0.85}
-                            >
-                                <Ionicons name="add-circle" size={18} color={colors.primaryText} />
-                                <Text style={[styles.emptyCtaText, { color: colors.primaryText }]}>Добавить автограф</Text>
-                            </TouchableOpacity>
-                        ) : null}
-                    </View>
-                </View>
+                <EmptyState
+                    style={styles.emptyWrap}
+                    icon={posts.length === 0 ? 'sparkles-outline' : 'search-outline'}
+                    title={posts.length === 0 ? 'Коллекция пока пуста' : 'Ничего не найдено'}
+                    hint={
+                        posts.length === 0
+                            ? 'Загрузите первый автограф — сообщество проверит его подлинность.'
+                            : 'Попробуйте снять часть фильтров или изменить поисковый запрос.'
+                    }
+                    actionLabel={posts.length === 0 ? 'Добавить автограф' : undefined}
+                    onAction={posts.length === 0 ? () => router.push('/(tabs)/upload') : undefined}
+                />
             ) : (
                 <FlatList
                     data={filteredPosts}
@@ -311,6 +293,14 @@ export default function FeedScreen() {
                     showsVerticalScrollIndicator={false}
                     removeClippedSubviews={Platform.OS === 'android'}
                     windowSize={5}
+                    ListFooterComponent={
+                        <View style={styles.feedFooter}>
+                            <Ionicons name="checkmark-done-circle" size={22} color={colors.success} />
+                            <Text style={[typography.bodySmall, { color: colors.textSecondary, fontWeight: '600' }]}>
+                                Вы всё посмотрели
+                            </Text>
+                        </View>
+                    }
                 />
             )}
 
@@ -366,6 +356,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         paddingBottom: 8,
         gap: 10,
+    },
+    segmentWrap: {
+        paddingHorizontal: 14,
+        paddingBottom: 12,
+    },
+    feedFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 24,
     },
     searchBox: {
         borderWidth: 1,
@@ -423,43 +424,5 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 18,
         justifyContent: 'center',
-    },
-    emptyCard: {
-        borderWidth: 1,
-        borderRadius: 24,
-        paddingHorizontal: 24,
-        paddingVertical: 28,
-        alignItems: 'center',
-    },
-    emptyIcon: {
-        width: 64,
-        height: 64,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 16,
-    },
-    emptyText: {
-        fontSize: 20,
-        fontWeight: '700',
-        marginBottom: 8,
-    },
-    emptyHint: {
-        fontSize: 14,
-        textAlign: 'center',
-        lineHeight: 20,
-    },
-    emptyCta: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginTop: 18,
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 16,
-    },
-    emptyCtaText: {
-        fontSize: 15,
-        fontWeight: '700',
     },
 });

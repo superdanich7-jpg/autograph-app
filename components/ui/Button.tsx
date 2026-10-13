@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { hapticLight } from '../../lib/haptics';
-import { radii, shadows, spacing, typography } from '../../lib/theme';
+import { minTouch, radii, shadows, spacing, typography } from '../../lib/theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.lg,
+    minHeight: minTouch,
   },
   fullWidth: {
     width: '100%',

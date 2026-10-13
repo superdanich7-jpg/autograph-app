@@ -103,6 +103,50 @@ export default function FeedPostCard({
 
             <TouchableOpacity activeOpacity={0.92} onPress={handleImagePress}>
                 <Image source={{ uri: item.uri }} style={styles.postImage} resizeMode="cover" />
+                {/* B2: вердикт-оверлей на фото (glass) — подлинность видна до открытия */}
+                <View
+                    pointerEvents="none"
+                    style={[
+                        styles.verdictOverlay,
+                        {
+                            backgroundColor: colors.glass,
+                            borderColor:
+                                verdict.colorHint === 'success' ? colors.success
+                                    : verdict.colorHint === 'danger' ? colors.danger
+                                        : verdict.colorHint === 'warning' ? colors.warning
+                                            : colors.info,
+                        },
+                    ]}
+                >
+                    <Ionicons
+                        name={
+                            verdict.verdict === 'genuine' ? 'shield-checkmark'
+                                : verdict.verdict === 'likely-fake' ? 'warning'
+                                    : verdict.verdict === 'disputed' ? 'help-buoy'
+                                        : 'help-circle-outline'
+                        }
+                        size={14}
+                        color={
+                            verdict.colorHint === 'success' ? colors.success
+                                : verdict.colorHint === 'danger' ? colors.danger
+                                    : verdict.colorHint === 'warning' ? colors.warning
+                                        : colors.info
+                        }
+                    />
+                    <Text
+                        style={[
+                            styles.verdictOverlayText,
+                            {
+                                color: verdict.colorHint === 'success' ? colors.success
+                                    : verdict.colorHint === 'danger' ? colors.danger
+                                        : verdict.colorHint === 'warning' ? colors.warning
+                                            : colors.info,
+                            },
+                        ]}
+                    >
+                        {verdict.label} · {verdict.score}%
+                    </Text>
+                </View>
                 <Animated.View
                     pointerEvents="none"
                     style={[
@@ -358,9 +402,10 @@ const styles = StyleSheet.create({
     actionButton: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 48,
         borderRadius: 999,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 16,
         gap: 6,
     },
     actionText: {
@@ -473,5 +518,21 @@ const styles = StyleSheet.create({
     verdictPillText: {
         fontSize: 11,
         fontWeight: '700',
+    },
+    verdictOverlay: {
+        position: 'absolute',
+        top: 12,
+        left: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        borderRadius: 999,
+        borderWidth: 1,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+    },
+    verdictOverlayText: {
+        fontSize: 12,
+        fontWeight: '800',
     },
 });

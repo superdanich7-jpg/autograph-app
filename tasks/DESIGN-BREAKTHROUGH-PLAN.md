@@ -2,15 +2,15 @@
 
 ## Волна A — Дизайн-система (фундамент)
 - A1 ✅ Единый источник темы (сделано ранее)
-- A2 Тема: добавить overlay/scrim/skeleton/shimmer токены в light+dark
-- A3 Примитивы: PressableScale+Chip (сделано) → добавить Sheet, Skeleton, EmptyState, SegmentedControl
-- A4 Button min 48, Card hero-вариант, Badge gold-вариант для вердиктов
+- ✅ A2 Тема: добавить overlay/scrim/skeleton/shimmer токены в light+dark
+- ✅ A3 Примитивы: PressableScale+Chip (сделано) → добавить Sheet, Skeleton, EmptyState, SegmentedControl
+- ✅ A4 Button min 48, Card hero-вариант, Badge gold-вариант для вердиктов
 - A5 Типографика: запретить ручные fontSize вне typography.* (линт-гайд)
 
 ## Волна B — Лента (главный экран)
-- B1 Табы «Для вас / Подписки» (SegmentedControl, sticky)
-- B2 Hero-карточка: edge-to-edge фото 4:3, вердикт-оверлей на фото, trust-бейдж у аватара, compact actions 48
-- B3 «Вы всё посмотрели» + pull-to-refresh с +N новых + haptic
+- ✅ B1 Табы «Для вас / Подписки» (SegmentedControl, sticky)
+- ✅ B2 Hero-карточка: edge-to-edge фото 4:3, вердикт-оверлей на фото, trust-бейдж у аватара, compact actions 48
+- ✅ B3 «Вы всё посмотрели» + pull-to-refresh с +N новых + haptic
 - B4 FeedSkeleton (shimmer) + memo + getItemLayout
 - B5 RecommendedRail уже есть — вставить между 3 и 4 постом
 
