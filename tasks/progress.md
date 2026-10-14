@@ -188,3 +188,12 @@
 - [x] LOOP-SOC-03: UI — FriendsSheet (друзья/заявки/для вас) + ChatScreen (список диалогов + пузыри + presence) + вход из профиля
 - Рисерч соцсетей 2026: DM + friends + presence = core loop удержания
 - Интеграция PostsContext: offline-first + seed-демо (друзья, заявки, переписка)
+
+## MIGRATION — Expo SDK 54 -> SDK 57 (2026-10)
+- [x] npx expo install expo@~57.0.0 --fix (RN 0.86.3, React 19.2.3, reanimated 4.5.1, worklets 0.10.1, screens 4.26, safe-area 5.7, gesture-handler 2.32, jest-expo 57, typescript 6)
+- [x] app.json: убран newArchEnabled (удалён в SDK 55)
+- [x] Sheet.tsx: StyleSheet.absoluteFillObject -> absoluteFill (RN 0.86)
+- [x] ThemeContext: useColorScheme теперь может вернуть unspecified -> нормализация в ThemeMode
+- [x] tsconfig: +types[jest,node] (TS 6.0 больше не тянет @types авто), +devDeps @types/node, dotenv
+- [x] jest-expo 57: +@react-native/jest-preset@0.86.3 (пин под RN 0.86.3 — пресет переехал в отдельный пакет)
+- Валидация: typecheck PASS, 194/194 тестов PASS, expo export android = OK (5.5MB hbc), encoding ALL CLEAN
