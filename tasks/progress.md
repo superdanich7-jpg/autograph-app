@@ -1,5 +1,13 @@
 # Progress Log
 
+## 2026-10-25 (ночь, R-03) — честный offline-режим
+- [x] lib/cloud-health.ts: createCloudHealthChecker (fetch/now/timeout/ttl инжектятся), checkCloudHealth-синглтон, isCacheFresh + classifyHealthResponse чистыми функциями
+- [x] Логика: GET /auth/v1/health, таймаут 5с (AbortController), TTL-кэш 60с (негативный результат тоже кэшируется — нет спама при лежащем облаке)
+- [x] Интеграция PostsContext: гейты в refreshCloudData / flushPostQueue (посты возвращаются в очередь) / persistProfileToCloud -> status offline + честный syncError вместо error
+- [x] profile.tsx: offline -> «Демо-режим: данные сохраняются на устройстве», error -> «Ошибка синхронизации — попробуйте позже»
+- [x] lib/__tests__/cloud-health.test.ts — 15 тестов (не-настроен fast-fail, 200/5xx/сеть/таймаут, кэш в TTL и после, негатив-кэш)
+- [x] Валидация: typecheck PASS, jest 209/209 PASS (было 194), encoding ALL CLEAN
+
 ## 2026-10-25 (ночь) — R-02 ЗАВЕРШЁН: БД полностью зелёная
 - [x] 🧑‍💼 Founder: SUPABASE_ACCESS_TOKEN (sbp_) в .env (в git НЕ попадает — проверено: .env игнорируется)
 - [x] Management API жив: проект autograph-app ACTIVE_HEALTHY, eu-west-1

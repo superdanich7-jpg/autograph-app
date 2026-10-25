@@ -10,7 +10,7 @@
 - [x] **R-01** ✅ 2026-10-25 — Проект был на ПАУЗЕ (не удалён), Founder восстановил его вручную. Агент: `scripts/db-health.js` (`npm run db:health`) — REST/anon/Auth зелёные, 2 поста уцелели. Корректива аудита: F-01→RESOLVED, добавлены F-27 (частичные миграции) и F-28 (РФ-риск)
 - [x] **R-02** ✅ 2026-10-25 — Миграции до конца + доказательство. Выполнено через Management API (🧑‍💼 Founder добавил `SUPABASE_ACCESS_TOKEN` в `.env`; в git не попадает): применены 002/006/008/009 + бакет + storage-политики; **007 исправлена** (незакрытый `create table` — F-29) и применена; Edge Function `analyze-autograph` переписана zero-dep (BOOT_ERROR на легаси-импортах) и задеплоена, live-тест ОК; сид: в БД 97 знаменитостей (F-30 — upsert без констрейнта, не блокер). Итог: `db:health` ВСЁ ЗЕЛЁНОЕ, `db:proof` ДОКАЗАНО (публичная лента читается). 🧑‍💼 Остался опциональный пункт: секрет `GOOGLE_VISION_API_KEY` для настоящего OCR
 - [x] **R-02 (частично)** ✅ 2026-10-25 — `scripts/db-proof.js` (`npm run db:proof`): полный цикл Auth→WRITE→READ→UPDATE→cleanup. Текущий живой результат: WRITE/UPDATE/Auth ✅, **READ public feed ✗ — политика 002 не применена (F-27), лента пуста для гостей и показывает только свои посты**. Плюс: новые ключи Founder (sb_publishable/sb_secret) проверены live и подключены в db-health/db-proof (приоритет над легаси); .env.example обновлён
-- [ ] **R-03** Защита от «мёртвого облака» (F-04): startup health-check с 5s-таймаутом → `syncStatus='offline'` + баннер «Демо-режим: облако недоступно» вместо бесконечных ошибок; unit-тесты на логику статуса
+- [x] **R-03** ✅ 2026-10-25 — Защита от «мёртвого облака» (F-04): `lib/cloud-health.ts` (health-check `/auth/v1/health`, таймаут 5с, TTL-кэш 60с, инжект-зависимости для тестов) + гейты в PostsContext (`refreshCloudData`/`flushPostQueue`/`persistProfileToCloud`) → честный `offline` «Демо-режим» вместо вечного error; подписи профиля переписаны. 15 unit-тестов, всего 209/209 PASS
 
 ## Фаза 1 — Доставка без QR (жалоба Founder №1) — F-07…F-12
 
@@ -71,4 +71,5 @@ R-16, R-17 ─► R-18            (релиз: последним)
 | 2026-10-25 | F-01 evidence | DoH+JWT доказательства по запросу Founder | 96b6336 |
 | 2026-10-25 | R-01 | Пауза→восстановление; db-health.js; корректировка аудита (F-01 RESOLVED, +F-27, +F-28) | 4235b44 |
 | 2026-10-25 | R-02 частично | Новые ключи sb_publishable/sb_secret подключены в инструменты | 8aba304 |
-| 2026-10-25 | R-02 ✅ | sbp_-токен Founder → Management API: миграции 002/006/007(фикс F-29)/008/009 + бакет; Edge Function zero-dep деплой; db:health+db:proof ЗЕЛЁНЫЕ; 97 знаменитостей; +F-30 | (этот коммит) |
+| 2026-10-25 | R-02 ✅ | sbp_-токен Founder → Management API: миграции 002/006/007(фикс F-29)/008/009 + бакет; Edge Function zero-dep деплой; db:health+db:proof ЗЕЛЁНЫЕ; 97 знаменитостей; +F-30 | 9f1a821 |
+| 2026-10-25 | R-03 ✅ | cloud-health (5с/60с) + гейты синка → честный offline-режим; F-04 RESOLVED; 209/209 | (этот коммит) |

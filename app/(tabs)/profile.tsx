@@ -112,8 +112,8 @@ export default function ProfileScreen() {
     const syncStatusLabel = useMemo(() => {
         if (syncStatus === 'syncing') return 'Автоматически загружаю данные...';
         if (syncStatus === 'loading') return 'Загрузка локальных данных...';
-        if (syncStatus === 'offline') return 'Облачная синхронизация не подключена';
-        if (syncStatus === 'error') return 'Нужно проверить подключение';
+        if (syncStatus === 'offline') return 'Демо-режим: данные сохраняются на устройстве';
+        if (syncStatus === 'error') return 'Ошибка синхронизации — попробуйте позже';
         if (lastSyncedAt) return `Автосохранение активно • ${new Date(lastSyncedAt).toLocaleString('ru-RU')}`;
         return isAuthenticated ? 'Автосохранение активно' : 'Гостевой режим: только просмотр';
     }, [isAuthenticated, lastSyncedAt, syncStatus]);

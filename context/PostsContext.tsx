@@ -30,6 +30,7 @@ import {
     markThreadRead as markThreadReadFn,
 } from '../lib/chat';
 import { hapticLight } from '../lib/haptics';
+import { checkCloudHealth } from '../lib/cloud-health';
 
 export type Comment = {
     id: string;
@@ -501,6 +502,14 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const persistProfileToCloud = useCallback(async (nextProfile: UserProfile, userId = authUserIdRef.current) => {
         if (!isSupabaseConfigured || !userId) return;
 
+        // R-03 (F-04): мёртвое облако распознаём заранее и уходим в offline, а не в error.
+        const health = await checkCloudHealth();
+        if (!health.healthy) {
+            setSyncStatus('offline');
+            setSyncError('Облако недоступно — профиль сохранён локально.');
+            return;
+        }
+
         const now = new Date().toISOString();
         const { error } = await supabase.from('autograph_profiles').upsert({
             user_id: userId,
@@ -532,6 +541,18 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         const batch = new Map(postQueueRef.current);
         postQueueRef.current.clear();
+
+        // R-03 (F-04): облако недоступно -> посты молча возвращаются в очередь,
+        // статус уходит в offline (демо-режим), без спама ошибками.
+        const health = await checkCloudHealth();
+        if (!health.healthy) {
+            for (const post of batch.values()) {
+                postQueueRef.current.set(post.id, post);
+            }
+            setSyncStatus('offline');
+            setSyncError('Облако недоступно — пост сохранён локально, синхронизируем позже.');
+            return;
+        }
 
         try {
             const rows = Array.from(batch.values()).map((post) => {
@@ -592,6 +613,16 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
 
         setSyncStatus('syncing');
+
+        // R-03 (F-04): дешёвый health-check (<=5с, затем кэш 60с) перед любыми
+        // сетевыми вызовами — лежащее облако даёт честный offline вместо вечного error.
+        const health = await checkCloudHealth();
+        if (!health.healthy) {
+            setSyncStatus('offline');
+            setSyncError('Облако недоступно — демо-режим, данные сохраняются на устройстве.');
+            return;
+        }
+
         setSyncError(null);
 
         try {
