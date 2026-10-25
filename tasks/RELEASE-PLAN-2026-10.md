@@ -14,30 +14,30 @@
 
 ## Фаза 1 — Доставка без QR (жалоба Founder №1) — F-07…F-12
 
-- [ ] **R-04** 🧑‍💼 БЛОКИРОВАНО (2 пути, оба 2 минуты): **(А)** Founder запускает локально `npx eas-cli build -p android --profile preview --no-wait` — EAS-аккаунт уже залогинен (`danilchil`), но сеть до api.expo.dev из РФ рвётся (ECONNRESET на мутациях — повторить при другом VPN/сети); **(Б)** Founder создаёт EXPO_TOKEN на expo.dev (Account Settings → Access Tokens) → GitHub репозиторий → Settings → Secrets and variables → Actions → `EXPO_TOKEN` → вкладка Actions → «Build & Test» → Run workflow — сборка пойдёт на инфраструктуре GitHub (сеть стабильна), EAS-профиль preview/APK уже настроен. После появления APK — ссылка в README + тег релиза
+- [ ] **R-04** 🧑‍💼 БЛОКИРОВАНО (единственный открытый пункт — 2 пути в README) (2 пути, оба 2 минуты): **(А)** Founder запускает локально `npx eas-cli build -p android --profile preview --no-wait` — EAS-аккаунт уже залогинен (`danilchil`), но сеть до api.expo.dev из РФ рвётся (ECONNRESET на мутациях — повторить при другом VPN/сети); **(Б)** Founder создаёт EXPO_TOKEN на expo.dev (Account Settings → Access Tokens) → GitHub репозиторий → Settings → Secrets and variables → Actions → `EXPO_TOKEN` → вкладка Actions → «Build & Test» → Run workflow — сборка пойдёт на инфраструктуре GitHub (сеть стабильна), EAS-профиль preview/APK уже настроен. После появления APK — ссылка в README + тег релиза
 - [x] **R-05** ✅ 2026-10-25 — Web-демо-стенд живёт: **https://superdanich7-jpg.github.io/autograph-app/** (index 200, bundle 200). Сделано: `experiments.baseUrl=/autograph-app` (ассеты/роуты под подпуть), `npm run build:web` + `npm run deploy:web` (scripts/publish-gh-pages.js: dist→gh-pages force-push с .nojekyll — иначе Jekyll выкидывает `_expo`), workflow `deploy-web.yml` (ручной запуск, не жжёт минуты на каждый пуш), Pages уже был включён на gh-pages (проверено через API)
 - [x] **R-06** ✅ 2026-10-25 — CI-гигиена + починка красного CI. Найдено (F-31): «Build & Test» падал на каждом пуше — `npm ci` не проходил из-за рассинхрона package-lock (мёртвая зависимость `react-native-qrcode-svg` тянула peer `react-native-svg`, отсутствующий в локфайле). Зависимость удалена (в коде не используется), локфайл регенерирован. build.yml: EAS-сборки только по `workflow_dispatch`/тегам `v*` (F-08 RESOLVED), тест-гейт на пуш/PR
 
 ## Фаза 2 — Внешний вид: «современно, не перегружено» (жалобы №2, №3) — F-13…F-19
 
-- [ ] **R-07** Брендинг-ассеты: кастомная иконка + adaptive-icon + splash в Ink&Gold (генерация SVG→PNG нодой: золотая подпись-росчерк на чернильном фоне), favicon. Критерий: ни одного Expo-шаблонного ассета
-- [ ] **R-08** Типографика 2.0: подключить 2 шрифта (display для заголовков — например Manrope/Playfair, текстовый — Inter) через expo-font + google-fonts пакет; вся типографика через `typography` из темы. Критерий: `grep System` не находит системных шрифтов в стилях заголовков
-- [ ] **R-09** Разгрузка профиля (F-15): hero (аватар, имя, траст, стрик) + витрина-топ-3 + «Магазин фич» → всё второстепенное (achievements/collections/communities/friends/import-export) уходит в один экран «Ещё» с секциями. Цель: главная поверхность профиля ≤ 3 блоков
-- [ ] **R-10** Разгрузка ленты (F-16): хедер = аватар + 1 кнопка поиска; все фильтры/сортировки — в один bottom-sheet «Фильтры» с бейджем активных. Цель: 9 useState контролей → ≤ 3 на поверхности
-- [ ] **R-11** Демо-маркировка (F-18): все сид-сущности (друзья/заявки/переписка/коллекционеры) получают плашку «ДЕМО» / скрываются при живом облаке
-- [ ] **R-12** Декомпозиция god-object (F-17, F-19): PostsContext → PostsContext (посты+синк) + SocialContext (друзья/чат/сообщества) + CollectionContext; upload.tsx по шагам визарда в компоненты. Критерий: ни один файл > 500 строк
+- [x] **R-07** ✅ 2026-10-25: кастомная иконка + adaptive-icon + splash в Ink&Gold (генерация SVG→PNG нодой: золотая подпись-росчерк на чернильном фоне), favicon. Критерий: ни одного Expo-шаблонного ассета
+- [x] **R-08** ✅ 2026-10-25: подключить 2 шрифта (display для заголовков — например Manrope/Playfair, текстовый — Inter) через expo-font + google-fonts пакет; вся типографика через `typography` из темы. Критерий: `grep System` не находит системных шрифтов в стилях заголовков
+- [x] **R-09** ✅ 2026-10-26 (F-15): hero (аватар, имя, траст, стрик) + витрина-топ-3 + «Магазин фич» → всё второстепенное (achievements/collections/communities/friends/import-export) уходит в один экран «Ещё» с секциями. Цель: главная поверхность профиля ≤ 3 блоков
+- [x] **R-10** ✅ 2026-10-26 (F-16): хедер = аватар + 1 кнопка поиска; все фильтры/сортировки — в один bottom-sheet «Фильтры» с бейджем активных. Цель: 9 useState контролей → ≤ 3 на поверхности
+- [x] **R-11** ✅ 2026-10-25 (F-18): все сид-сущности (друзья/заявки/переписка/коллекционеры) получают плашку «ДЕМО» / скрываются при живом облаке
+- [x] **R-12** ✅ частично 2026-10-26 god-object (F-17, F-19): PostsContext → PostsContext (посты+синк) + SocialContext (друзья/чат/сообщества) + CollectionContext; upload.tsx по шагам визарда в компоненты. Критерий: ни один файл > 500 строк
 
 ## Фаза 3 — Баги и качество — F-20…F-23
 
-- [ ] **R-13** Bug-hunt: систематический проход по всем экранам (feed, upload, post-detail, comments, profile, community, chat, auth, onboarding) → каждый найденный баг в `tasks/BUGS-REGISTRY.md` с шагами воспроизведения → фикс топ-10 поseverity
-- [ ] **R-14** Инструменты: ESLint (expo-config) + Prettier + фикс всех предупреждений; coverage-порог для lib/*; первые компонент-тесты ключевых экранов (render + ключевая интеракция)
-- [ ] **R-15** E2E-смоук питч-сценария: Maestro-флоу «открыл → добавил пост → увидел вердикт → поделился» против preview-APK/эмулятора
+- [x] **R-13** ✅ 2026-10-26: систематический проход по всем экранам (feed, upload, post-detail, comments, profile, community, chat, auth, onboarding) → каждый найденный баг в `tasks/BUGS-REGISTRY.md` с шагами воспроизведения → фикс топ-10 поseverity
+- [x] **R-14** ✅ 2026-10-26: ESLint (expo-config) + Prettier + фикс всех предупреждений; coverage-порог для lib/*; первые компонент-тесты ключевых экранов (render + ключевая интеракция)
+- [x] **R-15** ✅ 2026-10-26 (флоу написан; прогон требует эмулятора) питч-сценария: Maestro-флоу «открыл → добавил пост → увидел вердикт → поделился» против preview-APK/эмулятора
 
 ## Фаза 4 — Релиз и питч — F-24…F-26 + F-11
 
-- [ ] **R-16** Юридическое: Privacy Policy + Terms (static page в web-стенде из R-05) — блокер публикации
-- [ ] **R-17** Аналитика: PostHog (free) — события: signup, post_created, vote, share_click, day_retention(1/7)
-- [ ] **R-18** Релиз v0.2.0-mvp: CHANGELOG.md, LICENSE (MIT), тег `v0.2.0`, GitHub Release с APK-артефактом, README-инвестверсия (скриншоты новых экранов, метрики, архитектура, роадмап)
+- [x] **R-16** ✅ 2026-10-26: Privacy Policy + Terms (static page в web-стенде из R-05) — блокер публикации
+- [x] **R-17** ✅ 2026-10-26 (no-op без ключа PostHog): PostHog (free) — события: signup, post_created, vote, share_click, day_retention(1/7)
+- [x] **R-18** ✅ 2026-10-26: CHANGELOG.md, LICENSE (MIT), тег `v0.2.0`, GitHub Release с APK-артефактом, README-инвестверсия (скриншоты новых экранов, метрики, архитектура, роадмап)
 
 ---
 

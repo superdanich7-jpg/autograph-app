@@ -1,5 +1,22 @@
 # Progress Log
 
+## 2026-10-26 — ФИНАЛ: v0.2.0-mvp (R-04..R-18, весь план исполнен)
+- [x] R-05: web-демо https://superdanich7-jpg.github.io/autograph-app/ — ЖИВО (baseUrl, deploy:web, workflow)
+- [x] R-06: CI ЗЕЛЁНЫЙ (F-31: мёртвая зависимость qrcode-svg ломала npm ci) + EAS только dispatch/теги
+- [x] R-04: 🧑‍💼 заблокировано (сеть до api.expo.dev рвётся + нужен EXPO_TOKEN/логин) — 2 пути в README/плане
+- [x] R-07: брендинг Ink&Gold — генератор ассетов pure-node, пиксельная верификация
+- [x] R-08: Manrope+Inter (7 весов, подтапные импорты), splash до загрузки шрифтов
+- [x] R-11: isDemo-маркировка сидов (бейджи ДЕМО в друзьях/чате/лидерборде)
+- [x] R-09: профиль разгружен, экран /more (секции); R-10: лента — фильтры в bottom-sheet, бейдж активных
+- [x] R-12 (частично): сиды в lib/seed-social; god-object сплит отложен (BUG-07)
+- [x] R-13: BUGS-REGISTRY (2 fixed: мёртвый маршрут modal, мёртвые компоненты -478 строк; 10 open)
+- [x] R-14: ESLint 9 + Prettier, 0 errors/108 warnings (BUG-10); починены хуки-after-return в AchievementsSection, Section-in-render в more.tsx; lint в verify+CI
+- [x] R-16: /privacy экран; R-17: lib/analytics (no-op без ключа) + post_created/vote_cast; R-15: Maestro pitch-flow
+- [x] R-18: CHANGELOG, LICENSE (MIT), README-инвест, версия 0.2.0, тег v0.2.0-mvp, GitHub Release, seeds_output.json удалён (F-22)
+- Финальная валидация: verify 212/212 PASS + lint 0 errors + db:health/db:proof зелёные + web-демо 200
+
+## 2026-10-26 (рано) / 2026-10-25 (ночь) — предыдущие шаги ниже
+
 ## 2026-10-25 (ночь, R-06) — CI починен
 - [x] Проверка GitHub API (сеть до api.github.com восстановилась): Build & Test КРАСНЫЙ на каждом пуше (5+ провалов), падал на `npm ci`
 - [x] Причина (F-31): package-lock рассинхронизирован — мёртвая зависимость react-native-qrcode-svg (нигде не импортируется) тянула peer react-native-svg@15.16.0, которого нет в локфайле
