@@ -30,6 +30,7 @@ import {
     markThreadRead as markThreadReadFn,
 } from '../lib/chat';
 import { hapticLight } from '../lib/haptics';
+import { track } from '../lib/analytics';
 import { SEED_FRIENDS, SEED_FRIEND_REQUESTS, SEED_MESSAGES } from '../lib/seed-social';
 import { checkCloudHealth } from '../lib/cloud-health';
 
@@ -696,6 +697,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }: AddPostInput) => {
         const ownerId = authUserIdRef.current;
         const ownerName = profileRef.current.name;
+        track('post_created', { category, rarity, is_analyzed: isAnalyzed });
         const newPost: Post = {
             ownerId,
             ownerName,
@@ -784,6 +786,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const voteAuthenticity = (postId: string, vote: VoteChoice) => {
         const userId = authUserIdRef.current;
         if (!userId) return;
+        track('vote_cast', { vote });
 
         // Rate limit: max 1 vote per post per 2 seconds
         const now = Date.now();

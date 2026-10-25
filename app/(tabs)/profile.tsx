@@ -454,6 +454,17 @@ export default function ProfileScreen() {
                         <Text style={[styles.settingButtonText, { color: colors.text }]}>Очистить кэш</Text>
                     </TouchableOpacity>
 
+                    <TouchableOpacity
+                        style={[styles.settingButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+                        onPress={() => {
+                            setSettingsVisible(false);
+                            router.push('/privacy');
+                        }}
+                    >
+                        <Ionicons name="shield-checkmark-outline" size={18} color={colors.text} />
+                        <Text style={[styles.settingButtonText, { color: colors.text }]}>Политика конфиденциальности</Text>
+                    </TouchableOpacity>
+
                     {isAuthenticated ? (
                         <TouchableOpacity
                             style={[styles.settingButton, { backgroundColor: colors.card, borderColor: colors.border }]}
