@@ -1,5 +1,12 @@
 # Progress Log
 
+## 2026-10-25 (ночь, R-06) — CI починен
+- [x] Проверка GitHub API (сеть до api.github.com восстановилась): Build & Test КРАСНЫЙ на каждом пуше (5+ провалов), падал на `npm ci`
+- [x] Причина (F-31): package-lock рассинхронизирован — мёртвая зависимость react-native-qrcode-svg (нигде не импортируется) тянула peer react-native-svg@15.16.0, которого нет в локфайле
+- [x] Лечение: react-native-qrcode-svg удалена из package.json, npm install регенерировал локфайл (removed 18 packages)
+- [x] build.yml (R-06/F-08): EAS-сборки только workflow_dispatch + теги v*; тест-гейт остаётся на пуш/PR
+- [x] Валидация локально: verify 209/209 PASS; CI-статус нового пуша — проверить после прогона
+
 ## 2026-10-25 (ночь, R-05) — web-демо БЕЗ QR живёт
 - [x] app.json: experiments.baseUrl=/autograph-app (подпуть GitHub Pages; без него ассеты ломаются)
 - [x] npm run build:web / deploy:web (scripts/publish-gh-pages.js: dist -> gh-pages force-push, .nojekyll против Jekyll-игнора _expo)

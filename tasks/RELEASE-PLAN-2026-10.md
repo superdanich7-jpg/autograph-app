@@ -16,7 +16,7 @@
 
 - [ ] **R-04** 🧑‍💼 Preview-APK через EAS: `eas build -p android --profile preview` → ссылка на APK в README + tasks/R-04 (Founder: `eas login` один раз). Критерий: телефон открывает приложение по прямой ссылке, без Expo Go
 - [x] **R-05** ✅ 2026-10-25 — Web-демо-стенд живёт: **https://superdanich7-jpg.github.io/autograph-app/** (index 200, bundle 200). Сделано: `experiments.baseUrl=/autograph-app` (ассеты/роуты под подпуть), `npm run build:web` + `npm run deploy:web` (scripts/publish-gh-pages.js: dist→gh-pages force-push с .nojekyll — иначе Jekyll выкидывает `_expo`), workflow `deploy-web.yml` (ручной запуск, не жжёт минуты на каждый пуш), Pages уже был включён на gh-pages (проверено через API)
-- [ ] **R-06** CI-гигиена (F-08): EAS-билды только по `workflow_dispatch` и тегам `v*`; тест-гейт остаётся на каждый пуш. Плюс lint-job (см. R-14)
+- [x] **R-06** ✅ 2026-10-25 — CI-гигиена + починка красного CI. Найдено (F-31): «Build & Test» падал на каждом пуше — `npm ci` не проходил из-за рассинхрона package-lock (мёртвая зависимость `react-native-qrcode-svg` тянула peer `react-native-svg`, отсутствующий в локфайле). Зависимость удалена (в коде не используется), локфайл регенерирован. build.yml: EAS-сборки только по `workflow_dispatch`/тегам `v*` (F-08 RESOLVED), тест-гейт на пуш/PR
 
 ## Фаза 2 — Внешний вид: «современно, не перегружено» (жалобы №2, №3) — F-13…F-19
 
