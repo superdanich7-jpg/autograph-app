@@ -34,6 +34,7 @@ import CommentsModal from '../../components/CommentsModal';
 import FeedPostCard from '../../components/FeedPostCard';
 import { PostCardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState, SegmentedControl } from '../../components/ui/primitives';
+import { Sheet } from '../../components/ui/Sheet';
 import { hapticLight } from '../../lib/haptics';
 import { typography } from '../../lib/theme';
 
@@ -52,6 +53,22 @@ export default function FeedScreen() {
     const [sortMode, setSortMode] = useState<'latest' | 'trusted' | 'debated'>('latest');
     const [detailPost, setDetailPost] = useState<Post | null>(null);
     const [sharePost, setSharePost] = useState<Post | null>(null);
+    const [filtersVisible, setFiltersVisible] = useState(false);
+
+    // R-10: бейдж на кнопке поиска — сколько фильтров активно (поиск/категория/только-подтв./сортировка).
+    const activeFilterCount =
+        (query.trim() ? 1 : 0) +
+        (categoryFilter !== 'all' ? 1 : 0) +
+        (onlyVerified ? 1 : 0) +
+        (sortMode !== 'latest' ? 1 : 0);
+
+    const resetFilters = () => {
+        hapticLight();
+        setQuery('');
+        setCategoryFilter('all');
+        setOnlyVerified(false);
+        setSortMode('latest');
+    };
 
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
@@ -170,89 +187,30 @@ export default function FeedScreen() {
                 <View>
                     <Text style={[styles.screenTitle, { color: colors.text }]}>Коллекция</Text>
                     <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
-                        Поиск, фильтры и быстрая проверка достоверности
+                        {activeFilterCount > 0 ? `Фильтров активно: ${activeFilterCount}` : 'Лента автографов сообщества'}
                     </Text>
                 </View>
-                <View style={[styles.userPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Ionicons name="person-circle-outline" size={16} color={colors.primary} />
-                    <Text style={[styles.userPillText, { color: colors.text }]}>{profile.name}</Text>
-                </View>
-            </View>
-
-            <View style={styles.filtersWrap}>
-                <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
-                    <TextInput
-                        style={[styles.searchInput, { color: colors.text }]}
-                        placeholder="Поиск по имени, месту или заметке"
-                        placeholderTextColor={colors.placeholder}
-                        value={query}
-                        onChangeText={setQuery}
-                    />
-                </View>
-
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterChips}>
+                <View style={styles.headerRight}>
                     <TouchableOpacity
-                        style={[styles.filterChip, { backgroundColor: categoryFilter === 'all' ? colors.primary : colors.surface }]}
-                        onPress={() => setCategoryFilter('all')}
+                        style={[styles.searchButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+                        onPress={() => {
+                            hapticLight();
+                            setFiltersVisible(true);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel="Поиск и фильтры"
                     >
-                        <Text style={[styles.filterChipText, { color: categoryFilter === 'all' ? colors.primaryText : colors.text }]}>
-                            Все
-                        </Text>
+                        <Ionicons name="search-outline" size={20} color={colors.text} />
+                        {activeFilterCount > 0 ? (
+                            <View style={[styles.filterBadge, { backgroundColor: colors.accent }]}>
+                                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+                            </View>
+                        ) : null}
                     </TouchableOpacity>
-                    {POST_CATEGORIES.map((item) => {
-                        const active = categoryFilter === item.value;
-                        return (
-                            <TouchableOpacity
-                                key={item.value}
-                                style={[styles.filterChip, { backgroundColor: active ? colors.primary : colors.surface }]}
-                                onPress={() => setCategoryFilter(item.value)}
-                            >
-                                <Text style={[styles.filterChipText, { color: active ? colors.primaryText : colors.text }]}>
-                                    {item.label}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                    <TouchableOpacity
-                        style={[styles.filterChip, { backgroundColor: onlyVerified ? colors.primary : colors.surface }]}
-                        onPress={() => setOnlyVerified((prev) => !prev)}
-                    >
-                        <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>
-                            Только подтвержденные
-                        </Text>
-                    </TouchableOpacity>
-                </ScrollView>
-            </View>
-
-            {/* B1: сегментированный контроль сортировки вместо 3 перегружающих чипов */}
-            <View style={styles.segmentWrap}>
-                <SegmentedControl
-                    segments={[
-                        { key: 'latest', label: 'Новые', icon: 'time-outline' },
-                        { key: 'trusted', label: 'Достоверные', icon: 'shield-checkmark-outline' },
-                        { key: 'debated', label: 'Спорные', icon: 'help-buoy' },
-                    ]}
-                    activeKey={sortMode}
-                    onChange={(key) => {
-                        hapticLight();
-                        setSortMode(key as 'latest' | 'trusted' | 'debated');
-                    }}
-                />
-            </View>
-
-            <View style={styles.summaryRow}>
-                <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
-                    <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.verified}</Text>
-                </View>
-                <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Спорных</Text>
-                    <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.disputed}</Text>
-                </View>
-                <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Легендарных</Text>
-                    <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.legendary}</Text>
+                    <View style={[styles.userPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <Ionicons name="person-circle-outline" size={16} color={colors.primary} />
+                        <Text style={[styles.userPillText, { color: colors.text }]}>{profile.name}</Text>
+                    </View>
                 </View>
             </View>
 
@@ -316,6 +274,94 @@ export default function FeedScreen() {
 
             <PostDetailModal post={detailPost} visible={Boolean(detailPost)} onClose={() => setDetailPost(null)} onShare={(post) => setSharePost(post)} colors={colors} />
             <ShareSheet visible={Boolean(sharePost)} postId={sharePost?.id || ''} celebrityName={sharePost?.celebrityName || ''} imageUri={sharePost?.uri} onClose={() => setSharePost(null)} />
+
+            {/* R-10: поиск + фильтры + сортировка + сводка — в одном sheet, хедер ленты чистый */}
+            <Sheet visible={filtersVisible} onClose={() => setFiltersVisible(false)} title="Поиск и фильтры" subtitle="Лента сразу отреагирует на изменения" size="half">
+                <View style={styles.sheetBody}>
+                    <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
+                        <TextInput
+                            style={[styles.searchInput, { color: colors.text }]}
+                            placeholder="Поиск по имени, месту или заметке"
+                            placeholderTextColor={colors.placeholder}
+                            value={query}
+                            onChangeText={setQuery}
+                            onSubmitEditing={() => setFiltersVisible(false)}
+                            returnKeyType="search"
+                        />
+                        {query ? (
+                            <TouchableOpacity onPress={() => setQuery('')} accessibilityRole="button" accessibilityLabel="Очистить поиск">
+                                <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
+                            </TouchableOpacity>
+                        ) : null}
+                    </View>
+
+                    <View style={styles.sheetChips}>
+                        <TouchableOpacity
+                            style={[styles.filterChip, { backgroundColor: categoryFilter === 'all' ? colors.primary : colors.surface }]}
+                            onPress={() => setCategoryFilter('all')}
+                        >
+                            <Text style={[styles.filterChipText, { color: categoryFilter === 'all' ? colors.primaryText : colors.text }]}>Все</Text>
+                        </TouchableOpacity>
+                        {POST_CATEGORIES.map((item) => {
+                            const active = categoryFilter === item.value;
+                            return (
+                                <TouchableOpacity
+                                    key={item.value}
+                                    style={[styles.filterChip, { backgroundColor: active ? colors.primary : colors.surface }]}
+                                    onPress={() => setCategoryFilter(item.value)}
+                                >
+                                    <Text style={[styles.filterChipText, { color: active ? colors.primaryText : colors.text }]}>{item.label}</Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                        <TouchableOpacity
+                            style={[styles.filterChip, { backgroundColor: onlyVerified ? colors.primary : colors.surface }]}
+                            onPress={() => setOnlyVerified((prev) => !prev)}
+                        >
+                            <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>Только подтвержденные</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <SegmentedControl
+                        segments={[
+                            { key: 'latest', label: 'Новые', icon: 'time-outline' },
+                            { key: 'trusted', label: 'Достоверные', icon: 'shield-checkmark-outline' },
+                            { key: 'debated', label: 'Спорные', icon: 'help-buoy' },
+                        ]}
+                        activeKey={sortMode}
+                        onChange={(key) => {
+                            hapticLight();
+                            setSortMode(key as 'latest' | 'trusted' | 'debated');
+                        }}
+                    />
+
+                    <View style={styles.summaryRow}>
+                        <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
+                            <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.verified}</Text>
+                        </View>
+                        <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Спорных</Text>
+                            <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.disputed}</Text>
+                        </View>
+                        <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                            <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.legendary}</Text>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        style={[styles.resetButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                        onPress={resetFilters}
+                        accessibilityRole="button"
+                        accessibilityLabel="Сбросить фильтры"
+                    >
+                        <Ionicons name="refresh-outline" size={18} color={colors.text} />
+                        <Text style={[styles.resetButtonText, { color: colors.text }]}>Сбросить всё</Text>
+                    </TouchableOpacity>
+                </View>
+            </Sheet>
         </SafeAreaView>
     );
 }
@@ -350,6 +396,57 @@ const styles = StyleSheet.create({
     },
     userPillText: {
         fontSize: 12,
+        fontWeight: '600',
+    },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    searchButton: {
+        borderWidth: 1,
+        borderRadius: 999,
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    filterBadge: {
+        position: 'absolute',
+        top: -4,
+        right: -4,
+        minWidth: 18,
+        height: 18,
+        borderRadius: 999,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 4,
+    },
+    filterBadgeText: {
+        color: '#0B1220',
+        fontSize: 10,
+        fontWeight: '700',
+    },
+    sheetBody: {
+        gap: 14,
+        paddingBottom: 24,
+    },
+    sheetChips: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    resetButton: {
+        borderWidth: 1,
+        borderRadius: 14,
+        minHeight: 44,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    resetButtonText: {
+        fontSize: 14,
         fontWeight: '600',
     },
     filtersWrap: {
