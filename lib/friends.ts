@@ -20,6 +20,8 @@ export interface Friend {
   lastSeen: string;
   specialty?: string;
   mutualCount?: number;
+  /** Демо-профиль из сида (не реальный пользователь) — бейдж «ДЕМО» (R-11). */
+  isDemo?: boolean;
 }
 
 export interface FriendRequest {
@@ -27,6 +29,8 @@ export interface FriendRequest {
   fromId: string;
   toId: string;
   createdAt: string;
+  /** Демо-заявка из сида (R-11). */
+  isDemo?: boolean;
 }
 
 export interface Friendship {

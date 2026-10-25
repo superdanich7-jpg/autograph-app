@@ -20,6 +20,8 @@ export interface ChatMessage {
   timestamp: string;
   /** Прочитано получателем. */
   read: boolean;
+  /** Демо-сообщение из сида (R-11). */
+  isDemo?: boolean;
 }
 
 export interface Conversation {

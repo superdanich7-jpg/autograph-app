@@ -98,6 +98,15 @@ export default function ChatScreen() {
                         data={groups}
                         keyExtractor={(g) => g.key}
                         contentContainerStyle={styles.threadList}
+                        ListHeaderComponent={
+                            thread.some((m) => m.isDemo) ? (
+                                <View style={[styles.demoNote, { backgroundColor: colors.accentLight }]}>
+                                    <Text style={[typography.labelSmall, { color: colors.accent }]}>
+                                        Демо-переписка — предзаполнена для примера
+                                    </Text>
+                                </View>
+                            ) : null
+                        }
                         renderItem={({ item: group }) => (
                             <View>
                                 <View style={styles.daySep}>
@@ -281,6 +290,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     threadAvatarEmoji: { fontSize: 22 },
+    demoNote: {
+        alignSelf: 'center' as const,
+        borderRadius: radii.full,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.xs + 2,
+        marginBottom: spacing.md,
+    },
     threadList: {
         padding: spacing.lg,
         gap: spacing.sm,

@@ -58,9 +58,16 @@ function FriendRow({
         {presence ? <PresenceDot online={friend.online} colors={colors} /> : null}
       </View>
       <View style={styles.rowBody}>
-        <Text style={[typography.bodyMedium, { color: colors.text, fontWeight: '700' }]} numberOfLines={1}>
-          {friend.name}
-        </Text>
+        <View style={styles.nameRow}>
+          <Text style={[typography.bodyMedium, { color: colors.text, fontWeight: '700' }]} numberOfLines={1}>
+            {friend.name}
+          </Text>
+          {friend.isDemo ? (
+            <View style={[styles.demoBadge, { backgroundColor: colors.accentLight }]}>
+              <Text style={[typography.labelSmall, { color: colors.accent, fontSize: 9, letterSpacing: 0.4 }]}>ДЕМО</Text>
+            </View>
+          ) : null}
+        </View>
         <Text style={[typography.caption, { color: colors.textSecondary }]} numberOfLines={1}>
           @{friend.handle}
           {friend.specialty ? ` • ${friend.specialty}` : ''}
@@ -271,6 +278,16 @@ export default function FriendsSheet({
 }
 
 const styles = StyleSheet.create({
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  demoBadge: {
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.xs + 1,
+    paddingVertical: 1,
+  },
   tabs: {
     flexDirection: 'row',
     borderRadius: radii.full,

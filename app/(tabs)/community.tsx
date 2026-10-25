@@ -84,7 +84,7 @@ export default function CommunityScreen() {
                 <Card variant="default" padding="md">
                     <View style={styles.sectionHeader}>
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>Топ коллекционеров</Text>
-                        <Badge label="Рейтинг доверия" variant="default" size="sm" />
+                        <Badge label="Демо-данные" variant="gold" size="sm" />
                     </View>
                     {leaderboard.map((item) => {
                         const isFollowing = profile.following.includes(item.id);
