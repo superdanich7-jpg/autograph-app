@@ -1,5 +1,13 @@
 # Progress Log
 
+## 2026-10-25 — RE-AUDIT (Senior DevOps, pre-release)
+- [x] Git: дерево чистое, main == origin/main, stashes нет, .env никогда не коммитился
+- [x] Verify: encoding CLEAN, typecheck PASS, 194/194 тестов PASS (проверено вживую)
+- [x] 🔴 КРИТИЧНО: Supabase-проект из .env УДАЛЁН (DNS NXDOMAIN через 8.8.8.8) → Auth/Postgres/Storage/Edge/Realtime мертвы; приложение живёт на AsyncStorage + demo-seed
+- [x] UI-ревью: иконка = Expo-шаблон, шрифт системный, профиль/лента перегружены, PostsContext god-object 1091 строк
+- [x] CI: тест-гейт есть; EAS-билды на каждый пуш = сжигание минут; api.github.com из этой сети недоступен (статус Actions проверять вручную)
+- [x] Документы: tasks/AUDIT-2026-10-25.md (F-01…F-26) + tasks/RELEASE-PLAN-2026-10.md (loops R-01…R-18)
+
 ## 2025-07-30
 - [x] Прочитал package.json, изучил структуру проекта
 - [x] Прочитал основные экраны: Feed, Upload, Community, Profile, Auth
