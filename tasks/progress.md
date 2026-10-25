@@ -1,5 +1,12 @@
 # Progress Log
 
+## 2026-10-25 (ночь, R-05) — web-демо БЕЗ QR живёт
+- [x] app.json: experiments.baseUrl=/autograph-app (подпуть GitHub Pages; без него ассеты ломаются)
+- [x] npm run build:web / deploy:web (scripts/publish-gh-pages.js: dist -> gh-pages force-push, .nojekyll против Jekyll-игнора _expo)
+- [x] .github/workflows/deploy-web.yml — deploy-pages, только по кнопке (workflow_dispatch)
+- [x] Pages уже включён на gh-pages (проверено API), статус built
+- [x] LIVE: https://superdanich7-jpg.github.io/autograph-app/ — index 200, entry-bundle 200 (3.4МБ)
+
 ## 2026-10-25 (ночь, R-03) — честный offline-режим
 - [x] lib/cloud-health.ts: createCloudHealthChecker (fetch/now/timeout/ttl инжектятся), checkCloudHealth-синглтон, isCacheFresh + classifyHealthResponse чистыми функциями
 - [x] Логика: GET /auth/v1/health, таймаут 5с (AbortController), TTL-кэш 60с (негативный результат тоже кэшируется — нет спама при лежащем облаке)

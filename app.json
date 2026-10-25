@@ -47,7 +47,8 @@
       "expo-web-browser"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "baseUrl": "/autograph-app"
     },
     "extra": {
       "router": {},

@@ -15,7 +15,7 @@
 ## Фаза 1 — Доставка без QR (жалоба Founder №1) — F-07…F-12
 
 - [ ] **R-04** 🧑‍💼 Preview-APK через EAS: `eas build -p android --profile preview` → ссылка на APK в README + tasks/R-04 (Founder: `eas login` один раз). Критерий: телефон открывает приложение по прямой ссылке, без Expo Go
-- [ ] **R-05** Web-демо-стенд: `expo export --platform web` → деплой на GitHub Pages (бесплатно, без новых аккаунтов) через Actions; URL вида `https://superdanich7-jpg.github.io/autograph-app/`. Критерий: инвестор открывает URL в браузере
+- [x] **R-05** ✅ 2026-10-25 — Web-демо-стенд живёт: **https://superdanich7-jpg.github.io/autograph-app/** (index 200, bundle 200). Сделано: `experiments.baseUrl=/autograph-app` (ассеты/роуты под подпуть), `npm run build:web` + `npm run deploy:web` (scripts/publish-gh-pages.js: dist→gh-pages force-push с .nojekyll — иначе Jekyll выкидывает `_expo`), workflow `deploy-web.yml` (ручной запуск, не жжёт минуты на каждый пуш), Pages уже был включён на gh-pages (проверено через API)
 - [ ] **R-06** CI-гигиена (F-08): EAS-билды только по `workflow_dispatch` и тегам `v*`; тест-гейт остаётся на каждый пуш. Плюс lint-job (см. R-14)
 
 ## Фаза 2 — Внешний вид: «современно, не перегружено» (жалобы №2, №3) — F-13…F-19
@@ -72,4 +72,5 @@ R-16, R-17 ─► R-18            (релиз: последним)
 | 2026-10-25 | R-01 | Пауза→восстановление; db-health.js; корректировка аудита (F-01 RESOLVED, +F-27, +F-28) | 4235b44 |
 | 2026-10-25 | R-02 частично | Новые ключи sb_publishable/sb_secret подключены в инструменты | 8aba304 |
 | 2026-10-25 | R-02 ✅ | sbp_-токен Founder → Management API: миграции 002/006/007(фикс F-29)/008/009 + бакет; Edge Function zero-dep деплой; db:health+db:proof ЗЕЛЁНЫЕ; 97 знаменитостей; +F-30 | 9f1a821 |
-| 2026-10-25 | R-03 ✅ | cloud-health (5с/60с) + гейты синка → честный offline-режим; F-04 RESOLVED; 209/209 | (этот коммит) |
+| 2026-10-25 | R-03 ✅ | cloud-health (5с/60с) + гейты синка → честный offline-режим; F-04 RESOLVED; 209/209 | 866c388 |
+| 2026-10-25 | R-05 ✅ | web-демо на GitHub Pages живёт; deploy:web скрипт + workflow; F-09 RESOLVED | (этот коммит) |
