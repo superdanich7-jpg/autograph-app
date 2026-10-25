@@ -1,10 +1,15 @@
 name: Build & Test
 
+# R-06: тест-гейт на каждый пуш/PR; дорогие EAS-сборки — только по кнопке
+# (workflow_dispatch) или тегу v*. Раньше билдились на каждый пуш в main —
+# сжигали EAS-минуты и краснели без Apple-аккаунта (F-08).
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -34,10 +39,10 @@ jobs:
         run: npm test -- --ci --coverage=false --passWithNoTests=false
 
   build-android:
-    name: Build Android
+    name: Build Android (EAS preview)
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -62,10 +67,10 @@ jobs:
         run: eas build --platform android --profile preview --non-interactive
 
   build-ios:
-    name: Build iOS
+    name: Build iOS (EAS preview)
     runs-on: macos-latest
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
