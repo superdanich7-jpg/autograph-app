@@ -171,16 +171,30 @@ export const darkTheme = {
 };
 
 // ─── Typography ────────────────────────────────
+// Шрифтовая пара (R-08): Manrope — заголовки/лейблы (характерный,
+// современный гротеск), Inter — текст (отличная читаемость на экране).
+// Загружаются в app/_layout.tsx через @expo/google-fonts.
+
+export const fontFamilies = {
+  display: 'Manrope_800ExtraBold',
+  headingBold: 'Manrope_700Bold',
+  heading: 'Manrope_600SemiBold',
+  body: 'Inter_400Regular',
+  bodyMedium: 'Inter_500Medium',
+  label: 'Manrope_700Bold',
+} as const;
 
 export const typography = {
   // Display
   displayLarge: {
+    fontFamily: fontFamilies.display,
     fontSize: 34,
     lineHeight: 40,
     fontWeight: '800' as const,
     letterSpacing: -0.5,
   },
   displayMedium: {
+    fontFamily: fontFamilies.display,
     fontSize: 28,
     lineHeight: 34,
     fontWeight: '700' as const,
@@ -189,17 +203,20 @@ export const typography = {
 
   // Heading
   h1: {
+    fontFamily: fontFamilies.headingBold,
     fontSize: 24,
     lineHeight: 30,
     fontWeight: '700' as const,
     letterSpacing: -0.2,
   },
   h2: {
+    fontFamily: fontFamilies.headingBold,
     fontSize: 20,
     lineHeight: 26,
     fontWeight: '700' as const,
   },
   h3: {
+    fontFamily: fontFamilies.heading,
     fontSize: 17,
     lineHeight: 22,
     fontWeight: '600' as const,
@@ -207,16 +224,19 @@ export const typography = {
 
   // Body
   body: {
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 22,
     fontWeight: '400' as const,
   },
   bodyMedium: {
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 15,
     lineHeight: 22,
     fontWeight: '500' as const,
   },
   bodySmall: {
+    fontFamily: fontFamilies.body,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '400' as const,
@@ -224,6 +244,7 @@ export const typography = {
 
   // Label
   label: {
+    fontFamily: fontFamilies.label,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '600' as const,
@@ -231,6 +252,7 @@ export const typography = {
     textTransform: 'uppercase' as const,
   },
   labelSmall: {
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 11,
     lineHeight: 14,
     fontWeight: '500' as const,
@@ -238,6 +260,7 @@ export const typography = {
 
   // Caption
   caption: {
+    fontFamily: fontFamilies.body,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '400' as const,

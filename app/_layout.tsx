@@ -1,5 +1,15 @@
 import 'react-native-gesture-handler';
 
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from '@expo-google-fonts/manrope';
+import {
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
+} from '@expo-google-fonts/manrope';
+import { Inter_400Regular, Inter_500Medium } from '@expo-google-fonts/inter';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -11,6 +21,8 @@ import { configureNotifications } from '../lib/notifications';
 import Toast from '../components/Toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ONBOARDING_KEY } from './onboarding';
+
+SplashScreen.preventAutoHideAsync().catch(() => { /* уже скрыт — не критично */ });
 
 function OnboardingGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -40,6 +52,22 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
+    Inter_400Regular,
+    Inter_500Medium,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => { /* не критично */ });
+    }
+  }, [fontsLoaded]);
+
   useEffect(() => {
     try {
       configureNotifications();
@@ -48,6 +76,10 @@ export default function RootLayout() {
       console.warn('Notifications not available:', e);
     }
   }, []);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={styles.root}>
