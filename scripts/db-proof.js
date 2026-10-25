@@ -29,8 +29,9 @@ function loadEnv() {
 loadEnv();
 
 const URL_ = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
-const ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+// Приоритет: новые ключи Supabase (sb_publishable_/sb_secret_, 2025+) или легаси-имена.
+const ANON = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+const SERVICE = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 let failed = 0;
 function step(ok, name, detail) {

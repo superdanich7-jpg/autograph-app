@@ -1,5 +1,12 @@
 # Progress Log
 
+## 2026-10-25 (финал дня) — новые ключи Supabase подключены
+- [x] Founder добавил в .env новые ключи: SUPABASE_PUBLISHABLE_KEY (sb_publishable_…) + SUPABASE_SECRET_KEY (sb_secret_…)
+- [x] Live-проверка новых ключей: PUB → REST 200 + auth 400 (принят); SEC → REST count 206, storage 200, admin create/delete юзера 200 — полные аналоги легаси anon/service_role
+- [x] db-health.js + db-proof.js: фолбэк на новые имена ключей (приоритет sb_* > легаси); проверено прогоном db:health только на новых ключах
+- [x] .env.example: задокументированы оба формата + SUPABASE_ACCESS_TOKEN (sbp_) для автоматизации
+- [ ] R-02 не двигается без одного из путей: А) Founder вставляет supabase/apply-pending-2026-10-25.sql в SQL Editor; B) Founder кладёт sbp_-токен (Account → Access Tokens) в .env — проектные ключи DDL не умеют
+
 ## 2026-10-25 (продолжение) — R-01: БД восстановлена, найден баг ленты
 - [x] Founder: проект был на ПАУЗЕ (DNS снимается при паузе — первоначальный вердикт «удалён» скорректирован), восстановлен; ключи прежние, работают
 - [x] Live-проверки: REST ✅, anon-ключ ✅ (200), Auth ✅ (signup+password grant), 2 поста уцелели в autograph_posts
