@@ -27,18 +27,9 @@ type Props = {
 
 export default function AchievementsSection({ userId }: Props) {
     const { colors } = useTheme();
-
-    // Don't show achievements for guest users
-    if (!userId || userId === 'guest') {
-        return null;
-    }
     const [all, setAll] = useState<Achievement[]>([]);
     const [earned, setEarned] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        load();
-    }, [userId]);
 
     async function load() {
         setLoading(true);
@@ -54,6 +45,18 @@ export default function AchievementsSection({ userId }: Props) {
             showToast('Не удалось загрузить достижения', 'error');
         }
         setLoading(false);
+    }
+
+    useEffect(() => {
+        if (!userId || userId === 'guest') {
+            return;
+        }
+        load();
+    }, [userId]);
+
+    // Don't show achievements for guest users
+    if (!userId || userId === 'guest') {
+        return null;
     }
 
     if (loading) {

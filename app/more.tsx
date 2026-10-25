@@ -33,6 +33,16 @@ type Row = {
     onPress: () => void;
 };
 
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+    const { colors } = useTheme();
+    return (
+        <View style={styles.section}>
+            <Text style={[typography.label, { color: colors.textTertiary }]}>{title}</Text>
+            {children}
+        </View>
+    );
+}
+
 export default function MoreScreen() {
     const { colors } = useTheme();
     const { posts, authUserEmail } = usePosts();
@@ -94,13 +104,6 @@ export default function MoreScreen() {
             </View>
             <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
         </TouchableOpacity>
-    );
-
-    const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-        <View style={styles.section}>
-            <Text style={[typography.label, { color: colors.textTertiary }]}>{title}</Text>
-            {children}
-        </View>
     );
 
     return (

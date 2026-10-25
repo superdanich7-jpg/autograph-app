@@ -32,6 +32,9 @@ jobs:
       - name: Encoding check (UTF-8, no mojibake/BOM)
         run: node scripts/check-encoding.js
 
+      - name: ESLint
+        run: npm run lint
+
       - name: TypeScript check
         run: npx tsc --noEmit
 
