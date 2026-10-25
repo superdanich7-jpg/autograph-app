@@ -3,6 +3,7 @@
 -- Содержит НЕДОСТАЮЩИЕ миграции: 002, 006, 007, 008, 009 + storage-бакет.
 -- Идемпотентно: можно запускать повторно (if exists / on conflict do nothing).
 -- После применения: npm run db:health && npm run db:proof — оба должны позеленеть.
+-- 007 исправлен 2026-10-25: незакрытый create table community_requests (F-29).
 -- ============================================================
 
 drop policy if exists "Users can read own autograph posts" on public.autograph_posts;
@@ -105,6 +106,8 @@ create table if not exists public.community_requests (
   user_id uuid not null references auth.users (id) on delete cascade,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz not null default now(),
+  primary key (community_id, user_id)
+);
 
 -- ─── Row Level Security ────────────────────────
 alter table public.communities enable row level security;
@@ -230,9 +233,6 @@ drop trigger if exists community_members_count_sync on public.community_members;
 create trigger community_members_count_sync
   after insert or delete on public.community_members
   for each row execute function public.sync_community_member_count();
-
-  primary key (community_id, user_id)
-);
 
 create index if not exists communities_owner_idx on public.communities (owner_id);
 create index if not exists community_members_user_idx on public.community_members (user_id);

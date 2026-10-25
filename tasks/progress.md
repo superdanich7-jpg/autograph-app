@@ -1,5 +1,16 @@
 # Progress Log
 
+## 2026-10-25 (ночь) — R-02 ЗАВЕРШЁН: БД полностью зелёная
+- [x] 🧑‍💼 Founder: SUPABASE_ACCESS_TOKEN (sbp_) в .env (в git НЕ попадает — проверено: .env игнорируется)
+- [x] Management API жив: проект autograph-app ACTIVE_HEALTHY, eu-west-1
+- [x] Применены миграции 002, 006, 008, 009 + бакет autographs + storage-политики (Management API /database/query)
+- [x] Найден и исправлен F-29: миграция 007 была синтаксически сломана (незакрытый create table community_requests — закрывающая часть уехала в конец файла) → никогда не могла примениться. Файл починен, применена
+- [x] `npm run db:health` — ВСЁ ЗЕЛЁНОЕ (13 таблиц + бакет autographs)
+- [x] `npm run db:proof` — ДОКАЗАНО: Auth→WRITE→READ(public feed!)→UPDATE→cleanup, баг F-27 закрыт
+- [x] Edge Function analyze-autograph: легаси-версия (импорты deno.land/esm.sh) падала BOOT_ERROR → переписана на Deno.serve zero-dep (контракт 1:1), деплой через Management API, live-тест: функция исполняется (честный 400 про GOOGLE_VISION_API_KEY — ключ опционален, 🧑‍💼 для Founder)
+- [x] Сид: в БД 97 знаменитостей (78 upsert-строк упали на отсутствии unique-констрейнта — F-30, LOW, не блокер)
+- [x] Аудит: F-03/F-27 RESOLVED, +F-29 (fixed), +F-30; сводка БД → 🟢
+
 ## 2026-10-25 (финал дня) — новые ключи Supabase подключены
 - [x] Founder добавил в .env новые ключи: SUPABASE_PUBLISHABLE_KEY (sb_publishable_…) + SUPABASE_SECRET_KEY (sb_secret_…)
 - [x] Live-проверка новых ключей: PUB → REST 200 + auth 400 (принят); SEC → REST count 206, storage 200, admin create/delete юзера 200 — полные аналоги легаси anon/service_role

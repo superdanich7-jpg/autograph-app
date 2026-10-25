@@ -42,6 +42,8 @@ create table if not exists public.community_requests (
   user_id uuid not null references auth.users (id) on delete cascade,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz not null default now(),
+  primary key (community_id, user_id)
+);
 
 -- ─── Row Level Security ────────────────────────
 alter table public.communities enable row level security;
@@ -167,9 +169,6 @@ drop trigger if exists community_members_count_sync on public.community_members;
 create trigger community_members_count_sync
   after insert or delete on public.community_members
   for each row execute function public.sync_community_member_count();
-
-  primary key (community_id, user_id)
-);
 
 create index if not exists communities_owner_idx on public.communities (owner_id);
 create index if not exists community_members_user_idx on public.community_members (user_id);

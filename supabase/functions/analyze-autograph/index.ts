@@ -1,17 +1,19 @@
 /**
- * Supabase Edge Function: analyze-autograph
+ * Supabase Edge Function: analyze-autograph (v2, zero-dependency)
  *
  * Анализирует изображение автографа:
- * 1. Распознает текст на изображении (OCR) через Google Vision API
- * 2. Ищет совпадения в таблице autograph_celebrity_signatures
+ * 1. Распознает текст (OCR) через Google Vision API
+ * 2. Ищет совпадения в таблице autograph_celebrity_signatures (PostgREST)
  * 3. Возвращает предполагаемую знаменитость и уровень уверенности
  *
- * Запуск локально: supabase functions serve analyze-autograph
- * Деплой: supabase functions deploy analyze-autograph
+ * v2 (2026-10-25): Deno.serve + ноль внешних импортов (deno.land/esm.sh убраны —
+ * вызывали BOOT_ERROR на свежем runtime). Контракт ответов сохранён 1:1.
+ *
+ * Секреты (Dashboard -> Edge Functions -> Secrets или Management API):
+ *   GOOGLE_VISION_API_KEY  — ключ Google Cloud Vision (обязателен для OCR)
+ *   SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY — инжектятся платформой автоматически
+ *   ALLOWED_ORIGIN         — необязательный CORS-origin (по умолчанию *)
  */
-
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 
 interface AnalyzeRequest {
   imageBase64: string;
@@ -39,7 +41,14 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-serve(async (req: Request) => {
+function json(body: AnalyzeResponse, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -50,36 +59,24 @@ serve(async (req: Request) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 
     if (!GOOGLE_VISION_API_KEY) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'GOOGLE_VISION_API_KEY not configured' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json({ success: false, error: 'GOOGLE_VISION_API_KEY not configured' }, 400);
     }
 
     const { imageBase64 }: AnalyzeRequest = await req.json();
 
     if (!imageBase64) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Missing imageBase64' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json({ success: false, error: 'Missing imageBase64' }, 400);
     }
 
     // Validate image size: max 5MB (base64 ~1.37x binary size)
     const maxSize = 5 * 1024 * 1024 * 1.37; // ~7MB base64
     if (imageBase64.length > maxSize) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Image too large. Max 5MB.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json({ success: false, error: 'Image too large. Max 5MB.' }, 400);
     }
 
     // Validate base64 format
     if (!/^[A-Za-z0-9+/=]+$/.test(imageBase64)) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid image format. Expected base64.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json({ success: false, error: 'Invalid image format. Expected base64.' }, 400);
     }
 
     // Шаг 1: OCR через Google Vision API
@@ -105,20 +102,20 @@ serve(async (req: Request) => {
     }
 
     const visionData = await visionResponse.json();
-    const detectedText = visionData.responses?.[0]?.textAnnotations?.[0]?.description || '';
+    const detectedText: string = visionData.responses?.[0]?.textAnnotations?.[0]?.description || '';
 
-    // Шаг 2: Ищем совпадения в базе
+    // Шаг 2: Ищем совпадения в базе (PostgREST без SDK)
     let matches: AnalyzeMatch[] = [];
 
     if (detectedText && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const dbRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/autograph_celebrity_signatures?select=celebrity_name,category,reference_url`,
+        { headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+      );
 
-      // Получаем всех знаменитостей из базы
-      const { data: celebrities, error: dbError } = await supabase
-        .from('autograph_celebrity_signatures')
-        .select('celebrity_name, category, image_url, reference_url');
-
-      if (!dbError && celebrities) {
+      if (dbRes.ok) {
+        const celebrities: Array<{ celebrity_name: string; category: string; reference_url: string | null }> =
+          await dbRes.json();
         const searchText = detectedText.toLowerCase();
 
         // Ищем совпадения по имени в распознанном тексте
@@ -127,9 +124,7 @@ serve(async (req: Request) => {
           const nameParts = celebLower.split(' ');
 
           // Проверяем: содержит ли распознанный текст имя знаменитости
-          const matchCount = nameParts.filter((part) =>
-            part.length > 2 && searchText.includes(part)
-          ).length;
+          const matchCount = nameParts.filter((part) => part.length > 2 && searchText.includes(part)).length;
 
           if (matchCount > 0) {
             const score = Math.round((matchCount / nameParts.length) * 100);
@@ -137,7 +132,7 @@ serve(async (req: Request) => {
               celebrity_name: celeb.celebrity_name,
               category: celeb.category,
               score,
-              reference_url: celeb.reference_url,
+              reference_url: celeb.reference_url ?? null,
             });
           }
 
@@ -150,7 +145,7 @@ serve(async (req: Request) => {
                 celebrity_name: celeb.celebrity_name,
                 category: celeb.category,
                 score,
-                reference_url: celeb.reference_url,
+                reference_url: celeb.reference_url ?? null,
               });
             }
           }
@@ -169,21 +164,14 @@ serve(async (req: Request) => {
       confidence = matches[0].score;
     }
 
-    const response: AnalyzeResponse = {
+    return json({
       success: true,
       suggestion,
       confidence,
       matches: matches.length > 0 ? matches : undefined,
-    };
-
-    return new Response(JSON.stringify(response), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ success: false, error: message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return json({ success: false, error: message }, 500);
   }
 });
