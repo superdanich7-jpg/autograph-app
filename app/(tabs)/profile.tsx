@@ -13,21 +13,12 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AchievementsSection from '../../components/AchievementsSection';
-import AdvancedSearch from '../../components/AdvancedSearch';
-import ExportCollection from '../../components/ExportCollection';
-import ImportCollection from '../../components/ImportCollection';
-import ShareStatsCard from '../../components/ShareStatsCard';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import { Collection, Post, usePosts } from '../../context/PostsContext';
+import { Post, usePosts } from '../../context/PostsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
 import { getDayStreak } from '../../lib/stats-share';
-import CollectionsList from '../../components/CollectionsList';
-import CollectionValueCard from '../../components/CollectionValueCard';
-import CommunitiesList from '../../components/CommunitiesList';
-import FriendsSheet from '../../components/FriendsSheet';
 import { scheduleStreakReminderIfNeeded } from '../../lib/streak-reminder';
 
 import ProfileModal from '../../components/ProfileModal';
@@ -53,9 +44,6 @@ export default function ProfileScreen() {
 
     const [editVisible, setEditVisible] = useState(false);
     const [settingsVisible, setSettingsVisible] = useState(false);
-    const [collectionsVisible, setCollectionsVisible] = useState(false);
-    const [communitiesVisible, setCommunitiesVisible] = useState(false);
-    const [friendsVisible, setFriendsVisible] = useState(false);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [draftName, setDraftName] = useState(profile.name);
     const [draftBio, setDraftBio] = useState(profile.bio);
@@ -206,8 +194,6 @@ export default function ProfileScreen() {
                     </View>
                 </View>
 
-                <CollectionValueCard posts={posts} colors={colors} />
-
                 <View style={[styles.goalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.goalHeader}>
                         <Text style={[styles.goalTitle, { color: colors.text }]}>Цель месяца</Text>
@@ -229,8 +215,6 @@ export default function ProfileScreen() {
                     </View>
                 </View>
 
-                <AchievementsSection userId={authUserEmail || 'guest'} />
-
                 <View style={styles.actions}>
                     <Button
                         title="Редактировать"
@@ -244,32 +228,11 @@ export default function ProfileScreen() {
                         icon="create-outline"
                     />
                     <Button
-                        title="Подборки"
-                        onPress={() => setCollectionsVisible(true)}
-                        variant="secondary"
+                        title="Ещё"
+                        onPress={() => router.push('/more')}
+                        variant="primary"
                         size="sm"
-                        icon="albums-outline"
-                    />
-                    <Button
-                        title="Сообщества"
-                        onPress={() => setCommunitiesVisible(true)}
-                        variant="secondary"
-                        size="sm"
-                        icon="people-outline"
-                    />
-                    <Button
-                        title="Друзья"
-                        onPress={() => setFriendsVisible(true)}
-                        variant="secondary"
-                        size="sm"
-                        icon="person-add-outline"
-                    />
-                    <Button
-                        title="Сообщения"
-                        onPress={() => router.push('/chat')}
-                        variant="secondary"
-                        size="sm"
-                        icon="chatbubbles-outline"
+                        icon="grid-outline"
                     />
                     <Button
                         title="Настройки"
@@ -278,22 +241,7 @@ export default function ProfileScreen() {
                         size="sm"
                         icon="settings-outline"
                     />
-                    <Button
-                        title={theme === 'light' ? 'Тёмная' : 'Светлая'}
-                        onPress={toggleTheme}
-                        variant="ghost"
-                        size="sm"
-                        icon={theme === 'light' ? 'moon-outline' : 'sunny-outline'}
-                    />
                 </View>
-
-                <ExportCollection />
-
-                <ImportCollection />
-
-                <ShareStatsCard />
-
-                <AdvancedSearch posts={posts} onPostPress={(p) => setSelectedPost(p)} />
 
                 {savedPosts.length > 0 ? (
                     <View style={styles.section}>
@@ -438,6 +386,26 @@ export default function ProfileScreen() {
                         </View>
                     </View>
 
+                    <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.settingTitle, { color: colors.text }]}>Оформление</Text>
+                            <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
+                                {theme === 'light' ? 'Сейчас: светлая тема' : 'Сейчас: тёмная тема'}
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={toggleTheme}
+                            style={[styles.settingButton, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 }]}
+                            accessibilityRole="button"
+                            accessibilityLabel="Переключить тему"
+                        >
+                            <Ionicons name={theme === 'light' ? 'moon-outline' : 'sunny-outline'} size={18} color={colors.text} />
+                            <Text style={[styles.settingButtonText, { color: colors.text }]}>
+                                {theme === 'light' ? 'Тёмная' : 'Светлая'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+
                     <View style={[styles.cloudCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={styles.cloudHeader}>
                             <View style={[styles.cloudIcon, { backgroundColor: colors.surface }]}>
@@ -497,19 +465,6 @@ export default function ProfileScreen() {
                     ) : null}
                 </View>
             </ProfileModal>
-
-            <CollectionsList visible={collectionsVisible} onClose={() => setCollectionsVisible(false)} />
-
-            <CommunitiesList visible={communitiesVisible} onClose={() => setCommunitiesVisible(false)} />
-
-            <FriendsSheet
-                visible={friendsVisible}
-                onClose={() => setFriendsVisible(false)}
-                onOpenChat={(friendId, friendName) => {
-                    setFriendsVisible(false);
-                    router.push('/chat');
-                }}
-            />
 
             <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || 'Автограф'} colors={colors} onClose={() => setSelectedPost(null)}>
                 <ProfilePostModal post={selectedPost} colors={colors} onClose={() => setSelectedPost(null)} />
