@@ -1,5 +1,15 @@
 # Progress Log
 
+## 2026-10-25 (продолжение) — R-01: БД восстановлена, найден баг ленты
+- [x] Founder: проект был на ПАУЗЕ (DNS снимается при паузе — первоначальный вердикт «удалён» скорректирован), восстановлен; ключи прежние, работают
+- [x] Live-проверки: REST ✅, anon-ключ ✅ (200), Auth ✅ (signup+password grant), 2 поста уцелели в autograph_posts
+- [x] Новый инструмент: `npm run db:health` (scripts/db-health.js) — env/REST/anon/auth/13 таблиц/бакет, exit-коды 0/1/2
+- [x] Новый инструмент: `npm run db:proof` (scripts/db-proof.js) — Auth→WRITE→READ→UPDATE→cleanup через настоящие RLS
+- [x] Результат db-proof: WRITE ✅ UPDATE ✅ Auth ✅; **READ public feed ❌** — миграции применены частично (есть 001/003/004/005; нет 002/006/007/008/009, бакетов нет) → лента пуста для гостей, свои посты видит только владелец (F-27)
+- [x] Edge Function analyze-autograph: шлюз жив, функция НЕ задеплоена (404 NOT_FOUND) (F-03 подтверждён)
+- [x] Аудит обновлён: F-01→RESOLVED, F-02→RESOLVED, F-27 (частичные миграции), F-28 (РФ-сетевой риск)
+- [ ] R-02 ждёт Founder: Путь А (SQL Editor вручную) или Путь B (SUPABASE_ACCESS_TOKEN в .env → полная автоматизация)
+
 ## 2026-10-25 — RE-AUDIT (Senior DevOps, pre-release)
 - [x] Git: дерево чистое, main == origin/main, stashes нет, .env никогда не коммитился
 - [x] Verify: encoding CLEAN, typecheck PASS, 194/194 тестов PASS (проверено вживую)

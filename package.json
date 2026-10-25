@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests=false",
     "check:encoding": "node scripts/check-encoding.js",
+    "db:health": "node scripts/db-health.js",
+    "db:proof": "node scripts/db-proof.js",
     "verify": "npm run check:encoding && npm run typecheck && npm test",
     "seed:celebrities": "tsx supabase/seed.ts",
     "seed:local": "tsx supabase/local-seed.ts"
