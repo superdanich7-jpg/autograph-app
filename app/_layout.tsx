@@ -95,9 +95,11 @@ export default function RootLayout() {
                 </Stack>
               </OnboardingGate>
             </PostsProvider>
+            {/* Toast вызывает useTheme — обязан быть внутри ThemeProvider
+                (вне провайдера на web падал весь монтаж: белый экран). */}
+            <Toast />
           </ThemeProvider>
         </ErrorBoundary>
-        <Toast />
       </View>
     </GestureHandlerRootView>
   );
