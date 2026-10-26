@@ -31,6 +31,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { checkAndAwardAchievements, updateUserStats } from '../../lib/achievements';
 import { hapticLight } from '../../lib/haptics';
 import { radii } from '../../lib/theme';
+import { showToast } from '../../components/Toast';
 import { quickMatch } from '../../lib/signature-analyzer';
 
 type UploadFieldProps = {
@@ -172,6 +173,7 @@ export default function UploadScreen() {
             console.warn('Analysis error:', error);
             if (!isMounted.current) return;
             setAnalysis(null);
+            showToast('Автопроверку не удалось выполнить — введите имя знаменитости вручную', 'error');
         } finally {
             if (isMounted.current) {
                 setIsAnalyzing(false);

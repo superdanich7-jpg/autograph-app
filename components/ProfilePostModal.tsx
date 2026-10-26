@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post, usePosts } from '../context/PostsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -17,9 +17,21 @@ export default function ProfilePostModal({
     colors: Colors;
     onClose: () => void;
 }) {
-    const { collections, addPostToCollection } = usePosts();
+    const { collections, addPostToCollection, createCollection } = usePosts();
 
     if (!post) return null;
+
+    const ensureDefaultCollection = useCallback(() => {
+        let collection = collections.find((c) => c.name === 'Моя подборка');
+        if (!collection) {
+            collection = createCollection({
+                name: 'Моя подборка',
+                description: 'Автографы, добавленные из детального просмотра',
+                color: '#007AFF',
+            });
+        }
+        return collection;
+    }, [collections, createCollection]);
 
     return (
         <ScrollView style={styles.modalPostScroll} contentContainerStyle={styles.modalPostContent}>
@@ -59,11 +71,9 @@ export default function ProfilePostModal({
                     <TouchableOpacity
                         style={[styles.modalActionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                         onPress={() => {
-                            if (collections.length === 0) {
-                                Alert.alert('Нет подборок', 'Сначала создайте подборку в профиле.');
-                                return;
-                            }
-                            const options = collections.map((c) => ({
+                            const targetCollection = ensureDefaultCollection();
+                            const available = collections.length ? collections : [targetCollection];
+                            const options = available.map((c) => ({
                                 text: c.name,
                                 onPress: () => {
                                     addPostToCollection(c.id, post.id);

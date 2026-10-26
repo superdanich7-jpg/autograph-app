@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
+import { withTimeout } from '../lib/async';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
@@ -113,20 +114,32 @@ export default function AuthScreen() {
         setMessage({ type: 'info', text: 'Проверяю данные аккаунта...' });
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: email.trim().toLowerCase(),
-                password,
-            });
+            const { error } = await withTimeout(
+                supabase.auth.signInWithPassword({
+                    email: email.trim().toLowerCase(),
+                    password,
+                }),
+                15000,
+            );
 
             if (error) throw error;
 
             setMessage({ type: 'success', text: 'Вход выполнен. Перехожу в профиль...' });
             router.replace('/profile');
         } catch (error) {
-            setMessage({
-                type: 'error',
-                text: getFriendlyAuthError(error instanceof Error ? error.message : ''),
-            });
+            const message = error instanceof Error ? error.message : '';
+            if (message.includes('Сервер не отвечает')) {
+                setMessage({
+                    type: 'error',
+                    text:
+                        'Сервер не отвечает. Проверьте подключение (из РФ может потребоваться VPN) и попробуйте позже.',
+                });
+            } else {
+                setMessage({
+                    type: 'error',
+                    text: getFriendlyAuthError(message),
+                });
+            }
         } finally {
             setLoadingAction(null);
         }
@@ -139,16 +152,19 @@ export default function AuthScreen() {
         setMessage({ type: 'info', text: 'Создаю аккаунт...' });
 
         try {
-            const { data, error } = await supabase.auth.signUp({
-                email: email.trim().toLowerCase(),
-                password,
+            const { data, error } = await withTimeout(
+                supabase.auth.signUp({
+                    email: email.trim().toLowerCase(),
+                    password,
                 options: {
                     emailRedirectTo:
                         Platform.OS === 'web' && typeof window !== 'undefined'
                             ? `${window.location.origin}/auth`
                             : Linking.createURL('/auth'),
-                },
-            });
+                    },
+                }),
+                15000,
+            );
 
             if (error) throw error;
 
@@ -222,6 +238,7 @@ export default function AuthScreen() {
                                     setMessage(null);
                                 }}
                                 autoCapitalize="none"
+                                autoComplete="username"
                                 autoCorrect={false}
                                 keyboardType="email-address"
                                 textContentType="emailAddress"
@@ -236,6 +253,7 @@ export default function AuthScreen() {
                                 placeholder="Минимум 6 символов"
                                 placeholderTextColor={colors.placeholder}
                                 secureTextEntry
+                                autoComplete="current-password"
                                 value={password}
                                 onChangeText={(value) => {
                                     setPassword(value);

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef } from 'react';
-import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post } from '../context/PostsContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticLight, hapticMedium } from '../lib/haptics';
@@ -41,6 +41,7 @@ export default function FeedPostCard({
 }) {
     const verdict = getAuthenticityVerdict(item);
     const userVote = item.votesByUser[currentUserId];
+    const [imageError, setImageError] = useState(false);
     const disputed = isDisputed(item);
     const isOwnPost = item.ownerId === currentUserId;
     const votingDisabled = !canInteract || isOwnPost;
@@ -102,7 +103,26 @@ export default function FeedPostCard({
             </View>
 
             <TouchableOpacity activeOpacity={0.92} onPress={handleImagePress}>
-                <Image source={{ uri: item.uri }} style={styles.postImage} resizeMode="cover" />
+                {imageError ? (
+                    <View
+                        style={[
+                            styles.postImage,
+                            { backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' },
+                        ]}
+                    >
+                        <Ionicons name="image-outline" size={44} color={colors.textSecondary} />
+                        <Text style={[styles.caption, { color: colors.textSecondary }]}>
+                            Фото не удалось загрузить
+                        </Text>
+                    </View>
+                ) : (
+                    <Image
+                        source={{ uri: item.uri }}
+                        style={styles.postImage}
+                        resizeMode={Platform.OS === 'web' ? 'contain' : 'cover'}
+                        onError={() => setImageError(true)}
+                    />
+                )}
                 {/* B2: вердикт-оверлей на фото (glass) — подлинность видна до открытия */}
                 <View
                     pointerEvents="none"
