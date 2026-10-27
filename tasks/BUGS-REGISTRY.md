@@ -1,14 +1,17 @@
-# BUGS REGISTRY — реестр багов (R-13, 2026-10-26)
+# BUGS REGISTRY — реестр багов (R-13, 2026-10-26; обновлён 2026-10-27)
 
 > Живой документ: каждый баг получает ID, статус (fixed/open), severity и шаги проверки.
 > Найдено в цикле R-13 статическим анализом (dead code, мёртвые маршруты, живые проверки БД).
 
-## Fixed в R-13
+## Fixed
 
 | ID | Severity | Что | Фикс |
 |----|----------|-----|------|
 | BUG-01 | Low | Мёртвая регистрация маршрута `modal` в `_layout.tsx` — файла `app/modal.tsx` не существует, expo-router рендерит несуществующий экран при переходе | Регистрация удалена |
 | BUG-02 | Medium | Мёртвый код: `components/AnimatedPostCard.tsx` (329 строк) и `components/NotificationsList.tsx` (149 строк) нигде не импортируются | Файлы удалены (-478 строк) |
+| BUG-11 | Critical (web) | **Белый экран на web-демо** (найдено браузерной отладкой 2026-10-26): `<Toast />` стоял ВНЕ `<ThemeProvider>`, а внутри вызывает `useTheme()` → исключение при старте убивало весь монтаж React. Диагностика: локальный сервер dist + error-хук в index.html → `useTheme must be used within ThemeProvider` | Toast перенесён внутрь ThemeProvider (commit dbb94e8); прод проверен в браузере — онбординг/лента рендерятся |
+| BUG-12 | High (web) | **Краш экрана /upload на web**: `expo-media-library` (нет web-поддержки) импортирован статически в `lib/sharing.ts` → `Cannot find native module 'ExpoMediaLibraryNext'` убивал экран через ErrorBoundary | Веб-заглушка `lib/sharing.web.ts` (Metro резолвит `.web.ts` вместо `.ts` на web) — коммит 1c72bc7 другого агента; прод проверен: визард Фото→Детали→Проверка работает |
+| BUG-13 | High | **Условный `useCallback`** в `ProfilePostModal.tsx` (хук после `if (!post) return null`) — краш-риск при любом реордере; внесён коммитом d03992c, поймал ESLint rules-of-hooks (verify был красный) | Переведён в обычную функцию (вызывается только в onPress) — 2026-10-27, verify снова 212/212 + 0 lint errors |
 
 ## Open (осознанно отложены, не блокируют MVP)
 

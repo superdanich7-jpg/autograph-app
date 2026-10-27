@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post, usePosts } from '../context/PostsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -21,7 +21,9 @@ export default function ProfilePostModal({
 
     if (!post) return null;
 
-    const ensureDefaultCollection = useCallback(() => {
+    // Обычная функция (не хук): вызывается только в onPress ниже.
+    // Хук после early-return выше — краш-риск (правила хуков).
+    const ensureDefaultCollection = () => {
         let collection = collections.find((c) => c.name === 'Моя подборка');
         if (!collection) {
             collection = createCollection({
@@ -31,7 +33,7 @@ export default function ProfilePostModal({
             });
         }
         return collection;
-    }, [collections, createCollection]);
+    };
 
     return (
         <ScrollView style={styles.modalPostScroll} contentContainerStyle={styles.modalPostContent}>
