@@ -90,12 +90,14 @@ export default function FeedPostCard({
     return (
         <View style={[styles.post, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.postHeader}>
-                <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
-                    <Ionicons name="person" size={18} color={colors.textSecondary} />
+                <View style={[styles.avatar, { backgroundColor: colors.accentLight }]}>
+                    <Text style={[styles.avatarInitial, { color: colors.accent }]}>
+                        {(item.ownerName || 'C').trim().charAt(0).toUpperCase()}
+                    </Text>
                 </View>
                 <View style={styles.headerText}>
-                    <Text style={[styles.username, { color: colors.text }]}>{item.celebrityName || 'Autograph User'}</Text>
-                    <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
+                    <Text style={[styles.username, { color: colors.text }]}>{item.ownerName || 'Collector'}</Text>
+                    <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
                         {new Date(item.timestamp).toLocaleDateString('ru-RU')}
                         {item.location ? ` • ${item.location}` : ''}
                     </Text>
@@ -230,18 +232,19 @@ export default function FeedPostCard({
 
             <View style={styles.metaBlock}>
                 <Text style={[styles.metaTitle, { color: colors.text }]}>{item.celebrityName || 'Автограф без имени'}</Text>
-                <Text style={[styles.metaLine, { color: colors.textSecondary }]}>
-                    Автор: {item.ownerName || 'Collector'}
-                </Text>
-                <Text style={[styles.metaLine, { color: colors.textSecondary }]}>
-                    Получен: {item.dateReceived || 'Дата не указана'}
+                <Text style={[styles.metaLine, { color: colors.textTertiary }]}>
+                    Получен: {item.dateReceived || 'дата не указана'}
                 </Text>
                 {item.caption ? <Text style={[styles.caption, { color: colors.text }]}>{item.caption}</Text> : null}
             </View>
 
             <View style={styles.badgesRow}>
                 <Badge label={getCategoryLabel(item.category)} variant="primary" size="sm" />
-                <Badge label={getRarityLabel(item.rarity)} variant={item.rarity === 'legendary' ? 'warning' : 'default'} size="sm" />
+                <Badge
+                    label={getRarityLabel(item.rarity)}
+                    variant={item.rarity === 'legendary' ? 'gold' : 'default'}
+                    size="sm"
+                />
                 {disputed ? (
                     <Badge label="Спорный" variant="danger" size="sm" />
                 ) : null}
@@ -292,9 +295,7 @@ export default function FeedPostCard({
                         label="Подтверждаю"
                         icon="checkmark-circle"
                         active={userVote === 'real'}
-                        color={colors.primary}
-                        surface={colors.surface}
-                        text={colors.text}
+                        color={colors.success}
                         onPress={() => { onVote(item.id, 'real'); hapticMedium(); }}
                         disabled={votingDisabled}
                     />
@@ -303,8 +304,6 @@ export default function FeedPostCard({
                         icon="close-circle"
                         active={userVote === 'fake'}
                         color={colors.danger}
-                        surface={colors.surface}
-                        text={colors.text}
                         onPress={() => { onVote(item.id, 'fake'); hapticMedium(); }}
                         disabled={votingDisabled}
                     />
@@ -371,7 +370,7 @@ export default function FeedPostCard({
 const styles = StyleSheet.create({
     post: {
         borderWidth: 1,
-        borderRadius: 22,
+        borderRadius: 20,
         overflow: 'hidden',
     },
     postHeader: {
@@ -388,6 +387,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 10,
+    },
+    avatarInitial: {
+        fontSize: 17,
+        fontWeight: '800',
     },
     headerText: {
         flex: 1,
@@ -520,11 +523,6 @@ const styles = StyleSheet.create({
     },
     voteStatsText: {
         fontSize: 12,
-        flex: 1,
-    },
-    voteConfidence: {
-        fontSize: 12,
-        fontWeight: '700',
         flex: 1,
     },
     verdictPill: {

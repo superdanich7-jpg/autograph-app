@@ -20,6 +20,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
 import { getDayStreak } from '../../lib/stats-share';
 import { scheduleStreakReminderIfNeeded } from '../../lib/streak-reminder';
+import { radii } from '../../lib/theme';
 
 import ProfileModal from '../../components/ProfileModal';
 import ProfilePostModal from '../../components/ProfilePostModal';
@@ -147,7 +148,9 @@ export default function ProfileScreen() {
                     <Text style={[styles.bio, { color: colors.textSecondary }]}>{profile.bio}</Text>
 
                     <View style={[styles.badgeRow, { backgroundColor: colors.surface }]}>
-                        <Text style={styles.reputationIcon}>{reputation.icon}</Text>
+                        <View style={[styles.reputationIconWrap, { backgroundColor: colors.accentLight }]}>
+                            <Ionicons name="medal" size={20} color={colors.accent} />
+                        </View>
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.badgeTitle, { color: colors.text }]}>{reputation.label}</Text>
                             <Text style={[styles.badgeSubtitle, { color: colors.textSecondary }]}>
@@ -157,28 +160,35 @@ export default function ProfileScreen() {
                     </View>
 
                     <View style={[styles.trustBarWrap, { backgroundColor: colors.surface }]}>
-                        <View style={[styles.trustBarFill, { backgroundColor: colors.primary, width: trustProgress }]} />
+                        <View style={[styles.trustBarFill, { backgroundColor: colors.accent, width: trustProgress }]} />
                     </View>
 
                     <View style={[styles.statsContainer, { backgroundColor: colors.surface }]}>
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalPosts}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Постов</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Постов</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalRealVotes}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Подтверждено</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{legendaryCount}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Легендарных</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
-                            <Text style={[styles.statNumber, { color: colors.text }]}>{dayStreak > 0 ? `🔥 ${dayStreak}` : '—'}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Дней серией</Text>
+                            <View style={styles.statStreakRow}>
+                                {dayStreak > 0 ? (
+                                    <Ionicons name="flame" size={18} color={colors.accent} />
+                                ) : null}
+                                <Text style={[styles.statNumber, { color: colors.text }]}>
+                                    {dayStreak > 0 ? dayStreak : '—'}
+                                </Text>
+                            </View>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Дней подряд</Text>
                         </View>
                     </View>
                 </Card>
@@ -207,7 +217,7 @@ export default function ProfileScreen() {
                             style={[
                                 styles.goalBarFill,
                                 {
-                                    backgroundColor: colors.primary,
+                                    backgroundColor: colors.accent,
                                     width: `${Math.min(100, Math.round((verifiedGoalCount / 3) * 100))}%`,
                                 },
                             ]}
@@ -490,14 +500,14 @@ const styles = StyleSheet.create({
     content: { padding: 16, paddingBottom: 18 },
     heroCard: {
         borderWidth: 1,
-        borderRadius: 26,
+        borderRadius: radii.xxl,
         padding: 22,
         alignItems: 'center',
     },
     avatar: {
         width: 104,
         height: 104,
-        borderRadius: 28,
+        borderRadius: radii.xxl,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 16,
@@ -505,7 +515,7 @@ const styles = StyleSheet.create({
     avatarRing: {
         width: 120,
         height: 120,
-        borderRadius: 34,
+        borderRadius: radii.xxl + 8,
         borderWidth: 3,
         alignItems: 'center',
         justifyContent: 'center',
@@ -513,10 +523,10 @@ const styles = StyleSheet.create({
     },
     name: { fontSize: 24, fontWeight: '700', marginBottom: 2 },
     handle: { fontSize: 14, fontWeight: '600', marginBottom: 6 },
-    bio: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 18 },
+    bio: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 18 },
     badgeRow: {
         width: '100%',
-        borderRadius: 18,
+        borderRadius: radii.lg,
         paddingHorizontal: 14,
         paddingVertical: 12,
         flexDirection: 'row',
@@ -524,8 +534,12 @@ const styles = StyleSheet.create({
         gap: 10,
         marginBottom: 12,
     },
-    reputationIcon: {
-        fontSize: 22,
+    reputationIconWrap: {
+        width: 36,
+        height: 36,
+        borderRadius: radii.full,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     badgeTitle: {
         fontSize: 16,
@@ -551,11 +565,12 @@ const styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'space-around',
         paddingVertical: 18,
-        borderRadius: 18,
+        borderRadius: radii.lg,
     },
-    statItem: { alignItems: 'center', flex: 1 },
+    statItem: { alignItems: 'center', flex: 1, minWidth: 0 },
+    statStreakRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     statNumber: { fontSize: 21, fontWeight: '700' },
-    statLabel: { fontSize: 12, marginTop: 4 },
+    statLabel: { fontSize: 11, marginTop: 4 },
     statDivider: { width: 1, height: 34 },
     insightsRow: {
         flexDirection: 'row',
@@ -565,7 +580,7 @@ const styles = StyleSheet.create({
     insightCard: {
         flex: 1,
         borderWidth: 1,
-        borderRadius: 18,
+        borderRadius: radii.lg,
         padding: 14,
     },
     insightLabel: {
@@ -579,7 +594,7 @@ const styles = StyleSheet.create({
     actions: { flexDirection: 'row', gap: 10, marginTop: 16 },
     goalCard: {
         borderWidth: 1,
-        borderRadius: 20,
+        borderRadius: radii.xl,
         padding: 16,
         marginTop: 16,
     },

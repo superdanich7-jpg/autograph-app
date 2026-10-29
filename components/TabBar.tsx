@@ -104,29 +104,35 @@ export default function CustomTabBar() {
                             }}
                         >
                             {tab.accent ? (
-                                <View
-                                    style={[
-                                        styles.fab,
-                                        {
-                                            backgroundColor: isActive
-                                                ? colors.primary
-                                                : colors.surface,
-                                            borderColor: isActive
-                                                ? colors.primary
-                                                : colors.border,
-                                        },
-                                    ]}
-                                >
-                                    <Ionicons
-                                        name={isActive ? tab.activeIcon : tab.icon}
-                                        size={24}
-                                        color={
-                                            isActive
-                                                ? colors.primaryText
-                                                : colors.textSecondary
-                                        }
-                                    />
-                                </View>
+                                <>
+                                    <View
+                                        style={[
+                                            styles.fab,
+                                            {
+                                                backgroundColor: colors.accent,
+                                                ...shadows.md,
+                                            },
+                                        ]}
+                                    >
+                                        <Ionicons
+                                            name="add"
+                                            size={26}
+                                            color="#0B1220"
+                                        />
+                                    </View>
+                                    <Text
+                                        style={[
+                                            styles.label,
+                                            {
+                                                color: isActive ? colors.text : colors.textSecondary,
+                                                fontWeight: isActive ? '700' : '500',
+                                            },
+                                        ]}
+                                        numberOfLines={1}
+                                    >
+                                        {tab.label}
+                                    </Text>
+                                </>
                             ) : (
                                 <>
                                     <View
@@ -161,6 +167,12 @@ export default function CustomTabBar() {
                                     >
                                         {tab.label}
                                     </Text>
+                                    <View
+                                        style={[
+                                            styles.activeDot,
+                                            { backgroundColor: isActive ? colors.accent : 'transparent' },
+                                        ]}
+                                    />
                                 </>
                             )}
                         </TouchableOpacity>
@@ -208,12 +220,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     fab: {
-        width: 52,
-        height: 52,
-        borderRadius: radii.xl,
+        width: 48,
+        height: 48,
+        borderRadius: radii.full,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 2,
+    },
+    activeDot: {
+        width: 4,
+        height: 4,
+        borderRadius: radii.full,
+        marginTop: 1,
     },
     label: {
         fontSize: 11,

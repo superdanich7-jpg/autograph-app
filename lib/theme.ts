@@ -72,7 +72,8 @@ export const lightTheme = {
   // Text (ink)
   text: brandColors.ink900,
   textSecondary: brandColors.ink500,
-  textTertiary: palette.gray400,
+  // gray500: единственный серый, дающий ≥4.5:1 на paper50 (WCAG AA для мелких подписей)
+  textTertiary: palette.gray500,
   placeholder: palette.gray400,
 
   // Borders
@@ -127,7 +128,8 @@ export const darkTheme = {
   // Text
   text: palette.gray50,
   textSecondary: palette.gray400,
-  textTertiary: palette.gray500,
+  // #8E9DB4: ≥4.5:1 на карточке gray800 (gray500 давал 2.7:1 — «серая каша» метаданных)
+  textTertiary: '#8E9DB4',
   placeholder: palette.gray500,
 
   // Borders
@@ -282,14 +284,16 @@ export const spacing = {
 } as const;
 
 // ─── Border Radius ─────────────────────────────
+// Шкала «Ink & Gold»: 8 — чипы/мелочи, 12 — инпуты, 16 — внутренние блоки,
+// 20 — карточки, 28 — герой-блоки и сцены. Не отклоняться.
 
 export const radii = {
   none: 0,
-  sm: 6,
-  md: 10,
-  lg: 14,
-  xl: 18,
-  xxl: 24,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 28,
   full: 9999,
 } as const;
 
