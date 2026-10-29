@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePosts } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticLight } from '../lib/haptics';
 import { buildConversations, formatMessageTime, groupByDay } from '../lib/chat';
@@ -28,6 +29,7 @@ type Colors = ReturnType<typeof useTheme>['colors'];
 
 export default function ChatScreen() {
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const {
         messages,
         friends,
@@ -78,7 +80,7 @@ export default function ChatScreen() {
                     keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >
                     <View style={[styles.threadHeader, { borderBottomColor: colors.border }]}>
-                        <TouchableOpacity onPress={() => setActivePeerId(null)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Назад к диалогам">
+                        <TouchableOpacity onPress={() => setActivePeerId(null)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('chatBackToDialogs')}>
                             <Ionicons name="chevron-back" size={24} color={colors.text} />
                         </TouchableOpacity>
                         <View style={[styles.threadAvatar, { backgroundColor: colors.surface }]}>
@@ -86,7 +88,7 @@ export default function ChatScreen() {
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={[typography.bodyMedium, { color: colors.text, fontWeight: '700' }]} numberOfLines={1}>
-                                {peer?.name || 'Собеседник'}
+                                {peer?.name || t('chatPeerFallback')}
                             </Text>
                             <Text style={[typography.caption, { color: peer?.online ? colors.success : colors.textSecondary }]} numberOfLines={1}>
                                 {peer ? formatPresence(peer) : ''}
@@ -102,7 +104,7 @@ export default function ChatScreen() {
                             thread.some((m) => m.isDemo) ? (
                                 <View style={[styles.demoNote, { backgroundColor: colors.accentLight }]}>
                                     <Text style={[typography.labelSmall, { color: colors.accent }]}>
-                                        Демо-переписка — предзаполнена для примера
+                                        {t('chatDemoBadge')}
                                     </Text>
                                 </View>
                             ) : null
@@ -138,7 +140,7 @@ export default function ChatScreen() {
                     <View style={[styles.inputBar, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
                         <TextInput
                             style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
-                            placeholder="Сообщение..."
+                            placeholder={t("chatMessagePlaceholder")}
                             placeholderTextColor={colors.placeholder}
                             value={draft}
                             onChangeText={setDraft}
@@ -149,7 +151,7 @@ export default function ChatScreen() {
                             disabled={!canInteract || !draft.trim()}
                             style={[styles.sendBtn, { backgroundColor: canInteract && draft.trim() ? colors.accent : colors.surface }]}
                             accessibilityRole="button"
-                            accessibilityLabel="Отправить"
+                            accessibilityLabel={t('chatSend')}
                         >
                             <Ionicons name="send" size={20} color={canInteract && draft.trim() ? colors.accentText : colors.textTertiary} />
                         </TouchableOpacity>
@@ -163,8 +165,8 @@ export default function ChatScreen() {
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
             <View style={styles.header}>
-                <Text style={[styles.title, { color: colors.text }]}>Сообщения</Text>
-                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Переписка с другими коллекционерами</Text>
+                <Text style={[styles.title, { color: colors.text }]}>{t('chatTitle')}</Text>
+                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t('chatSubtitle')}</Text>
             </View>
 
             <FlatList
@@ -209,7 +211,7 @@ export default function ChatScreen() {
                     <View style={styles.empty}>
                         <Ionicons name="chatbubbles-outline" size={44} color={colors.textTertiary} />
                         <Text style={[typography.body, { color: colors.textSecondary, textAlign: 'center' }]}>
-                            Пока нет сообщений.{'\n'}Начните общение из раздела «Друзья».
+                            {t('chatNoMessages')}{'\n'}Начните общение из раздела «Друзья».
                         </Text>
                     </View>
                 }

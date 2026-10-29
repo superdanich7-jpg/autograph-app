@@ -185,7 +185,7 @@ export default function FeedScreen() {
 
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <View style={styles.screenHeader}>
                 <View style={styles.headerText}>
                     <Text style={[styles.screenTitle, { color: colors.text }]}>{t('feedTitle')}</Text>
@@ -197,7 +197,7 @@ export default function FeedScreen() {
                 </View>
                 <View style={styles.headerRight}>
                     <TouchableOpacity
-                        style={[styles.searchButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+                        style={[styles.searchButton, { backgroundColor: (colors as { glassCard?: string }).glassCard ?? colors.card }]}
                         onPress={() => {
                             hapticLight();
                             setFiltersVisible(true);
@@ -292,7 +292,7 @@ export default function FeedScreen() {
             {/* R-10: поиск + фильтры + сортировка + сводка — в одном sheet, хедер ленты чистый */}
             <Sheet visible={filtersVisible} onClose={() => setFiltersVisible(false)} title={t('searchFilters')} subtitle={t('sortHint')} size="half">
                 <View style={styles.sheetBody}>
-                    <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.searchBox, { backgroundColor: colors.surface }]}>
                         <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
                         <TextInput
                             style={[styles.searchInput, { color: colors.text }]}
@@ -420,12 +420,12 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     searchButton: {
-        borderWidth: 1,
         borderRadius: 999,
         width: 40,
         height: 40,
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
     },
     filterBadge: {
         position: 'absolute',

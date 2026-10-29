@@ -17,6 +17,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import { LanguageProvider } from '../context/LanguageContext';
 import { PostsProvider } from '../context/PostsContext';
 import { ThemeProvider } from '../context/ThemeContext';
+import AppBackground from '../components/ui/AppBackground';
 import { configureNotifications } from '../lib/notifications';
 import Toast from '../components/Toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -84,6 +85,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <View style={styles.root} pointerEvents="box-none">
+        {/* Liquid-glass фон: градиент + золотые свечения под всеми экранами */}
+        <AppBackground />
         <ErrorBoundary>
           <ThemeProvider>
             <LanguageProvider>

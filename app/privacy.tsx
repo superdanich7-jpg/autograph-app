@@ -9,55 +9,41 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { radii, spacing, typography } from '../lib/theme';
 
-const SECTION = [
-    {
-        title: '1. Какие данные мы обрабатываем',
-        body: '• Email и пароль — только для входа в аккаунт (пароль хранится в виде хеша).\n• Фотографии автографов, которые вы сами загружаете.\n• Метаданные поста: имя знаменитости, категория, редкость, дата и место получения (по желанию).\n• Данные на устройстве (локальная коллекция, настройки) — хранятся локально и не покидают телефон без вашего входа в аккаунт.',
-    },
-    {
-        title: '2. Где хранятся данные',
-        body: 'Облачные данные — в Supabase (регион EU, Ирландия). Фото — в объектном хранилище Supabase Storage. Передача данных выполняется по HTTPS.',
-    },
-    {
-        title: '3. Аналитика',
-        body: 'Мы можем собирать обезличенную статистику использования (события вроде «создан пост», «поделиться») для улучшения продукта. Данные не продаются и не передаются третьим лицам для рекламы.',
-    },
-    {
-        title: '4. Ваши права',
-        body: 'Вы можете в любой момент: экспортировать коллекцию (Настройки → Ещё → Экспорт), удалить локальные данные (Настройки → Очистить кэш) или запросить удаление аккаунта и облачных данных по контакту ниже.',
-    },
-    {
-        title: '5. Дети',
-        body: 'Приложение не предназначено для лиц младше 13 лет.',
-    },
-    {
-        title: '6. Контакты',
-        body: 'Вопросы по приватности: autograph.app.support@gmail.com',
-    },
-];
 
 export default function PrivacyScreen() {
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const router = useRouter();
+
+    // Тексты зависят от языка — секции собираются в компоненте.
+    const SECTION = [
+        { title: t('privacyS1Title'), body: t('privacyS1Body') },
+        { title: t('privacyS2Title'), body: t('privacyS2Body') },
+        { title: t('privacyS3Title'), body: t('privacyS3Body') },
+        { title: t('privacyS4Title'), body: t('privacyS4Body') },
+        { title: t('privacyS5Title'), body: t('privacyS5Body') },
+        { title: t('privacyS6Title'), body: t('privacyS6Body') },
+    ];
 
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Назад">
+                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityRole="button" accessibilityLabel={t('back')}>
                     <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[typography.h2, { color: colors.text }]}>Политика конфиденциальности</Text>
+                <Text style={[typography.h2, { color: colors.text }]}>{t('privacyTitle')}</Text>
                 <View style={styles.backBtn} />
             </View>
             <ScrollView style={styles.container} contentContainerStyle={styles.content}>
                 <Text style={[typography.caption, { color: colors.textTertiary, marginBottom: spacing.md }]}>
-                    Последнее обновление: 26 октября 2026
+                    {t('privacyUpdated')}
                 </Text>
                 {SECTION.map((s) => (
-                    <View key={s.title} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View key={s.title} style={[styles.card, { backgroundColor: colors.card }]}>
                         <Text style={[typography.h3, { color: colors.text, marginBottom: spacing.sm }]}>{s.title}</Text>
                         <Text style={[typography.body, { color: colors.textSecondary }]}>{s.body}</Text>
                     </View>
@@ -66,10 +52,10 @@ export default function PrivacyScreen() {
                     style={[styles.mailButton, { backgroundColor: colors.accentLight }]}
                     onPress={() => Linking.openURL('mailto:autograph.app.support@gmail.com')}
                     accessibilityRole="button"
-                    accessibilityLabel="Написать в поддержку"
+                    accessibilityLabel={t('privacySupport')}
                 >
                     <Ionicons name="mail-outline" size={18} color={colors.accent} />
-                    <Text style={[typography.bodyMedium, { color: colors.accent }]}>Написать в поддержку</Text>
+                    <Text style={[typography.bodyMedium, { color: colors.accent }]}>{t('privacySupport')}</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
@@ -90,7 +76,6 @@ const styles = StyleSheet.create({
     },
     backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
     card: {
-        borderWidth: 1,
         borderRadius: radii.lg,
         padding: spacing.lg,
     },

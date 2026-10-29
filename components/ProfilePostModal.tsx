@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post, usePosts } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../lib/helpers';
 import { showToast } from './Toast';
@@ -17,6 +18,7 @@ export default function ProfilePostModal({
     colors: Colors;
     onClose: () => void;
 }) {
+    const { t } = useLanguage();
     const { collections, addPostToCollection, createCollection } = usePosts();
 
     if (!post) return null;
@@ -24,11 +26,11 @@ export default function ProfilePostModal({
     // Обычная функция (не хук): вызывается только в onPress ниже.
     // Хук после early-return выше — краш-риск (правила хуков).
     const ensureDefaultCollection = () => {
-        let collection = collections.find((c) => c.name === 'Моя подборка');
+        let collection = collections.find((c) => c.name === t('myCollectionDefault'));
         if (!collection) {
             collection = createCollection({
-                name: 'Моя подборка',
-                description: 'Автографы, добавленные из детального просмотра',
+                name: t('myCollectionDefault'),
+                description: t('addedFromDetail'),
                 color: '#007AFF',
             });
         }
@@ -39,9 +41,9 @@ export default function ProfilePostModal({
         <ScrollView style={styles.modalPostScroll} contentContainerStyle={styles.modalPostContent}>
             <Image source={{ uri: post.uri }} style={styles.modalPostImage} resizeMode="cover" />
             <View style={[styles.modalPostCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <Text style={[styles.modalPostTitle, { color: colors.text }]}>{post.celebrityName || 'Без имени'}</Text>
+                <Text style={[styles.modalPostTitle, { color: colors.text }]}>{post.celebrityName || t('nameless')}</Text>
                 <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                    {post.location || 'Место не указано'} • {post.dateReceived || 'Дата не указана'}
+                    {post.location || t('placeUnspecified')} • {post.dateReceived || t('dateNotSpecified')}
                 </Text>
                 <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
                     {getCategoryLabel(post.category)} • {getRarityLabel(post.rarity)}
@@ -66,7 +68,7 @@ export default function ProfilePostModal({
                 </View>
 
                 <Text style={[styles.modalPostMeta, { color: colors.textSecondary }]}>
-                    Достоверность: {getAuthenticityPercent(post)}%
+                    {t('detailAuthenticity', )}{getAuthenticityPercent(post)}%
                 </Text>
 
                 <View style={styles.modalActionsRow}>
@@ -79,15 +81,15 @@ export default function ProfilePostModal({
                                 text: c.name,
                                 onPress: () => {
                                     addPostToCollection(c.id, post.id);
-                                    showToast('Добавлено в подборку', 'success');
+                                    showToast(t('addedToCollection'), 'success');
                                 },
                             }));
-                            options.push({ text: 'Отмена', onPress: () => {} });
-                            Alert.alert('Добавить в подборку', 'Выберите подборку:', options, { cancelable: true });
+                            options.push({ text: t('cancel'), onPress: () => {} });
+                            Alert.alert(t('addToCollection'), t('selectCollection'), options, { cancelable: true });
                         }}
                     >
                         <Ionicons name="albums-outline" size={18} color={colors.text} />
-                        <Text style={[styles.modalActionText, { color: colors.text }]}>В подборку</Text>
+                        <Text style={[styles.modalActionText, { color: colors.text }]}>{t('addToCollection')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

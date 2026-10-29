@@ -145,7 +145,7 @@ export default function ProfileScreen() {
     // (ревью основателя: «откуда у неавторизованного вообще что-то есть»).
     if (!isAuthenticated) {
         return (
-            <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+            <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
                 <AuthGate
                     icon="person"
                     title={t('gateProfileTitle')}
@@ -156,9 +156,9 @@ export default function ProfileScreen() {
     }
 
     return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
             <ScrollView
-                style={[styles.container, { backgroundColor: colors.background }]}
+                style={styles.container}
                 contentContainerStyle={styles.content}
                 showsVerticalScrollIndicator={false}
             >
@@ -371,7 +371,7 @@ export default function ProfileScreen() {
                 <View style={styles.modalContent}>
                     <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('fieldName')}</Text>
                     <TextInput
-                        style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
+                        style={[styles.fieldInput, { color: colors.text, backgroundColor: colors.surface }]}
                         value={draftName}
                         onChangeText={setDraftName}
                         placeholder={t("namePlaceholder")}
@@ -439,10 +439,7 @@ export default function ProfileScreen() {
                                     onPress={() => setLang(code)}
                                     style={[
                                         styles.langOption,
-                                        {
-                                            backgroundColor: lang === code ? colors.primary : colors.surface,
-                                            borderColor: colors.border,
-                                        },
+                                        { backgroundColor: lang === code ? colors.primary : colors.surface },
                                     ]}
                                     accessibilityRole="button"
                                     accessibilityLabel={code === 'ru' ? t('russian') : 'English'}
@@ -469,7 +466,7 @@ export default function ProfileScreen() {
                         </View>
                         <TouchableOpacity
                             onPress={toggleTheme}
-                            style={[styles.settingButton, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 }]}
+                            style={[styles.settingButton, { backgroundColor: colors.surface }]}
                             accessibilityRole="button"
                             accessibilityLabel={t('themeToggleLabel')}
                         >
@@ -508,7 +505,7 @@ export default function ProfileScreen() {
                         ) : null}
                         {!isAuthenticated ? (
                             <TouchableOpacity
-                                style={[styles.authButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                                style={[styles.authButton, { backgroundColor: colors.surface }]}
                                 onPress={() => {
                                     setSettingsVisible(false);
                                     router.push('/auth');
@@ -604,7 +601,6 @@ const styles = StyleSheet.create({
         minWidth: 46,
         minHeight: 36,
         borderRadius: radii.md,
-        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 8,
@@ -824,7 +820,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     fieldInput: {
-        borderWidth: 1,
+        borderWidth: 0,
         borderRadius: 16,
         minHeight: 50,
         paddingHorizontal: 14,

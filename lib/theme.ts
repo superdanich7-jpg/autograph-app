@@ -107,6 +107,13 @@ export const lightTheme = {
   shimmer: '#FFFFFF',
   glass: 'rgba(255, 255, 255, 0.72)',
 
+  // Liquid Glass (2026-10-29): полупрозрачные поверхности над градиентным фоном
+  glassCard: 'rgba(255, 255, 255, 0.58)',
+  glassBorder: 'rgba(255, 255, 255, 0.65)',
+  glassHighlight: 'rgba(255, 255, 255, 0.55)',
+  bgGradient: ['#FAF8F4', '#F3EFE7', '#EDE6D8'],
+  glow: 'rgba(201, 162, 39, 0.12)',
+
   // Shadows (iOS)
   shadowColor: '#000000',
   shadowOffset: { width: 0, height: 2 },
@@ -162,6 +169,13 @@ export const darkTheme = {
   skeleton: palette.gray800,
   shimmer: brandColors.gold300,
   glass: 'rgba(30, 41, 59, 0.72)',
+
+  // Liquid Glass (2026-10-29): стекло над градиентом «чернила + золото»
+  glassCard: 'rgba(23, 32, 51, 0.55)',
+  glassBorder: 'rgba(148, 163, 184, 0.22)',
+  glassHighlight: 'rgba(255, 255, 255, 0.08)',
+  bgGradient: ['#020617', '#0B1220', '#111B2E'],
+  glow: 'rgba(231, 200, 115, 0.10)',
 
   // Shadows
   shadowColor: '#000000',

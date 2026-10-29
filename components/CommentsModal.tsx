@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Post } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 
 type Colors = ReturnType<typeof useTheme>['colors'];
@@ -34,11 +35,12 @@ export default function CommentsModal({
     onSend: () => void;
     colors: Colors;
 }) {
+    const { t } = useLanguage();
     return (
         <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
             <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
                 <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                    <Text style={[styles.modalTitle, { color: colors.text }]}>Комментарии</Text>
+                    <Text style={[styles.modalTitle, { color: colors.text }]}>{t('commentsTitle')}</Text>
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                         <Ionicons name="close" size={24} color={colors.text} />
                     </TouchableOpacity>
@@ -51,7 +53,7 @@ export default function CommentsModal({
                     contentContainerStyle={{ padding: 16, paddingBottom: 88 }}
                     ListEmptyComponent={
                         <Text style={[styles.noComments, { color: colors.textSecondary }]}>
-                            Комментариев пока нет. Можно оставить первый.
+                            {t('commentsEmpty')}
                         </Text>
                     }
                     renderItem={({ item }) => (
@@ -76,7 +78,7 @@ export default function CommentsModal({
                                     backgroundColor: colors.card,
                                 },
                             ]}
-                            placeholder="Написать комментарий..."
+                            placeholder={t("commentPlaceholder")}
                             placeholderTextColor={colors.placeholder}
                             value={commentText}
                             onChangeText={onChangeText}

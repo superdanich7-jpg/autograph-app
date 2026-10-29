@@ -4,6 +4,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePosts } from '../../context/PostsContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getRarityLabel } from '../../lib/helpers';
 
@@ -11,6 +12,7 @@ export default function CollectorProfileScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { colors } = useTheme();
+    const { t, lang } = useLanguage();
     const { getCollectorById, profile, toggleFollowCollector } = usePosts();
 
     const collector = getCollectorById(id);
@@ -20,12 +22,12 @@ export default function CollectorProfileScreen() {
             <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
                 <Stack.Screen options={{ headerShown: false }} />
                 <View style={styles.missingWrap}>
-                    <Text style={[styles.missingTitle, { color: colors.text }]}>Профиль не найден</Text>
+                    <Text style={[styles.missingTitle, { color: colors.text }]}>{t('collectorNotFound')}</Text>
                     <TouchableOpacity
                         style={[styles.backButton, { backgroundColor: colors.primary }]}
                         onPress={() => router.back()}
                     >
-                        <Text style={[styles.backButtonText, { color: colors.primaryText }]}>Назад</Text>
+                        <Text style={[styles.backButtonText, { color: colors.primaryText }]}>{t('back')}</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -70,40 +72,40 @@ export default function CollectorProfileScreen() {
                             onPress={() => toggleFollowCollector(collector.id)}
                         >
                             <Text style={[styles.followText, { color: isFollowing ? colors.text : colors.primaryText }]}>
-                                {isFollowing ? 'Вы подписаны' : 'Подписаться'}
+                                {isFollowing ? t('following') : t('follow')}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.messageButton, { backgroundColor: colors.accentLight, borderColor: colors.border }]}
                             onPress={() => router.push('/chat')}
                             accessibilityRole="button"
-                            accessibilityLabel={`Написать ${collector.name}`}
+                            accessibilityLabel={`{t('messageAction')} ${collector.name}`}
                         >
                             <Ionicons name="chatbubble-ellipses" size={18} color={colors.accent} />
-                            <Text style={[styles.followText, { color: colors.accent }]}>Написать</Text>
+                            <Text style={[styles.followText, { color: colors.accent }]}>{t('messageAction')}</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={[styles.statsRow, { backgroundColor: colors.surface }]}>
                         <View style={styles.stat}>
                             <Text style={[styles.statValue, { color: colors.text }]}>{collector.score}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Очков</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('collectorPoints')}</Text>
                         </View>
                         <View style={[styles.divider, { backgroundColor: colors.border }]} />
                         <View style={styles.stat}>
                             <Text style={[styles.statValue, { color: colors.text }]}>{collector.verifiedCount}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Проверено</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('collectorVerified')}</Text>
                         </View>
                         <View style={[styles.divider, { backgroundColor: colors.border }]} />
                         <View style={styles.stat}>
                             <Text style={[styles.statValue, { color: colors.text }]}>{collector.legendaryCount}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('statLegendary')}</Text>
                         </View>
                     </View>
                 </View>
 
                 <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Витрина коллекционера</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('collectorShowcase')}</Text>
                     {collector.showcase.map((item) => (
                         <View key={item.id} style={[styles.showcaseRow, { borderBottomColor: colors.border }]}>
                             <View style={[styles.showcaseIcon, { backgroundColor: colors.surface }]}>

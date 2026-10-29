@@ -290,7 +290,7 @@ export default function UploadScreen() {
     // Гейт стоит после всех хуков, поэтому правила хуков не нарушены.
     if (!isAuthenticated) {
         return (
-            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'left', 'right']}>
+            <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
                 <AuthGate
                     icon="create-outline"
                     title={t('gateUploadTitle')}
@@ -362,15 +362,14 @@ export default function UploadScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
             <KeyboardAvoidingView
-                style={[styles.keyboardWrap, { backgroundColor: colors.background }]}
+                style={styles.keyboardWrap}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'android' ? 20 : 0}
             >
                 <ScrollView
                     contentContainerStyle={styles.container}
-                    style={{ backgroundColor: colors.background }}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >

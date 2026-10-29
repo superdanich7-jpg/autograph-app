@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { hapticLight, hapticMedium } from '../../lib/haptics';
 import { radii, spacing, typography } from '../../lib/theme';
@@ -47,6 +48,7 @@ export function Sheet({
   children,
 }: SheetProps) {
   const { colors } = useTheme();
+    const { t, lang } = useLanguage();
   const insets = useSafeAreaInsets();
   const screenHeight = Dimensions.get('window').height;
   const sheetHeight = screenHeight * SHEET_RATIOS[size];
@@ -114,7 +116,7 @@ export function Sheet({
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={close}>
       <View style={styles.root}>
-        <TouchableWithoutFeedback onPress={close} accessibilityRole="button" accessibilityLabel="Закрыть">
+        <TouchableWithoutFeedback onPress={close} accessibilityRole="button" accessibilityLabel={t('close')}>
           <Animated.View style={[styles.backdrop, { backgroundColor: colors.overlay, opacity: backdropOpacity }]} />
         </TouchableWithoutFeedback>
         <Animated.View
@@ -128,7 +130,7 @@ export function Sheet({
             },
           ]}
         >
-          <View {...panResponder.panHandlers} style={styles.handleZone} accessibilityRole="button" accessibilityLabel="Потяните вниз чтобы закрыть">
+          <View {...panResponder.panHandlers} style={styles.handleZone} accessibilityRole="button" accessibilityLabel={t('sheetDragHint')}>
             <View style={[styles.handle, { backgroundColor: colors.border }]} />
           </View>
           {title ? (
@@ -143,7 +145,7 @@ export function Sheet({
                 onPress={close}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 accessibilityRole="button"
-                accessibilityLabel="Закрыть"
+                accessibilityLabel={t('close')}
                 style={[styles.closeBtn, { backgroundColor: colors.surface }]}
               >
                 <Ionicons name="close" size={20} color={colors.textSecondary} />

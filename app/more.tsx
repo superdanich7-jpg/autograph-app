@@ -119,7 +119,7 @@ export default function MoreScreen() {
     );
 
     return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
                 <TouchableOpacity
                     onPress={() => router.back()}

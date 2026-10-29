@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import { Post } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { getCategoryLabel, getEvidenceLabel, getRarityLabel } from '../lib/helpers';
 import AuthenticityVerdictCard from './AuthenticityVerdictCard';
@@ -35,6 +36,7 @@ export default function PostDetailModal({
     onShare?: (post: Post) => void;
     colors: Colors;
 }) {
+    const { t } = useLanguage();
     if (!post) return null;
 
     const handleShareCertificate = async () => {
@@ -51,7 +53,7 @@ export default function PostDetailModal({
                 if (canShare) {
                     await Sharing.shareAsync(fileUri, {
                         mimeType: 'image/svg+xml',
-                        dialogTitle: 'Поделиться сертификатом подлинности',
+                        dialogTitle: t('shareCertificate'),
                         UTI: 'public.svg-image',
                     });
                     return;
@@ -63,11 +65,11 @@ export default function PostDetailModal({
             const text = formatCertificateShareText(post, url);
             await Sharing.shareAsync(text, {
                 mimeType: 'text/plain',
-                dialogTitle: 'Поделиться сертификатом подлинности',
+                dialogTitle: t('shareCertificate'),
             });
         } catch (error) {
             console.warn('[Certificate] Share failed:', error);
-            showToast('Не удалось поделиться сертификатом', 'error');
+            showToast(t('shareCertificateError'), 'error');
         }
     };
 
@@ -92,7 +94,7 @@ export default function PostDetailModal({
                     <Text style={[styles.detailMeta, { color: colors.textSecondary }]}>
                         {post.location} • {post.dateReceived}
                     </Text>
-                    <Text style={[styles.detailDescription, { color: colors.text }]}>{post.caption || 'Без описания'}</Text>
+                    <Text style={[styles.detailDescription, { color: colors.text }]}>{post.caption || t('detailNoDescription')}</Text>
 
                     <View style={styles.detailBadges}>
                         <View style={[styles.badge, { backgroundColor: colors.surface }]}>
@@ -103,7 +105,7 @@ export default function PostDetailModal({
                         </View>
                     </View>
 
-                    <Text style={[styles.evidenceTitle, { color: colors.textSecondary }]}>Доказательства</Text>
+                    <Text style={[styles.evidenceTitle, { color: colors.textSecondary }]}>{t('detailEvidence')}</Text>
                     <View style={styles.detailBadges}>
                         {post.evidence.map((item) => (
                             <View key={item} style={[styles.badge, { backgroundColor: colors.surface }]}>
@@ -118,7 +120,7 @@ export default function PostDetailModal({
                         <View style={[styles.aiCard, { backgroundColor: colors.surface }]}>
                             <View style={styles.aiTitleRow}>
                                 <Ionicons name="sparkles-outline" size={16} color={colors.primary} />
-                                <Text style={[styles.aiTitle, { color: colors.text }]}>Распознанная личность</Text>
+                                <Text style={[styles.aiTitle, { color: colors.text }]}>{t('detailIdentity')}</Text>
                             </View>
                             <Text style={[styles.aiHint, { color: colors.textSecondary }]}>
                                 {post.aiSuggestion}

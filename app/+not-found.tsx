@@ -1,15 +1,17 @@
 import { Link, Stack } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function NotFoundScreen() {
+  const { t } = useLanguage();
   return (
     <>
-      <Stack.Screen options={{ title: 'Ой!' }} />
+      <Stack.Screen options={{ title: t('nfTitle') }} />
       <View style={styles.container}>
-        <Text style={styles.title}>Такой экран не существует.</Text>
+        <Text style={styles.title}>{t('nfText')}</Text>
 
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Вернуться на главную</Text>
+          <Text style={styles.linkText}>{t('nfHome')}</Text>
         </Link>
       </View>
     </>

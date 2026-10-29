@@ -1,5 +1,5 @@
 /**
- * RecommendedRail — горизонтальная карусель «Вам может понравиться».
+ * RecommendedRail — горизонтальная карусель «{t('recommendedForYou')}».
  *
  * CEO-идея #6 (Фаза 2): персональные рекомендации в ленте (паттерн
  * Instagram/TikTok «Suggested»). Показывает чип причины — прозрачность
@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import type { Recommendation } from '../lib/recommendations';
 import { getRarityLabel } from '../lib/helpers';
 
@@ -33,13 +34,14 @@ export default function RecommendedRail({
   colors: Colors;
   onOpenDetail: (post: Post) => void;
 }) {
+  const { t } = useLanguage();
   if (recommendations.length === 0) return null;
 
   return (
     <View style={styles.wrap}>
       <View style={styles.header}>
         <Ionicons name="sparkles" size={16} color={colors.primary} />
-        <Text style={[styles.title, { color: colors.text }]}>Вам может понравиться</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('recommendedForYou')}</Text>
       </View>
       <ScrollView
         horizontal

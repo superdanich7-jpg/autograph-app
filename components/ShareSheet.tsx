@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { getPostDeepLink, generateQrCodeDataUrl, saveQrCodeToGallery, sharePost as sharePostUtil } from '../lib/sharing';
 import { showToast } from './Toast';
@@ -16,6 +17,7 @@ type ShareSheetProps = {
 
 export default function ShareSheet({ visible, postId, celebrityName, imageUri, onClose }: ShareSheetProps) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -29,14 +31,14 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
       onClose();
     } catch (error) {
       console.warn('Share failed:', error);
-      showToast('Ошибка при отправке', 'error');
+      showToast(t('shareError'), 'error');
     }
   };
 
   const handleCopyLink = async () => {
     const link = getPostDeepLink(postId);
     // Fallback: use clipboard
-    Alert.alert('Ссылка скопирована', link);
+    Alert.alert(t('linkCopied'), link);
     onClose();
   };
 
@@ -48,7 +50,7 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
       setQrUrl(qrDataUrl);
     } catch (error) {
       console.warn('QR generation failed:', error);
-      Alert.alert('Ошибка', 'Не удалось сгенерировать QR-код.');
+      Alert.alert(t('error'), t('qrFailed'));
     } finally {
       setIsGenerating(false);
     }
@@ -58,7 +60,7 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
     if (!qrUrl) return;
     try {
       await saveQrCodeToGallery(qrUrl);
-      Alert.alert('Успех', 'QR-код сохранен в галерее');
+      Alert.alert(t('success'), t('qrSaved'));
     } catch (error) {
       console.warn('Save QR failed:', error);
     }
@@ -71,7 +73,7 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>Поделиться автографом</Text>
+            <Text style={[styles.title, { color: colors.text }]}>{t('shareTitle')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Ionicons name="close" size={24} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -81,10 +83,10 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
             <Ionicons name="image-outline" size={40} color={colors.primary} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.previewTitle, { color: colors.text }]} numberOfLines={1}>
-                {celebrityName || 'Автограф'}
+                {celebrityName || t('autographFallback')}
               </Text>
               <Text style={[styles.previewHint, { color: colors.textSecondary }]}>
-                Выберите способ шеринга
+                {t('shareChoose')}
               </Text>
             </View>
           </View>
@@ -92,12 +94,12 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
           <View style={styles.actionsRow}>
             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: colors.card }]} onPress={handleNativeShare}>
               <Ionicons name="share-social-outline" size={24} color={colors.primary} />
-              <Text style={[styles.actionText, { color: colors.text }]}>Поделиться</Text>
+              <Text style={[styles.actionText, { color: colors.text }]}>{t('shareAction')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: colors.card }]} onPress={handleCopyLink}>
               <Ionicons name="link-outline" size={24} color={colors.primary} />
-              <Text style={[styles.actionText, { color: colors.text }]}>Копировать ссылку</Text>
+              <Text style={[styles.actionText, { color: colors.text }]}>{t('copyLink')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: colors.card }]} onPress={handleGenerateQr} disabled={isGenerating}>
@@ -114,7 +116,7 @@ export default function ShareSheet({ visible, postId, celebrityName, imageUri, o
               </View>
               <TouchableOpacity style={[styles.saveQrBtn, { backgroundColor: colors.primary }]} onPress={handleSaveQr}>
                 <Ionicons name="download-outline" size={18} color={colors.primaryText} />
-                <Text style={[styles.saveQrText, { color: colors.primaryText }]}>Сохранить в галерею</Text>
+                <Text style={[styles.saveQrText, { color: colors.primaryText }]}>{t('saveGallery')}</Text>
               </TouchableOpacity>
             </View>
           ) : null}

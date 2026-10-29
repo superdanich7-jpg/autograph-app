@@ -56,10 +56,7 @@ export default function AuthGate({ icon, title, hint }: Props) {
                         onPress={() => setLang(code)}
                         style={[
                             styles.langOption,
-                            {
-                                backgroundColor: lang === code ? colors.primary : colors.card,
-                                borderColor: colors.border,
-                            },
+                            { backgroundColor: lang === code ? colors.primary : colors.card },
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel={code === 'ru' ? 'Русский' : 'English'}
@@ -130,7 +127,6 @@ const styles = StyleSheet.create({
         minWidth: 56,
         minHeight: 40,
         borderRadius: radii.full,
-        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: spacing.md,

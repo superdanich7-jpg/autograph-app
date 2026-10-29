@@ -6,7 +6,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Href, usePathname, useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
@@ -92,12 +93,13 @@ export default function CustomTabBar() {
             style={[
                 styles.bar,
                 {
-                    backgroundColor: colors.card,
-                    borderTopColor: colors.border,
+                    backgroundColor: (colors as { glassCard?: string }).glassCard ?? colors.card,
+                    borderTopColor: (colors as { glassBorder?: string }).glassBorder ?? colors.border,
                     paddingBottom: Math.max(insets.bottom, 10),
                 },
             ]}
         >
+            <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
             {renderSide(sideTabs[0])}
 
             <View style={styles.centerSlot} pointerEvents="box-none">
@@ -134,6 +136,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         minHeight: 64,
         borderTopWidth: StyleSheet.hairlineWidth,
+        overflow: 'hidden',
     },
     sideItem: {
         flex: 1,

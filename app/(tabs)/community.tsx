@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
 import { usePosts } from '../../context/PostsContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent } from '../../lib/helpers';
 import { getTrustTier } from '../../lib/trust';
@@ -13,6 +14,7 @@ import { getTrustTier } from '../../lib/trust';
 export default function CommunityScreen() {
     const { posts, profile, reputation, communityCollectors, toggleFollowCollector } = usePosts();
     const { colors } = useTheme();
+    const { t, lang } = useLanguage();
     const router = useRouter();
 
     const leaderboard = useMemo(() => {
@@ -22,9 +24,9 @@ export default function CommunityScreen() {
                 id: 'you',
                 name: profile.name,
                 badge: '*',
-                specialty: 'Ваша коллекция',
+                specialty: t('yourCollection'),
                 score: reputation.score,
-                featuredCelebrity: posts[0]?.celebrityName || 'Новый автограф',
+                featuredCelebrity: posts[0]?.celebrityName || t('upTitle'),
             },
         ].sort((a, b) => b.score - a.score);
 
@@ -53,14 +55,14 @@ export default function CommunityScreen() {
             id: `${post.id}-${index}`,
             text:
                 index % 2 === 0
-                    ? `${profile.name} загрузил карточку "${post.celebrityName}" и получил ${post.realVotes} подтверждений`
-                    : `${profile.name} сохранил в избранное карточку "${post.celebrityName}"`,
+                    ? t('activityUploaded', { name: profile.name, card: post.celebrityName, votes: post.realVotes })
+                    : t('activitySaved', { name: profile.name, card: post.celebrityName }),
         }));
 
         if (activities.length === 0) {
             return [
-                { id: 'seed-1', text: 'Arena Hunter подтвердил редкий автограф из мира спорта' },
-                { id: 'seed-2', text: 'Signature Vault добавил новую карточку с сертификатом подлинности' },
+                { id: 'seed-1', text: t('demoActivity1') },
+                { id: 'seed-2', text: t('demoActivity2') },
             ];
         }
 
@@ -75,16 +77,16 @@ export default function CommunityScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.header}>
-                    <Text style={[styles.title, { color: colors.text }]}>Клуб</Text>
+                    <Text style={[styles.title, { color: colors.text }]}>{t('clubTitle')}</Text>
                     <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                        Лидерборд коллекционеров, подписки и живой поток активности.
+                        {t('clubSubtitle')}
                     </Text>
                 </View>
 
                 <Card variant="default" padding="md">
                     <View style={styles.sectionHeader}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Топ коллекционеров</Text>
-                        <Badge label="Демо-данные" variant="gold" size="sm" />
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('topCollectors')}</Text>
+                        <Badge label={t('demoBadge')} variant="gold" size="sm" />
                     </View>
                     {leaderboard.map((item) => {
                         const isFollowing = profile.following.includes(item.id);
@@ -139,7 +141,7 @@ export default function CommunityScreen() {
                                                     { color: isFollowing ? colors.text : colors.primaryText },
                                                 ]}
                                             >
-                                                {isFollowing ? 'Вы подписаны' : 'Подписаться'}
+                                                {isFollowing ? t('following') : t('follow')}
                                             </Text>
                                         </TouchableOpacity>
                                     ) : null}
@@ -151,14 +153,14 @@ export default function CommunityScreen() {
 
                 <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.sectionHeader}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Подписки</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('subscriptions')}</Text>
                         <Text style={[styles.sectionMeta, { color: colors.textSecondary }]}>
-                            {profile.following.length} подписок
+                            {t('followingCount', { n: profile.following.length })}
                         </Text>
                     </View>
                     {profile.following.length === 0 ? (
                         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                            Пока ни на кого не подписаны. Выберите коллекционеров из рейтинга выше.
+                            {t('noFollowing')}
                         </Text>
                     ) : (
                         communityCollectors
@@ -168,7 +170,7 @@ export default function CommunityScreen() {
                                     <View>
                                         <Text style={[styles.followingName, { color: colors.text }]}>{collector.name}</Text>
                                         <Text style={[styles.followingHint, { color: colors.textSecondary }]}>
-                                            {collector.specialty} • {collector.score} очков
+                                            {t('collectorScore', { specialty: collector.specialty, score: collector.score })}
                                         </Text>
                                     </View>
                                     <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
@@ -179,8 +181,8 @@ export default function CommunityScreen() {
 
                 <Card variant="default" padding="md">
                     <View style={styles.sectionHeader}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Лента активности</Text>
-                        <Badge label="Последние события" variant="default" size="sm" />
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('activityFeed')}</Text>
+                        <Badge label={t('latestEvents')} variant="default" size="sm" />
                     </View>
                     {activityFeed.map((item) => (
                         <View key={item.id} style={[styles.activityRow, { borderBottomColor: colors.border }]}>
@@ -194,12 +196,12 @@ export default function CommunityScreen() {
 
                 <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.sectionHeader}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Сильные карточки</Text>
-                        <Text style={[styles.sectionMeta, { color: colors.textSecondary }]}>Лучшее доверие</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('strongCards')}</Text>
+                        <Text style={[styles.sectionMeta, { color: colors.textSecondary }]}>{t('bestTrust')}</Text>
                     </View>
                     {hottestPosts.length === 0 ? (
                         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                            Пока нет карточек, чтобы собрать витрину сообщества.
+                            {t('noShowcase')}
                         </Text>
                     ) : (
                         hottestPosts.map((post) => (
@@ -210,7 +212,7 @@ export default function CommunityScreen() {
                                 <View style={{ flex: 1 }}>
                                     <Text style={[styles.postName, { color: colors.text }]}>{post.celebrityName}</Text>
                                     <Text style={[styles.postMeta, { color: colors.textSecondary }]}>
-                                        {post.location} • {post.realVotes} подтверждений
+                                        {t('cardVerifications', { location: post.location, votes: post.realVotes })}
                                     </Text>
                                 </View>
                                 <Text style={[styles.postScore, { color: colors.text }]}>{getAuthenticityPercent(post)}%</Text>
@@ -221,12 +223,12 @@ export default function CommunityScreen() {
 
                 <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.sectionHeader}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Спорные кейсы</Text>
-                        <Text style={[styles.sectionMeta, { color: colors.textSecondary }]}>Нужны голоса</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('disputedCases')}</Text>
+                        <Text style={[styles.sectionMeta, { color: colors.textSecondary }]}>{t('needVotes')}</Text>
                     </View>
                     {disputedPosts.length === 0 ? (
                         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                            Сейчас спорных карточек нет. Сообщество довольно уверено.
+                            {t('noDisputed')}
                         </Text>
                     ) : (
                         disputedPosts.map((post) => (
@@ -237,7 +239,7 @@ export default function CommunityScreen() {
                                 <View style={{ flex: 1 }}>
                                     <Text style={[styles.postName, { color: colors.text }]}>{post.celebrityName}</Text>
                                     <Text style={[styles.postMeta, { color: colors.textSecondary }]}>
-                                        {post.realVotes} за реальный • {post.fakeVotes} за фейк
+                                        {t('cardVotesSplit', { real: post.realVotes, fake: post.fakeVotes })}
                                     </Text>
                                 </View>
                                 <Text style={[styles.postScore, { color: colors.text }]}>{getAuthenticityPercent(post)}%</Text>
