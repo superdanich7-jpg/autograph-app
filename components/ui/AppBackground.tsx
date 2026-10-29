@@ -9,7 +9,7 @@
 
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View, ViewStyle } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function AppBackground() {
@@ -30,21 +30,13 @@ export default function AppBackground() {
     const coolGlow = theme === 'dark' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(147, 197, 253, 0.18)';
 
     if (Platform.OS === 'web') {
+        // backgroundImage отсутствует в RN ViewStyle (это web-расширение RNW) —
+        // поэтому каст; на web стиль применяется как CSS.
+        const bgStyle = { backgroundImage: `linear-gradient(180deg, ${gradient.join(', ')})` } as unknown as ViewStyle;
+        const glowStyle = { backgroundImage: `linear-gradient(180deg, ${glow}, rgba(0,0,0,0))` } as unknown as ViewStyle;
         return (
-            <View
-                style={[
-                    StyleSheet.absoluteFill,
-                    { backgroundImage: `linear-gradient(180deg, ${gradient.join(', ')})` },
-                ]}
-                pointerEvents="none"
-            >
-                <View
-                    style={[
-                        StyleSheet.absoluteFill,
-                        styles.topGlow,
-                        { backgroundImage: `linear-gradient(180deg, ${glow}, rgba(0,0,0,0))` },
-                    ]}
-                />
+            <View style={[StyleSheet.absoluteFill, bgStyle]} pointerEvents="none">
+                <View style={[StyleSheet.absoluteFill, styles.topGlow, glowStyle]} />
                 <View style={[styles.glowBlob, styles.glowTopRight, { backgroundColor: glow }]} />
                 <View style={[styles.glowBlob, styles.glowBottomLeft, { backgroundColor: glow }]} />
                 <View style={[styles.glowBlob, styles.glowMid, { backgroundColor: coolGlow }]} />
