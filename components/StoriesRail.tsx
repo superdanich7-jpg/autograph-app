@@ -6,7 +6,7 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post } from '../context/PostsContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -20,15 +20,18 @@ type Props = {
     onPressAdd: () => void;
 };
 
-const FRESH_WINDOW_MS = 24 * 60 * 60 * 1000;
+// Окно 7 дней: на раннем этапе постов мало, 24ч оставляют рейку пустой на демо
+const FRESH_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_ITEMS = 12;
 
 export default function StoriesRail({ posts, onPressPost, onPressAdd }: Props) {
     const { colors } = useTheme();
     const { t } = useLanguage();
 
+    // Date.now() — «нечистый» вызов: берём один раз при монтировании (useState-инициализатор)
+    const [now] = useState(() => Date.now());
     const fresh = posts
-        .filter((p) => Date.now() - new Date(p.timestamp).getTime() < FRESH_WINDOW_MS)
+        .filter((p) => now - new Date(p.timestamp).getTime() < FRESH_WINDOW_MS)
         .slice(0, MAX_ITEMS);
 
     // Без свежих постов рейка не рисуется (в IG пустых кружков не бывает)
