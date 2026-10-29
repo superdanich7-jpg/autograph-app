@@ -15,29 +15,12 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticLight } from '../lib/haptics';
 import { motion, radii, shadows, spacing, typography } from '../lib/theme';
 
 export const ONBOARDING_KEY = 'autograph.onboarding.v2';
-
-const slides = [
-  {
-    icon: 'camera-outline',
-    title: 'Сфотографируйте автограф',
-    description: 'Сделайте снимок подписи — ИИ подскажет, чей это автограф.',
-  },
-  {
-    icon: 'shield-checkmark-outline',
-    title: 'Сообщество проверит подлинность',
-    description: 'Коллекционеры голосуют за подлинность. Больше голосов — выше доверие.',
-  },
-  {
-    icon: 'trophy-outline',
-    title: 'Собирайте и делитесь',
-    description: 'Копите редкие находки, следите за ценой коллекции и получайте бейджи.',
-  },
-];
 
 type Props = {
   onComplete?: () => void;
@@ -45,9 +28,29 @@ type Props = {
 
 export default function OnboardingScreen({ onComplete }: Props) {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const iconAnim = useRef(new Animated.Value(0)).current;
+
+  // Слайды внутри компонента: тексты зависят от выбранного языка.
+  const slides = [
+    {
+      icon: 'camera-outline',
+      title: t('onbPhotoTitle'),
+      description: t('onbPhotoDesc'),
+    },
+    {
+      icon: 'shield-checkmark-outline',
+      title: t('onb2Title'),
+      description: t('onb2Text'),
+    },
+    {
+      icon: 'trophy-outline',
+      title: t('onbShareTitle'),
+      description: t('onb3Text'),
+    },
+  ];
 
   useEffect(() => {
     iconAnim.setValue(0);
@@ -94,8 +97,8 @@ export default function OnboardingScreen({ onComplete }: Props) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.topRow}>
-        <TouchableOpacity onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Пропустить обучение">
-          <Text style={[typography.bodyMedium, { color: colors.textSecondary }]}>Пропустить</Text>
+        <TouchableOpacity onPress={handleSkip} accessibilityRole="button" accessibilityLabel={t('onbSkip')}>
+          <Text style={[typography.bodyMedium, { color: colors.textSecondary }]}>{t('onbSkip')}</Text>
         </TouchableOpacity>
         <Text style={[typography.label, { color: colors.textTertiary }]}>
           {currentIndex + 1} / {slides.length}
@@ -151,10 +154,10 @@ export default function OnboardingScreen({ onComplete }: Props) {
         onPress={handleNext}
         activeOpacity={0.85}
         accessibilityRole="button"
-        accessibilityLabel={isLast ? 'Добавить первый автограф' : 'Следующий шаг обучения'}
+        accessibilityLabel={isLast ? t('onbCta') : t('onbA11yNext')}
       >
         <Text style={[styles.buttonText, { color: colors.primaryText }]}>
-          {isLast ? 'Добавить первый автограф' : 'Далее'}
+          {isLast ? t('onbCta') : t('onbNext')}
         </Text>
         <Ionicons name={isLast ? 'camera' : 'arrow-forward'} size={20} color={colors.primaryText} />
       </TouchableOpacity>

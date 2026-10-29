@@ -12,6 +12,7 @@ import {
     isDisputed,
 } from '../lib/helpers';
 import { getAuthenticityVerdict } from '../lib/authenticity';
+import { shadows } from '../lib/theme';
 import Badge from './ui/Badge';
 import VoteButton from './ui/VoteButton';
 
@@ -369,9 +370,9 @@ export default function FeedPostCard({
 
 const styles = StyleSheet.create({
     post: {
-        borderWidth: 1,
         borderRadius: 20,
         overflow: 'hidden',
+        ...shadows.md,
     },
     postHeader: {
         flexDirection: 'row',

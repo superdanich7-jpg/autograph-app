@@ -29,7 +29,9 @@ export type HealthCheckerDeps = {
     ttlMs: number;
 };
 
-export const DEFAULT_HEALTH_TIMEOUT_MS = 5000;
+// 10с: из РФ ответ /auth/v1/health стабильно укладывается дольше 5с,
+// из-за чего живой проект помечался «недоступным» (жалоба основателя 2026-10-29).
+export const DEFAULT_HEALTH_TIMEOUT_MS = 10_000;
 export const DEFAULT_HEALTH_TTL_MS = 60_000;
 
 /** Свеж ли кэш health-проверки (чистая функция для тестов). */

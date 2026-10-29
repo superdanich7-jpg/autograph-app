@@ -21,9 +21,10 @@ import FriendsSheet from '../components/FriendsSheet';
 import ProfileModal from '../components/ProfileModal';
 import ProfilePostModal from '../components/ProfilePostModal';
 import { Post, usePosts } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticLight } from '../lib/haptics';
-import { radii, spacing, typography } from '../lib/theme';
+import { radii, shadows, spacing, typography } from '../lib/theme';
 
 type Row = {
     key: string;
@@ -45,6 +46,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function MoreScreen() {
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const { posts, authUserEmail } = usePosts();
     const router = useRouter();
 
@@ -57,8 +59,8 @@ export default function MoreScreen() {
         {
             key: 'club',
             icon: 'people-outline',
-            title: 'Клуб коллекционеров',
-            subtitle: 'Карточки, доверие, топ коллекционеров',
+            title: t('clubRow'),
+            subtitle: t('clubRowHint'),
             onPress: () => {
                 hapticLight();
                 router.push('/community');
@@ -67,15 +69,15 @@ export default function MoreScreen() {
         {
             key: 'friends',
             icon: 'person-add-outline',
-            title: 'Друзья',
-            subtitle: 'Заявки, Presence, «Для вас»',
+            title: t('rowFriends'),
+            subtitle: t('rowFriendsHint'),
             onPress: () => setFriendsVisible(true),
         },
         {
             key: 'chat',
             icon: 'chatbubbles-outline',
-            title: 'Сообщения',
-            subtitle: 'Личные диалоги коллекционеров',
+            title: t('rowMessages'),
+            subtitle: t('rowMessagesHint'),
             onPress: () => {
                 hapticLight();
                 router.push('/chat');
@@ -84,15 +86,15 @@ export default function MoreScreen() {
         {
             key: 'communities',
             icon: 'people-outline',
-            title: 'Сообщества',
-            subtitle: 'Публичные и приватные клубы',
+            title: t('rowCommunities'),
+            subtitle: t('rowCommunitiesHint'),
             onPress: () => setCommunitiesVisible(true),
         },
         {
             key: 'collections',
             icon: 'albums-outline',
-            title: 'Подборки',
-            subtitle: 'Тематические коллекции постов',
+            title: t('rowCollections'),
+            subtitle: t('rowCollectionsHint'),
             onPress: () => setCollectionsVisible(true),
         },
     ];
@@ -123,25 +125,25 @@ export default function MoreScreen() {
                     onPress={() => router.back()}
                     style={styles.backBtn}
                     accessibilityRole="button"
-                    accessibilityLabel="Назад"
+                    accessibilityLabel={t('back')}
                 >
                     <Ionicons name="chevron-back" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[typography.h2, { color: colors.text }]}>Ещё</Text>
+                <Text style={[typography.h2, { color: colors.text }]}>{t('moreTitle')}</Text>
                 <View style={styles.backBtn} />
             </View>
 
             <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                <Section title="Сообщество">
+                <Section title={t('sectionSocial')}>
                     {socialRows.map(renderRow)}
                 </Section>
 
-                <Section title="Коллекция">
+                <Section title={t('sectionCollection')}>
                     <ShareStatsCard />
                     <AchievementsSection userId={authUserEmail || 'guest'} />
                 </Section>
 
-                <Section title="Инструменты">
+                <Section title={t('sectionTools')}>
                     <AdvancedSearch posts={posts} onPostPress={(p) => setSelectedPost(p)} />
                     <ExportCollection />
                     <ImportCollection />
@@ -158,7 +160,7 @@ export default function MoreScreen() {
                     router.push('/chat');
                 }}
             />
-            <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || 'Автограф'} colors={colors} onClose={() => setSelectedPost(null)}>
+            <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || t('autographFallback')} colors={colors} onClose={() => setSelectedPost(null)}>
                 <ProfilePostModal post={selectedPost} colors={colors} onClose={() => setSelectedPost(null)} />
             </ProfileModal>
         </SafeAreaView>
@@ -183,9 +185,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.md,
-        borderWidth: 1,
         borderRadius: radii.lg,
         padding: spacing.md,
+        ...shadows.sm,
     },
     rowIcon: {
         width: 40,

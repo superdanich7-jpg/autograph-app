@@ -15,7 +15,10 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLanguage } from '../context/LanguageContext';
+import { Lang } from '../lib/i18n';
 import { useTheme } from '../context/ThemeContext';
+import { translate } from '../lib/i18n';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 type Message = {
@@ -25,35 +28,36 @@ type Message = {
 
 type AuthAction = 'login' | 'register';
 
-function getFriendlyAuthError(message: string) {
+function getFriendlyAuthError(message: string, lang: Lang) {
     const normalized = message.toLowerCase();
 
     if (normalized.includes('invalid login credentials')) {
-        return 'Неверный email или пароль. Проверьте данные и попробуйте еще раз.';
+        return translate(lang, 'authWrongCredentials');
     }
 
     if (normalized.includes('email not confirmed')) {
-        return 'Email еще не подтвержден. Откройте письмо и подтвердите аккаунт.';
+        return translate(lang, 'authEmailNotConfirmed');
     }
 
     if (normalized.includes('already registered') || normalized.includes('user already registered')) {
-        return 'Аккаунт с таким email уже есть. Попробуйте войти.';
+        return translate(lang, 'authEmailExists');
     }
 
     if (normalized.includes('password') && normalized.includes('6')) {
-        return 'Пароль должен быть не короче 6 символов.';
+        return translate(lang, 'authPasswordTooShort');
     }
 
     if (normalized.includes('signup')) {
-        return 'Регистрация сейчас временно отключена.';
+        return translate(lang, 'authSignupDisabled');
     }
 
-    return message || 'Сервис авторизации вернул ошибку.';
+    return message || translate(lang, 'authServiceError');
 }
 
 export default function AuthScreen() {
     const router = useRouter();
     const { colors } = useTheme();
+    const { t, lang } = useLanguage();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loadingAction, setLoadingAction] = useState<AuthAction | null>(null);
@@ -89,18 +93,18 @@ export default function AuthScreen() {
         if (!isSupabaseConfigured) {
             setMessage({
                 type: 'error',
-                text: 'Облачная синхронизация не подключена. Проверьте настройки окружения.',
+                text: t('authCloudNotConfigured'),
             });
             return false;
         }
 
         if (!email.trim() || !email.includes('@')) {
-            setMessage({ type: 'error', text: 'Введите корректный email.' });
+            setMessage({ type: 'error', text: t('authInvalidEmail') });
             return false;
         }
 
         if (password.length < 6) {
-            setMessage({ type: 'error', text: 'Пароль должен быть не короче 6 символов.' });
+            setMessage({ type: 'error', text: t('authPasswordTooShort') });
             return false;
         }
 
@@ -111,7 +115,7 @@ export default function AuthScreen() {
         if (!validateForm()) return;
 
         setLoadingAction('login');
-        setMessage({ type: 'info', text: 'Проверяю данные аккаунта...' });
+        setMessage({ type: 'info', text: t('authChecking') });
 
         try {
             const { error } = await withTimeout(
@@ -124,20 +128,19 @@ export default function AuthScreen() {
 
             if (error) throw error;
 
-            setMessage({ type: 'success', text: 'Вход выполнен. Перехожу в профиль...' });
+            setMessage({ type: 'success', text: t('authSignedIn') });
             router.replace('/profile');
         } catch (error) {
             const message = error instanceof Error ? error.message : '';
             if (message.includes('Сервер не отвечает')) {
                 setMessage({
                     type: 'error',
-                    text:
-                        'Сервер не отвечает. Проверьте подключение (из РФ может потребоваться VPN) и попробуйте позже.',
+                    text: t('authServerNoResponseBody'),
                 });
             } else {
                 setMessage({
                     type: 'error',
-                    text: getFriendlyAuthError(message),
+                    text: getFriendlyAuthError(message, lang),
                 });
             }
         } finally {
@@ -149,7 +152,7 @@ export default function AuthScreen() {
         if (!validateForm()) return;
 
         setLoadingAction('register');
-        setMessage({ type: 'info', text: 'Создаю аккаунт...' });
+        setMessage({ type: 'info', text: t('authCreating') });
 
         try {
             const { data, error } = await withTimeout(
@@ -169,19 +172,19 @@ export default function AuthScreen() {
             if (error) throw error;
 
             if (data.session) {
-                setMessage({ type: 'success', text: 'Аккаунт создан. Перехожу в профиль...' });
+                setMessage({ type: 'success', text: t('authCreated') });
                 router.replace('/profile');
                 return;
             }
 
             setMessage({
                 type: 'success',
-                text: 'Аккаунт создан. Если включено подтверждение email, откройте письмо и подтвердите вход.',
+                text: t('authCreatedConfirm'),
             });
         } catch (error) {
             setMessage({
                 type: 'error',
-                text: getFriendlyAuthError(error instanceof Error ? error.message : ''),
+                text: getFriendlyAuthError(error instanceof Error ? error.message : '', lang),
             });
         } finally {
             setLoadingAction(null);
@@ -189,7 +192,7 @@ export default function AuthScreen() {
     };
 
     const handleGuestMode = () => {
-        setMessage({ type: 'info', text: 'Гостевой режим: просмотр доступен, лайки, комментарии и голоса выключены.' });
+        setMessage({ type: 'info', text: t('authGuestBanner') });
         router.replace('/');
     };
 
@@ -220,7 +223,7 @@ export default function AuthScreen() {
 
                         <Text style={[styles.title, { color: colors.text }]}>Autograph</Text>
                         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                            Войдите, чтобы синхронизировать коллекцию в облаке.
+                            {t('authSubtitle')}
                         </Text>
 
                         <View style={styles.form}>
@@ -244,13 +247,13 @@ export default function AuthScreen() {
                                 textContentType="emailAddress"
                             />
 
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Пароль</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('authPassword')}</Text>
                             <TextInput
                                 style={[
                                     styles.input,
                                     { backgroundColor: colors.background, borderColor: colors.border, color: colors.text },
                                 ]}
-                                placeholder="Минимум 6 символов"
+                                placeholder={t("authMinLength")}
                                 placeholderTextColor={colors.placeholder}
                                 secureTextEntry
                                 autoComplete="current-password"
@@ -298,7 +301,7 @@ export default function AuthScreen() {
                                             { color: canSubmit ? colors.primaryText : colors.textSecondary },
                                         ]}
                                     >
-                                        Войти
+                                        {t('signInAction')}
                                     </Text>
                                 </>
                             )}
@@ -316,7 +319,7 @@ export default function AuthScreen() {
                                 <>
                                     <Ionicons name="person-add-outline" size={18} color={colors.text} />
                                     <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
-                                        Зарегистрироваться
+                                        {t('authRegister')}
                                     </Text>
                                 </>
                             )}
@@ -324,7 +327,7 @@ export default function AuthScreen() {
 
                         <TouchableOpacity style={styles.guestButton} onPress={handleGuestMode} activeOpacity={0.8}>
                             <Text style={[styles.guestButtonText, { color: colors.textSecondary }]}>
-                                Продолжить без входа
+                                {t('authGuestContinue')}
                             </Text>
                         </TouchableOpacity>
                     </View>

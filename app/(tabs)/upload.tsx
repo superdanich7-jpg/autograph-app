@@ -3,7 +3,6 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Image,
     KeyboardAvoidingView,
@@ -28,10 +27,12 @@ import {
     usePosts,
 } from '../../context/PostsContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { checkAndAwardAchievements, updateUserStats } from '../../lib/achievements';
-import { hapticLight } from '../../lib/haptics';
+import { hapticLight, hapticMedium } from '../../lib/haptics';
 import { radii } from '../../lib/theme';
 import { showToast } from '../../components/Toast';
+import AuthGate from '../../components/AuthGate';
 import { quickMatch } from '../../lib/signature-analyzer';
 
 type UploadFieldProps = {
@@ -84,8 +85,9 @@ function UploadField({
 }
 
 export default function UploadScreen() {
-    const { addPost, posts, authUserEmail, currentUserId } = usePosts();
+    const { addPost, posts, authUserEmail, currentUserId, isAuthenticated } = usePosts();
     const { colors } = useTheme();
+    const { t } = useLanguage();
 
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [caption, setCaption] = useState('');
@@ -102,9 +104,9 @@ export default function UploadScreen() {
     const [step, setStep] = useState(0);
 
     const steps = [
-        { key: 'photo', label: 'Фото', icon: 'camera-outline' as const },
-        { key: 'details', label: 'Детали', icon: 'create-outline' as const },
-        { key: 'verify', label: 'Проверка', icon: 'shield-checkmark-outline' as const },
+        { key: 'photo', label: t('upStepPhoto'), icon: 'camera-outline' as const },
+        { key: 'details', label: t('upStepDetails'), icon: 'create-outline' as const },
+        { key: 'verify', label: t('upStepVerify'), icon: 'shield-checkmark-outline' as const },
     ];
 
     const canProceedFromPhoto = Boolean(imageUri);
@@ -180,7 +182,7 @@ export default function UploadScreen() {
             console.warn('Analysis error:', error);
             if (!isMounted.current) return;
             setAnalysis(null);
-            showToast('Автопроверку не удалось выполнить — введите имя знаменитости вручную', 'error');
+            showToast(t('analysisFailed'), 'error');
         } finally {
             if (isMounted.current) {
                 setIsAnalyzing(false);
@@ -191,7 +193,7 @@ export default function UploadScreen() {
     const requestGalleryPermission = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Нужен доступ', 'Разрешите доступ к фото в настройках устройства.');
+            Alert.alert(t('permTitle'), t('permPhotoBody'));
             return false;
         }
         return true;
@@ -208,7 +210,7 @@ export default function UploadScreen() {
 
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Нужен доступ', 'Разрешите доступ к камере в настройках устройства.');
+            Alert.alert(t('permTitle'), t('permCameraBody'));
             isPickerOpen.current = false;
             return;
         }
@@ -284,14 +286,28 @@ export default function UploadScreen() {
         setIsAnalyzing(false);
     };
 
+    // Публикация — только для зарегистрированных (решение основателя).
+    // Гейт стоит после всех хуков, поэтому правила хуков не нарушены.
+    if (!isAuthenticated) {
+        return (
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'left', 'right']}>
+                <AuthGate
+                    icon="create-outline"
+                    title={t('gateUploadTitle')}
+                    hint={t('gateUploadHint')}
+                />
+            </SafeAreaView>
+        );
+    }
+
     const handlePublish = async () => {
         if (!imageUri) {
-            Alert.alert('Ошибка', 'Сначала выберите фотографию автографа.');
+            Alert.alert(t('error'), t('publishErrorPhoto'));
             return;
         }
 
         if (!celebrityName.trim()) {
-            Alert.alert('Ошибка', 'Укажите, чей это автограф.');
+            Alert.alert(t('error'), t('publishErrorName'));
             return;
         }
 
@@ -310,7 +326,7 @@ export default function UploadScreen() {
                 uri: finalUri,
                 caption,
                 celebrityName,
-                location: location.trim() || 'Место не указано',
+                location: location.trim() || t('placeUnspecified'),
                 dateReceived: dateReceived.trim() || new Date().toLocaleDateString('ru-RU'),
                 category,
                 rarity,
@@ -320,7 +336,9 @@ export default function UploadScreen() {
                 isAnalyzed: Boolean(analysis),
             });
 
-            Alert.alert('Опубликовано', 'Автограф добавлен в коллекцию.');
+            // На web Alert.alert — заглушка без UI, «уведомление» не показывалось.
+            showToast(t('publishedToast'), 'success');
+            hapticMedium();
 
             // Check achievements (non-blocking)
             const currentUser = authUserEmail || 'guest';
@@ -329,7 +347,7 @@ export default function UploadScreen() {
                     .then(() => checkAndAwardAchievements(currentUser))
                     .then((newAch) => {
                         if (newAch.length > 0) {
-                            Alert.alert('🏆 Новое достижение!', newAch.map((a) => `${a.icon} ${a.title}`).join('\n'));
+                            Alert.alert(t('achievementTitle'), newAch.map((a) => `${a.icon} ${a.title}`).join('\n'));
                         }
                     })
                     .catch((e) => console.warn('Achievement check failed:', e));
@@ -357,9 +375,9 @@ export default function UploadScreen() {
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.header}>
-                        <Text style={[styles.title, { color: colors.text }]}>Новый автограф</Text>
+                        <Text style={[styles.title, { color: colors.text }]}>{t('upTitle')}</Text>
                         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                            {steps[step].label}: {step === 0 ? 'сфотографируйте подпись' : step === 1 ? 'укажите детали' : 'проверьте и опубликуйте'}.
+                            {steps[step].label}: {step === 0 ? t('upHintPhoto') : step === 1 ? t('upHintDetails') : t('upHintVerify')}.
                         </Text>
                     </View>
 
@@ -429,9 +447,9 @@ export default function UploadScreen() {
                                 <View style={[styles.emptyPreviewIcon, { backgroundColor: colors.card }]}>
                                     <Ionicons name="camera-outline" size={30} color={colors.primary} />
                                 </View>
-                                <Text style={[styles.emptyText, { color: colors.text }]}>Выберите фото автографа</Text>
+                                <Text style={[styles.emptyText, { color: colors.text }]}>{t('upPickPhoto')}</Text>
                                 <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                                    Лучше всего смотрится фото без бликов и с ровным светом.
+                                    {t('upPhotoTip')}
                                 </Text>
                             </View>
                         )}
@@ -444,7 +462,7 @@ export default function UploadScreen() {
                                 disabled={isAnalyzing}
                             >
                                 <Ionicons name="camera-outline" size={18} color={colors.primaryText} />
-                                <Text style={[styles.primaryButtonText, { color: colors.primaryText }]}>Камера</Text>
+                                <Text style={[styles.primaryButtonText, { color: colors.primaryText }]}>{t('upCamera')}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -454,7 +472,7 @@ export default function UploadScreen() {
                                 disabled={isAnalyzing}
                             >
                                 <Ionicons name="images-outline" size={18} color={colors.text} />
-                                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Галерея</Text>
+                                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>{t('upGallery')}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -465,31 +483,31 @@ export default function UploadScreen() {
                     {step === 1 ? (
                     <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <UploadField
-                            label="Чей автограф"
+                            label={t('fieldWhose')}
                             value={celebrityName}
                             onChangeText={setCelebrityName}
-                            placeholder="Например: Лионель Месси"
+                            placeholder={t("placeholderCelebrity")}
                             colors={colors}
                         />
                         <UploadField
-                            label="Где получен"
+                            label={t('fieldWhere')}
                             value={location}
                             onChangeText={setLocation}
-                            placeholder="Например: Стадион Лужники"
+                            placeholder={t("placeholderLocation")}
                             colors={colors}
                         />
                         <UploadField
-                            label="Когда получен"
+                            label={t('fieldWhen')}
                             value={dateReceived}
                             onChangeText={setDateReceived}
-                            placeholder="Например: 15.04.2024"
+                            placeholder={t("placeholderDate")}
                             colors={colors}
                         />
                         <UploadField
-                            label="Комментарий"
+                            label={t('fieldCaption')}
                             value={caption}
                             onChangeText={setCaption}
-                            placeholder="Пара деталей о встрече, атмосфере или самой подписи"
+                            placeholder={t("placeholderCaption")}
                             colors={colors}
                             multiline
                         />
@@ -498,7 +516,7 @@ export default function UploadScreen() {
 
                     {step === 2 ? (
                     <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Text style={[styles.blockLabel, { color: colors.textSecondary }]}>Категория</Text>
+                        <Text style={[styles.blockLabel, { color: colors.textSecondary }]}>{t('upFieldCategory')}</Text>
                         <View style={styles.chipsRow}>
                             {POST_CATEGORIES.map((item) => {
                                 const active = category === item.value;
@@ -521,7 +539,7 @@ export default function UploadScreen() {
                             })}
                         </View>
 
-                        <Text style={[styles.blockLabel, { color: colors.textSecondary }]}>Редкость</Text>
+                        <Text style={[styles.blockLabel, { color: colors.textSecondary }]}>{t('upFieldRarity')}</Text>
                         <View style={styles.chipsRow}>
                             {RARITY_LEVELS.map((item) => {
                                 const active = rarity === item.value;
@@ -544,7 +562,7 @@ export default function UploadScreen() {
                             })}
                         </View>
 
-                        <Text style={[styles.blockLabel, { color: colors.textSecondary }]}>Доказательства</Text>
+                        <Text style={[styles.blockLabel, { color: colors.textSecondary }]}>{t('upFieldEvidence')}</Text>
                         <View style={styles.chipsRow}>
                             {EVIDENCE_OPTIONS.map((item) => {
                                 const active = evidence.includes(item.value);
@@ -581,13 +599,13 @@ export default function UploadScreen() {
                                 activeOpacity={0.85}
                             >
                                 <Ionicons name="arrow-back" size={20} color={colors.text} />
-                                <Text style={[styles.navBackText, { color: colors.text }]}>Назад</Text>
+                                <Text style={[styles.navBackText, { color: colors.text }]}>{t('back')}</Text>
                             </TouchableOpacity>
                         ) : null}
 
                         {step < 2 ? (
                             <Button
-                                title="Далее"
+                                title={t('onbNext')}
                                 onPress={() => {
                                     hapticLight();
                                     setStep((prev) => Math.min(2, prev + 1));
@@ -601,7 +619,7 @@ export default function UploadScreen() {
                             />
                         ) : (
                             <Button
-                                title={loading ? 'Публикация...' : 'Опубликовать'}
+                                title={loading ? t('upPublishing') : t('upPublish')}
                                 onPress={handlePublish}
                                 variant="primary"
                                 size="lg"

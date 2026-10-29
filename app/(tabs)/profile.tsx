@@ -18,13 +18,15 @@ import Card from '../../components/ui/Card';
 import { Post, usePosts, getReputation } from '../../context/PostsContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
+import { getAuthenticityPercent, getRarityLabel } from '../../lib/helpers';
+import { categoryLabel } from '../../lib/i18n';
 import { getDayStreak } from '../../lib/stats-share';
 import { scheduleStreakReminderIfNeeded } from '../../lib/streak-reminder';
-import { radii } from '../../lib/theme';
+import { radii, shadows } from '../../lib/theme';
 
 import ProfileModal from '../../components/ProfileModal';
 import ProfilePostModal from '../../components/ProfilePostModal';
+import AuthGate from '../../components/AuthGate';
 
 export default function ProfileScreen() {
     const {
@@ -80,13 +82,13 @@ export default function ProfileScreen() {
         .slice(0, 3);
 
     const favoriteCategory = useMemo(() => {
-        if (myPosts.length === 0) return 'Пока не определена';
+        if (myPosts.length === 0) return t('favCategoryEmpty');
         const counts = myPosts.reduce<Record<string, number>>((acc, post) => {
             acc[post.category] = (acc[post.category] || 0) + 1;
             return acc;
         }, {});
         const [category] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-        return getCategoryLabel(category as Post['category']);
+        return categoryLabel(category, lang);
     }, [myPosts]);
 
     const trustProgress = useMemo(() => {
@@ -102,23 +104,23 @@ export default function ProfileScreen() {
     const handleClearCache = () => {
         clearPosts();
         setSettingsVisible(false);
-        Alert.alert('Кэш очищен', 'Локальная коллекция очищена.');
+        Alert.alert(t('cacheClearedTitle'), t('cacheClearedBody'));
     };
 
     const handleSignOut = () => {
         signOut();
         setSettingsVisible(false);
-        Alert.alert('Выход выполнен', 'Локальный профиль сброшен.');
+        Alert.alert(t('signedOutTitle'), t('signedOutBody'));
     };
 
     const syncStatusLabel = useMemo(() => {
-        if (syncStatus === 'syncing') return 'Автоматически загружаю данные...';
-        if (syncStatus === 'loading') return 'Загрузка локальных данных...';
-        if (syncStatus === 'offline') return 'Демо-режим: данные сохраняются на устройстве';
-        if (syncStatus === 'error') return 'Ошибка синхронизации — попробуйте позже';
-        if (lastSyncedAt) return `Автосохранение активно • ${new Date(lastSyncedAt).toLocaleString('ru-RU')}`;
-        return isAuthenticated ? 'Автосохранение активно' : 'Гостевой режим: только просмотр';
-    }, [isAuthenticated, lastSyncedAt, syncStatus]);
+        if (syncStatus === 'syncing') return t('syncAutoLoading');
+        if (syncStatus === 'loading') return t('syncLocalLoading');
+        if (syncStatus === 'offline') return t('syncOffline');
+        if (syncStatus === 'error') return t('syncErrorStatus');
+        if (lastSyncedAt) return t('syncActiveAt', { date: new Date(lastSyncedAt).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US') });
+        return isAuthenticated ? t('syncActive') : t('guestViewOnly');
+    }, [isAuthenticated, lastSyncedAt, syncStatus, t, lang]);
 
     // CEO-идея #9: при открытии профиля планируем push-напоминание о серии
     // (только если уведомления включены, разрешение выдано и сегодня ещё не было активности).
@@ -139,6 +141,20 @@ export default function ProfileScreen() {
         })();
     }, [posts, profile.notificationsEnabled]);
 
+    // Гость видит только гейт входа: пустой профиль с чужими нулями путает
+    // (ревью основателя: «откуда у неавторизованного вообще что-то есть»).
+    if (!isAuthenticated) {
+        return (
+            <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+                <AuthGate
+                    icon="person"
+                    title={t('gateProfileTitle')}
+                    hint={t('gateProfileHint')}
+                />
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
             <ScrollView
@@ -147,7 +163,7 @@ export default function ProfileScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <Card variant="elevated" padding="lg" style={{ alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => Alert.alert('Аватар', 'Смена фото появится позже.')}>
+                    <TouchableOpacity onPress={() => Alert.alert(t('avatarAlert'), t('avatarComingSoon'))}>
                         <View style={[styles.avatarRing, { borderColor: colors.accent }]}>
                             <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
                                 <Ionicons name="person" size={44} color={colors.primary} />
@@ -207,19 +223,19 @@ export default function ProfileScreen() {
                 </Card>
 
                 <View style={styles.insightsRow}>
-                    <View style={[styles.insightCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>Уникальных имен</Text>
+                    <View style={[styles.insightCard, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>{t('uniqueNames')}</Text>
                         <Text style={[styles.insightValue, { color: colors.text }]}>{uniqueCelebrities}</Text>
                     </View>
-                    <View style={[styles.insightCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>Любимая категория</Text>
+                    <View style={[styles.insightCard, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>{t('favCategory')}</Text>
                         <Text style={[styles.insightValue, { color: colors.text }]}>{favoriteCategory}</Text>
                     </View>
                 </View>
 
-                <View style={[styles.goalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={[styles.goalCard, { backgroundColor: colors.card }]}>
                     <View style={styles.goalHeader}>
-                        <Text style={[styles.goalTitle, { color: colors.text }]}>Цель месяца</Text>
+                        <Text style={[styles.goalTitle, { color: colors.text }]}>{t('goalTitle')}</Text>
                         <Text style={[styles.goalProgress, { color: colors.textSecondary }]}>{verifiedGoalCount}/3</Text>
                     </View>
                     <Text style={[styles.goalHint, { color: colors.textSecondary }]}>
@@ -240,7 +256,7 @@ export default function ProfileScreen() {
 
                 <View style={styles.actions}>
                     <Button
-                        title="Редактировать"
+                        title={t('editProfile')}
                         onPress={() => {
                             setDraftName(profile.name);
                             setDraftBio(profile.bio);
@@ -251,14 +267,14 @@ export default function ProfileScreen() {
                         icon="create-outline"
                     />
                     <Button
-                        title="Ещё"
+                        title={t('more')}
                         onPress={() => router.push('/more')}
                         variant="primary"
                         size="sm"
                         icon="grid-outline"
                     />
                     <Button
-                        title="Настройки"
+                        title={t('settings')}
                         onPress={() => setSettingsVisible(true)}
                         variant="secondary"
                         size="sm"
@@ -268,18 +284,18 @@ export default function ProfileScreen() {
 
                 {savedPosts.length > 0 ? (
                     <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Избранное</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('savedTitle')}</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedRow}>
                             {savedPosts.slice(0, 5).map((post) => (
                                 <TouchableOpacity
                                     key={post.id}
-                                    style={[styles.savedCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                                    style={[styles.savedCard, { backgroundColor: colors.card }]}
                                     onPress={() => setSelectedPost(post)}
                                 >
                                     <Image source={{ uri: post.uri }} style={styles.savedImage} resizeMode="cover" />
                                     <View style={styles.savedFooter}>
                                         <Text style={[styles.savedTitle, { color: colors.text }]} numberOfLines={1}>
-                                            {post.celebrityName || 'Без имени'}
+                                            {post.celebrityName || t('nameless')}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -294,16 +310,16 @@ export default function ProfileScreen() {
                         {topShowcase.map((post) => (
                             <TouchableOpacity
                                 key={post.id}
-                                style={[styles.showcaseRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+                                style={[styles.showcaseRow, { backgroundColor: colors.card }]}
                                 onPress={() => setSelectedPost(post)}
                             >
                                 <Image source={{ uri: post.uri }} style={styles.showcaseImage} resizeMode="cover" />
                                 <View style={styles.showcaseBody}>
                                     <Text style={[styles.showcaseTitle, { color: colors.text }]} numberOfLines={1}>
-                                        {post.celebrityName || 'Без имени'}
+                                        {post.celebrityName || t('nameless')}
                                     </Text>
                                     <Text style={[styles.showcaseMeta, { color: colors.textSecondary }]} numberOfLines={1}>
-                                        {getCategoryLabel(post.category)} • {getRarityLabel(post.rarity)}
+                                        {categoryLabel(post.category, lang)} • {getRarityLabel(post.rarity)}
                                     </Text>
                                     <Text style={[styles.showcaseScore, { color: colors.text }]}>
                                         {getAuthenticityPercent(post)}% доверия
@@ -318,7 +334,7 @@ export default function ProfileScreen() {
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('myCollection')}</Text>
 
                     {myPosts.length === 0 ? (
-                        <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
                             <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                                 <Ionicons name="albums-outline" size={28} color={colors.primary} />
                             </View>
@@ -332,16 +348,16 @@ export default function ProfileScreen() {
                             {myPosts.slice(0, 6).map((post) => (
                                 <TouchableOpacity
                                     key={post.id}
-                                    style={[styles.gridItem, { backgroundColor: colors.card, borderColor: colors.border }]}
+                                    style={[styles.gridItem, { backgroundColor: colors.card }]}
                                     onPress={() => setSelectedPost(post)}
                                 >
                                     <Image source={{ uri: post.uri }} style={styles.gridImage} resizeMode="cover" />
                                     <View style={styles.gridFooter}>
                                         <Text style={[styles.gridTitle, { color: colors.text }]} numberOfLines={1}>
-                                            {post.celebrityName || 'Без имени'}
+                                            {post.celebrityName || t('nameless')}
                                         </Text>
                                         <Text style={[styles.gridSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                                            {getCategoryLabel(post.category)} • {getRarityLabel(post.rarity)}
+                                            {categoryLabel(post.category, lang)} • {getRarityLabel(post.rarity)}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -351,18 +367,18 @@ export default function ProfileScreen() {
                 </View>
             </ScrollView>
 
-            <ProfileModal visible={editVisible} title="Редактировать профиль" colors={colors} onClose={() => setEditVisible(false)}>
+            <ProfileModal visible={editVisible} title={t('profileEditTitle')} colors={colors} onClose={() => setEditVisible(false)}>
                 <View style={styles.modalContent}>
-                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Имя</Text>
+                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('fieldName')}</Text>
                     <TextInput
                         style={[styles.fieldInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
                         value={draftName}
                         onChangeText={setDraftName}
-                        placeholder="Ваше имя"
+                        placeholder={t("namePlaceholder")}
                         placeholderTextColor={colors.placeholder}
                     />
 
-                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Био</Text>
+                    <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('fieldBio')}</Text>
                     <TextInput
                         style={[
                             styles.fieldInput,
@@ -371,25 +387,25 @@ export default function ProfileScreen() {
                         ]}
                         value={draftBio}
                         onChangeText={setDraftBio}
-                        placeholder="Коротко о вашей коллекции"
+                        placeholder={t("bioPlaceholder")}
                         placeholderTextColor={colors.placeholder}
                         multiline
                         textAlignVertical="top"
                     />
 
                     <TouchableOpacity style={[styles.modalAction, { backgroundColor: colors.primary }]} onPress={saveProfile}>
-                        <Text style={[styles.modalActionText, { color: colors.primaryText }]}>Сохранить</Text>
+                        <Text style={[styles.modalActionText, { color: colors.primaryText }]}>{t('save')}</Text>
                     </TouchableOpacity>
                 </View>
             </ProfileModal>
 
-            <ProfileModal visible={settingsVisible} title="Настройки" colors={colors} onClose={() => setSettingsVisible(false)}>
+            <ProfileModal visible={settingsVisible} title={t('settings')} colors={colors} onClose={() => setSettingsVisible(false)}>
                 <View style={styles.modalContent}>
-                    <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.settingRow, { backgroundColor: colors.card }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.settingTitle, { color: colors.text }]}>Уведомления</Text>
+                            <Text style={[styles.settingTitle, { color: colors.text }]}>{t('notifications')}</Text>
                             <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
-                                Напоминания о новых голосах и активности
+                                {t('notificationsHint')}
                             </Text>
                         </View>
                         <Switch
@@ -400,16 +416,16 @@ export default function ProfileScreen() {
                         />
                     </View>
 
-                    <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.settingRow, { backgroundColor: colors.card }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.settingTitle, { color: colors.text }]}>Спорные автографы</Text>
+                            <Text style={[styles.settingTitle, { color: colors.text }]}>{t('disputedCards')}</Text>
                             <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
-                                Сейчас {disputedCount} карточек с почти равным доверием сообщества.
+                                {t('disputedNow', { n: disputedCount })}
                             </Text>
                         </View>
                     </View>
 
-                    <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.settingRow, { backgroundColor: colors.card }]}>
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.settingTitle, { color: colors.text }]}>{t('language')}</Text>
                             <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
@@ -429,7 +445,7 @@ export default function ProfileScreen() {
                                         },
                                     ]}
                                     accessibilityRole="button"
-                                    accessibilityLabel={code === 'ru' ? 'Русский' : 'English'}
+                                    accessibilityLabel={code === 'ru' ? t('russian') : 'English'}
                                 >
                                     <Text
                                         style={[
@@ -444,7 +460,7 @@ export default function ProfileScreen() {
                         </View>
                     </View>
 
-                    <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.settingRow, { backgroundColor: colors.card }]}>
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.settingTitle, { color: colors.text }]}>{t('appearance')}</Text>
                             <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
@@ -455,7 +471,7 @@ export default function ProfileScreen() {
                             onPress={toggleTheme}
                             style={[styles.settingButton, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 }]}
                             accessibilityRole="button"
-                            accessibilityLabel="Переключить тему"
+                            accessibilityLabel={t('themeToggleLabel')}
                         >
                             <Ionicons name={theme === 'light' ? 'moon-outline' : 'sunny-outline'} size={18} color={colors.text} />
                             <Text style={[styles.settingButtonText, { color: colors.text }]}>
@@ -464,7 +480,7 @@ export default function ProfileScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    <View style={[styles.cloudCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <View style={[styles.cloudCard, { backgroundColor: colors.card }]}>
                         <View style={styles.cloudHeader}>
                             <View style={[styles.cloudIcon, { backgroundColor: colors.surface }]}>
                                 <Ionicons
@@ -475,7 +491,7 @@ export default function ProfileScreen() {
                             </View>
                             <View style={{ flex: 1 }}>
                                 <Text style={[styles.settingTitle, { color: colors.text }]}>
-                                    {isAuthenticated ? 'Облачная синхронизация' : 'Гостевой доступ'}
+                                    {isAuthenticated ? t('cloudSync') : t('guestAccess')}
                                 </Text>
                                 <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
                                     {syncStatusLabel}
@@ -499,7 +515,7 @@ export default function ProfileScreen() {
                                 }}
                             >
                                 <Ionicons name="log-in-outline" size={18} color={colors.text} />
-                                <Text style={[styles.authButtonText, { color: colors.text }]}>Войти или зарегистрироваться</Text>
+                                <Text style={[styles.authButtonText, { color: colors.text }]}>{t('signIn')}</Text>
                             </TouchableOpacity>
                         ) : null}
                     </View>
@@ -509,7 +525,7 @@ export default function ProfileScreen() {
                         onPress={handleClearCache}
                     >
                         <Ionicons name="trash-outline" size={18} color={colors.text} />
-                        <Text style={[styles.settingButtonText, { color: colors.text }]}>Очистить кэш</Text>
+                        <Text style={[styles.settingButtonText, { color: colors.text }]}>{t('clearCache')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -520,7 +536,7 @@ export default function ProfileScreen() {
                         }}
                     >
                         <Ionicons name="shield-checkmark-outline" size={18} color={colors.text} />
-                        <Text style={[styles.settingButtonText, { color: colors.text }]}>Политика конфиденциальности</Text>
+                        <Text style={[styles.settingButtonText, { color: colors.text }]}>{t('privacyPolicy')}</Text>
                     </TouchableOpacity>
 
                     {isAuthenticated ? (
@@ -529,13 +545,13 @@ export default function ProfileScreen() {
                             onPress={handleSignOut}
                         >
                             <Ionicons name="log-out-outline" size={18} color={colors.danger} />
-                            <Text style={[styles.settingButtonText, { color: colors.danger }]}>Выйти</Text>
+                            <Text style={[styles.settingButtonText, { color: colors.danger }]}>{t('signOut')}</Text>
                         </TouchableOpacity>
                     ) : null}
                 </View>
             </ProfileModal>
 
-            <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || 'Автограф'} colors={colors} onClose={() => setSelectedPost(null)}>
+            <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || t('autographFallback')} colors={colors} onClose={() => setSelectedPost(null)}>
                 <ProfilePostModal post={selectedPost} colors={colors} onClose={() => setSelectedPost(null)} />
             </ProfileModal>
         </SafeAreaView>
@@ -547,26 +563,24 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     content: { padding: 16, paddingBottom: 18 },
     heroCard: {
-        borderWidth: 1,
         borderRadius: radii.xxl,
         padding: 22,
         alignItems: 'center',
     },
     avatar: {
-        width: 104,
-        height: 104,
+        flex: 1,
         borderRadius: radii.xxl,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
     },
     avatarRing: {
         width: 120,
         height: 120,
         borderRadius: radii.xxl + 8,
         borderWidth: 3,
-        alignItems: 'center',
-        justifyContent: 'center',
+        // padding вместо flex-центрирования: рамка гарантированно концентрична
+        // (ревью основателя: «съезжает рамка фото профиля»).
+        padding: 5,
         marginBottom: 16,
     },
     name: { fontSize: 24, fontWeight: '700', marginBottom: 2 },
@@ -643,8 +657,8 @@ const styles = StyleSheet.create({
         marginTop: 16,
     },
     insightCard: {
+        ...shadows.sm,
         flex: 1,
-        borderWidth: 1,
         borderRadius: radii.lg,
         padding: 14,
     },
@@ -658,7 +672,7 @@ const styles = StyleSheet.create({
     },
     actions: { flexDirection: 'row', gap: 10, marginTop: 16 },
     goalCard: {
-        borderWidth: 1,
+        ...shadows.sm,
         borderRadius: radii.xl,
         padding: 16,
         marginTop: 16,
@@ -710,8 +724,8 @@ const styles = StyleSheet.create({
         paddingRight: 16,
     },
     savedCard: {
+        ...shadows.sm,
         width: 150,
-        borderWidth: 1,
         borderRadius: 18,
         overflow: 'hidden',
     },
@@ -728,7 +742,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     showcaseRow: {
-        borderWidth: 1,
+        ...shadows.sm,
         borderRadius: 18,
         flexDirection: 'row',
         overflow: 'hidden',
@@ -757,7 +771,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     emptyState: {
-        borderWidth: 1,
+        ...shadows.sm,
         borderRadius: 24,
         padding: 26,
         alignItems: 'center',
@@ -779,10 +793,10 @@ const styles = StyleSheet.create({
         rowGap: 12,
     },
     gridItem: {
+        ...shadows.sm,
         width: '48%',
         borderRadius: 18,
         overflow: 'hidden',
-        borderWidth: 1,
     },
     gridImage: {
         width: '100%',
@@ -833,7 +847,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     settingRow: {
-        borderWidth: 1,
+        ...shadows.sm,
         borderRadius: 18,
         paddingHorizontal: 14,
         paddingVertical: 14,
@@ -851,7 +865,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
     },
     cloudCard: {
-        borderWidth: 1,
+        ...shadows.sm,
         borderRadius: 18,
         padding: 14,
         marginBottom: 12,

@@ -27,6 +27,7 @@ import {
     getAuthenticity,
     isDisputed,
 } from '../../lib/helpers';
+import { categoryLabel, rarityLabel } from '../../lib/i18n';
 import { getFavoriteCategory, recommendPosts, Recommendation } from '../../lib/recommendations';
 import RecommendedRail from '../../components/RecommendedRail';
 import ShareSheet from '../../components/ShareSheet';
@@ -42,7 +43,7 @@ import { typography } from '../../lib/theme';
 export default function FeedScreen() {
     const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData, syncStatus } = usePosts();
     const { colors } = useTheme();
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -146,11 +147,11 @@ export default function FeedScreen() {
 
     const handleRequireAuth = () => {
         Alert.alert(
-            'Требуется вход',
-            'Войдите в аккаунт, чтобы лайкать, комментировать и подтверждать автографы.',
+            t('requireAuthTitle'),
+            t('guestVoteHint'),
             [
-                { text: 'Отмена', style: 'cancel' },
-                { text: 'Войти', onPress: () => router.push('/auth') },
+                { text: t('cancel'), style: 'cancel' },
+                { text: t('signInAction'), onPress: () => router.push('/auth') },
             ]
         );
     };
@@ -190,7 +191,7 @@ export default function FeedScreen() {
                     <Text style={[styles.screenTitle, { color: colors.text }]}>{t('feedTitle')}</Text>
                     {activeFilterCount > 0 ? (
                         <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
-                            {`Фильтров активно: ${activeFilterCount}`}
+                            {t('filtersActive', { n: activeFilterCount })}
                         </Text>
                     ) : null}
                 </View>
@@ -202,7 +203,7 @@ export default function FeedScreen() {
                             setFiltersVisible(true);
                         }}
                         accessibilityRole="button"
-                        accessibilityLabel="Поиск и фильтры"
+                        accessibilityLabel={t('searchFilters')}
                     >
                         <Ionicons name="search-outline" size={20} color={colors.text} />
                         {activeFilterCount > 0 ? (
@@ -218,7 +219,7 @@ export default function FeedScreen() {
                             router.push('/profile');
                         }}
                         accessibilityRole="button"
-                        accessibilityLabel="Профиль"
+                        accessibilityLabel={t('tabProfile')}
                     >
                         <Text style={[styles.headerAvatarText, { color: colors.accent }]}>
                             {(profile.name || 'C').trim().charAt(0).toUpperCase()}
@@ -237,13 +238,13 @@ export default function FeedScreen() {
                 <EmptyState
                     style={styles.emptyWrap}
                     icon={posts.length === 0 ? 'sparkles-outline' : 'search-outline'}
-                    title={posts.length === 0 ? 'Коллекция пока пуста' : 'Ничего не найдено'}
+                    title={posts.length === 0 ? t('feedEmptyTitle') : t('notFoundTitle')}
                     hint={
                         posts.length === 0
-                            ? 'Загрузите первый автограф — сообщество проверит его подлинность.'
-                            : 'Попробуйте снять часть фильтров или изменить поисковый запрос.'
+                            ? t('feedEmptyHint')
+                            : t('notFoundHint')
                     }
-                    actionLabel={posts.length === 0 ? 'Добавить автограф' : undefined}
+                    actionLabel={posts.length === 0 ? t('feedAddFirst') : undefined}
                     onAction={posts.length === 0 ? () => router.push('/(tabs)/upload') : undefined}
                 />
             ) : (
@@ -268,7 +269,7 @@ export default function FeedScreen() {
                         <View style={styles.feedFooter}>
                             <Ionicons name="checkmark-done-circle" size={22} color={colors.success} />
                             <Text style={[typography.bodySmall, { color: colors.textSecondary, fontWeight: '600' }]}>
-                                Вы всё посмотрели
+                                {t('youSawItAll')}
                             </Text>
                         </View>
                     }
@@ -289,13 +290,13 @@ export default function FeedScreen() {
             <ShareSheet visible={Boolean(sharePost)} postId={sharePost?.id || ''} celebrityName={sharePost?.celebrityName || ''} imageUri={sharePost?.uri} onClose={() => setSharePost(null)} />
 
             {/* R-10: поиск + фильтры + сортировка + сводка — в одном sheet, хедер ленты чистый */}
-            <Sheet visible={filtersVisible} onClose={() => setFiltersVisible(false)} title="Поиск и фильтры" subtitle="Лента сразу отреагирует на изменения" size="half">
+            <Sheet visible={filtersVisible} onClose={() => setFiltersVisible(false)} title={t('searchFilters')} subtitle={t('sortHint')} size="half">
                 <View style={styles.sheetBody}>
                     <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <Ionicons name="search-outline" size={18} color={colors.textSecondary} />
                         <TextInput
                             style={[styles.searchInput, { color: colors.text }]}
-                            placeholder="Поиск по имени, месту или заметке"
+                            placeholder={t('searchPlaceholder')}
                             placeholderTextColor={colors.placeholder}
                             value={query}
                             onChangeText={setQuery}
@@ -303,7 +304,7 @@ export default function FeedScreen() {
                             returnKeyType="search"
                         />
                         {query ? (
-                            <TouchableOpacity onPress={() => setQuery('')} accessibilityRole="button" accessibilityLabel="Очистить поиск">
+                            <TouchableOpacity onPress={() => setQuery('')} accessibilityRole="button" accessibilityLabel={t('clearSearch')}>
                                 <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
                             </TouchableOpacity>
                         ) : null}
@@ -314,7 +315,7 @@ export default function FeedScreen() {
                             style={[styles.filterChip, { backgroundColor: categoryFilter === 'all' ? colors.primary : colors.surface }]}
                             onPress={() => setCategoryFilter('all')}
                         >
-                            <Text style={[styles.filterChipText, { color: categoryFilter === 'all' ? colors.primaryText : colors.text }]}>Все</Text>
+                            <Text style={[styles.filterChipText, { color: categoryFilter === 'all' ? colors.primaryText : colors.text }]}>{t('filterAll')}</Text>
                         </TouchableOpacity>
                         {POST_CATEGORIES.map((item) => {
                             const active = categoryFilter === item.value;
@@ -324,7 +325,7 @@ export default function FeedScreen() {
                                     style={[styles.filterChip, { backgroundColor: active ? colors.primary : colors.surface }]}
                                     onPress={() => setCategoryFilter(item.value)}
                                 >
-                                    <Text style={[styles.filterChipText, { color: active ? colors.primaryText : colors.text }]}>{item.label}</Text>
+                                    <Text style={[styles.filterChipText, { color: active ? colors.primaryText : colors.text }]}>{categoryLabel(item.value, lang)}</Text>
                                 </TouchableOpacity>
                             );
                         })}
@@ -332,15 +333,15 @@ export default function FeedScreen() {
                             style={[styles.filterChip, { backgroundColor: onlyVerified ? colors.primary : colors.surface }]}
                             onPress={() => setOnlyVerified((prev) => !prev)}
                         >
-                            <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>Только подтвержденные</Text>
+                            <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>{t('filterVerifiedOnly')}</Text>
                         </TouchableOpacity>
                     </View>
 
                     <SegmentedControl
                         segments={[
-                            { key: 'latest', label: 'Новые', icon: 'time-outline' },
-                            { key: 'trusted', label: 'Достоверные', icon: 'shield-checkmark-outline' },
-                            { key: 'debated', label: 'Спорные', icon: 'help-buoy' },
+                            { key: 'latest', label: t('sortNew'), icon: 'time-outline' as const },
+                            { key: 'trusted', label: t('sortTrusted'), icon: 'shield-checkmark-outline' as const },
+                            { key: 'debated', label: t('sortDebated'), icon: 'help-buoy' as const },
                         ]}
                         activeKey={sortMode}
                         onChange={(key) => {
@@ -351,15 +352,15 @@ export default function FeedScreen() {
 
                     <View style={styles.summaryRow}>
                         <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Подтверждено</Text>
+                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('summaryVerified')}</Text>
                             <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.verified}</Text>
                         </View>
                         <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Спорных</Text>
+                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('summaryDisputed')}</Text>
                             <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.disputed}</Text>
                         </View>
                         <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Легендарных</Text>
+                            <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('summaryLegendary')}</Text>
                             <Text style={[styles.summaryValue, { color: colors.text }]}>{summary.legendary}</Text>
                         </View>
                     </View>
@@ -368,10 +369,10 @@ export default function FeedScreen() {
                         style={[styles.resetButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
                         onPress={resetFilters}
                         accessibilityRole="button"
-                        accessibilityLabel="Сбросить фильтры"
+                        accessibilityLabel={t('resetFilters')}
                     >
                         <Ionicons name="refresh-outline" size={18} color={colors.text} />
-                        <Text style={[styles.resetButtonText, { color: colors.text }]}>Сбросить всё</Text>
+                        <Text style={[styles.resetButtonText, { color: colors.text }]}>{t('resetAll')}</Text>
                     </TouchableOpacity>
                 </View>
             </Sheet>
