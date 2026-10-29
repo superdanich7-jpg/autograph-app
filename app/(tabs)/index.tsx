@@ -34,6 +34,7 @@ import ShareSheet from '../../components/ShareSheet';
 import PostDetailModal from '../../components/PostDetailModal';
 import CommentsModal from '../../components/CommentsModal';
 import FeedPostCard from '../../components/FeedPostCard';
+import StoriesRail from '../../components/StoriesRail';
 import { PostCardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState, SegmentedControl } from '../../components/ui/primitives';
 import { Sheet } from '../../components/ui/Sheet';
@@ -227,6 +228,13 @@ export default function FeedScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            {/* Шаг 11 PLAN-100: рейка «Свежее в клубе» */}
+            <StoriesRail
+                posts={posts}
+                onPressPost={(post) => setDetailPost(post)}
+                onPressAdd={() => router.push('/upload')}
+            />
 
             {initialLoading && posts.length === 0 ? (
                 <View style={styles.list}>
