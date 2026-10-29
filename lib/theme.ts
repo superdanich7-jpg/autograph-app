@@ -111,8 +111,8 @@ export const lightTheme = {
   glassCard: 'rgba(255, 255, 255, 0.58)',
   glassBorder: 'rgba(255, 255, 255, 0.65)',
   glassHighlight: 'rgba(255, 255, 255, 0.55)',
-  bgGradient: ['#FAF8F4', '#F3EFE7', '#EDE6D8'],
-  glow: 'rgba(201, 162, 39, 0.12)',
+  bgGradient: ['#FBF9F5', '#F3EEE3', '#EAE2D0'],
+  glow: 'rgba(201, 162, 39, 0.16)',
 
   // Shadows (iOS)
   shadowColor: '#000000',
@@ -174,8 +174,8 @@ export const darkTheme = {
   glassCard: 'rgba(23, 32, 51, 0.55)',
   glassBorder: 'rgba(148, 163, 184, 0.22)',
   glassHighlight: 'rgba(255, 255, 255, 0.08)',
-  bgGradient: ['#020617', '#0B1220', '#111B2E'],
-  glow: 'rgba(231, 200, 115, 0.10)',
+  bgGradient: ['#0E1626', '#0B1220', '#020617'],
+  glow: 'rgba(231, 200, 115, 0.16)',
 
   // Shadows
   shadowColor: '#000000',

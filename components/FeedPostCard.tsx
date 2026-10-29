@@ -12,7 +12,7 @@ import {
     isDisputed,
 } from '../lib/helpers';
 import { getAuthenticityVerdict } from '../lib/authenticity';
-import { shadows } from '../lib/theme';
+import GlassCard from './ui/GlassCard';
 import Badge from './ui/Badge';
 import VoteButton from './ui/VoteButton';
 
@@ -91,7 +91,7 @@ export default function FeedPostCard({
     };
 
     return (
-        <View style={[styles.post, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <GlassCard radius={20} style={styles.post}>
             <View style={styles.postHeader}>
                 <View style={[styles.avatar, { backgroundColor: colors.accentLight }]}>
                     <Text style={[styles.avatarInitial, { color: colors.accent }]}>
@@ -364,7 +364,7 @@ export default function FeedPostCard({
                     </View>
                 </View>
             </View>
-        </View>
+        </GlassCard>
     );
 }
 
@@ -372,7 +372,6 @@ const styles = StyleSheet.create({
     post: {
         borderRadius: 20,
         overflow: 'hidden',
-        ...shadows.md,
     },
     postHeader: {
         flexDirection: 'row',

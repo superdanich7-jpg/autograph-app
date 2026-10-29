@@ -10,10 +10,11 @@ import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function AppBackground() {
-    const { colors } = useTheme();
+    const { colors, theme } = useTheme();
     const gradient = ((colors as { bgGradient?: string[] }).bgGradient ??
         [colors.background, colors.background]) as [string, string, ...string[]];
     const glow = (colors as { glow?: string }).glow ?? 'rgba(0,0,0,0)';
+    const coolGlow = theme === 'dark' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(147, 197, 253, 0.18)';
 
     return (
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -30,6 +31,8 @@ export default function AppBackground() {
             />
             <View style={[styles.glowBlob, styles.glowTopRight, { backgroundColor: glow }]} />
             <View style={[styles.glowBlob, styles.glowBottomLeft, { backgroundColor: glow }]} />
+            {/* Холодный блик снизу-справа — глубина как у обоёв iOS */}
+            <View style={[styles.glowBlob, styles.glowMid, { backgroundColor: coolGlow }]} />
         </View>
     );
 }
@@ -52,5 +55,12 @@ const styles = StyleSheet.create({
     glowBottomLeft: {
         bottom: -140,
         left: -100,
+    },
+    glowMid: {
+        top: '42%',
+        right: -140,
+        width: 380,
+        height: 380,
+        borderRadius: 190,
     },
 });
