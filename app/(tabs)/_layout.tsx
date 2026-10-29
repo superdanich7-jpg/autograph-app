@@ -10,7 +10,9 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="community" />
+      {/* Клуб убран из таб-бара (решение основателя) — маршрут живёт,
+          вход через экран «Ещё». */}
+      <Tabs.Screen name="community" options={{ href: null }} />
       <Tabs.Screen name="upload" />
       <Tabs.Screen name="profile" />
     </Tabs>

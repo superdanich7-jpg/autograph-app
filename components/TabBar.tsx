@@ -1,6 +1,6 @@
 /**
- * TabBar — современная навигация с floating pill design.
- * Следует трендам 2024-2025: glassmorphism, floating tabs, micro-interactions.
+ * TabBar — стандартная нижняя панель: сплошной фон, тонкая верхняя линия,
+ * три слота и золотая кнопка «Добавить» строго по центру, выступающая над панелью.
  */
 
 import { Ionicons } from '@expo/vector-icons';
@@ -8,45 +8,31 @@ import { Href, usePathname, useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticSelection } from '../lib/haptics';
-import { radii, shadows, spacing } from '../lib/theme';
+import { shadows } from '../lib/theme';
+import type { TranslationKey } from '../lib/i18n';
 
 type TabItem = {
     name: string;
-    label: string;
+    labelKey: TranslationKey;
     icon: keyof typeof Ionicons.glyphMap;
     activeIcon: keyof typeof Ionicons.glyphMap;
     href: Href;
-    accent?: boolean;
 };
 
-const tabs: TabItem[] = [
+const sideTabs: TabItem[] = [
     {
         name: 'index',
-        label: 'Лента',
+        labelKey: 'tabFeed',
         icon: 'home-outline',
         activeIcon: 'home',
         href: '/',
     },
     {
-        name: 'community',
-        label: 'Клуб',
-        icon: 'people-outline',
-        activeIcon: 'people',
-        href: '/community',
-    },
-    {
-        name: 'upload',
-        label: 'Добавить',
-        icon: 'add-circle-outline',
-        activeIcon: 'add-circle',
-        href: '/upload',
-        accent: true,
-    },
-    {
         name: 'profile',
-        label: 'Профиль',
+        labelKey: 'tabProfile',
         icon: 'person-outline',
         activeIcon: 'person',
         href: '/profile',
@@ -57,183 +43,123 @@ export default function CustomTabBar() {
     const pathname = usePathname();
     const router = useRouter();
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const insets = useSafeAreaInsets();
+
+    const addActive = pathname === '/upload';
+
+    const renderSide = (tab: TabItem) => {
+        const isActive =
+            pathname === tab.href ||
+            (tab.name === 'index' && pathname === '/') ||
+            (tab.name === 'index' && pathname === '/community');
+
+        return (
+            <TouchableOpacity
+                key={tab.name}
+                style={styles.sideItem}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={t(tab.labelKey)}
+                onPress={() => {
+                    hapticSelection();
+                    if (!isActive) {
+                        router.push(tab.href);
+                    }
+                }}
+            >
+                <Ionicons
+                    name={isActive ? tab.activeIcon : tab.icon}
+                    size={23}
+                    color={isActive ? colors.primary : colors.textSecondary}
+                />
+                <Text
+                    style={[
+                        styles.label,
+                        { color: isActive ? colors.primary : colors.textSecondary },
+                    ]}
+                    numberOfLines={1}
+                >
+                    {t(tab.labelKey)}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View
             style={[
-                styles.container,
+                styles.bar,
                 {
-                    paddingBottom: Math.max(insets.bottom, 8),
-                    backgroundColor: 'transparent',
+                    backgroundColor: colors.card,
+                    borderTopColor: colors.border,
+                    paddingBottom: Math.max(insets.bottom, 10),
                 },
             ]}
         >
-            <View
-                style={[
-                    styles.tabBar,
-                    {
-                        backgroundColor: colors.card,
-                        borderColor: colors.border,
-                        ...shadows.lg,
-                    },
-                ]}
-            >
-                {tabs.map((tab) => {
-                    const isActive =
-                        pathname === tab.href ||
-                        (tab.name === 'index' && pathname === '/');
+            {renderSide(sideTabs[0])}
 
-                    return (
-                        <TouchableOpacity
-                            key={tab.name}
-                            style={[
-                                styles.tabItem,
-                                isActive && styles.tabItemActive,
-                                tab.accent && styles.accentItem,
-                            ]}
-                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                            activeOpacity={0.7}
-                            accessibilityRole="button"
-                            accessibilityLabel={tab.label}
-                            onPress={() => {
-                                hapticSelection();
-                                if (!isActive) {
-                                    router.push(tab.href);
-                                }
-                            }}
-                        >
-                            {tab.accent ? (
-                                <>
-                                    <View
-                                        style={[
-                                            styles.fab,
-                                            {
-                                                backgroundColor: colors.accent,
-                                                ...shadows.md,
-                                            },
-                                        ]}
-                                    >
-                                        <Ionicons
-                                            name="add"
-                                            size={26}
-                                            color="#0B1220"
-                                        />
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.label,
-                                            {
-                                                color: isActive ? colors.text : colors.textSecondary,
-                                                fontWeight: isActive ? '700' : '500',
-                                            },
-                                        ]}
-                                        numberOfLines={1}
-                                    >
-                                        {tab.label}
-                                    </Text>
-                                </>
-                            ) : (
-                                <>
-                                    <View
-                                        style={[
-                                            styles.iconContainer,
-                                            isActive && {
-                                                backgroundColor: colors.primaryLight,
-                                            },
-                                        ]}
-                                    >
-                                        <Ionicons
-                                            name={isActive ? tab.activeIcon : tab.icon}
-                                            size={22}
-                                            color={
-                                                isActive
-                                                    ? colors.primary
-                                                    : colors.textSecondary
-                                            }
-                                        />
-                                    </View>
-                                    <Text
-                                        style={[
-                                            styles.label,
-                                            {
-                                                color: isActive
-                                                    ? colors.primary
-                                                    : colors.textSecondary,
-                                                fontWeight: isActive ? '700' : '500',
-                                            },
-                                        ]}
-                                        numberOfLines={1}
-                                    >
-                                        {tab.label}
-                                    </Text>
-                                    <View
-                                        style={[
-                                            styles.activeDot,
-                                            { backgroundColor: isActive ? colors.accent : 'transparent' },
-                                        ]}
-                                    />
-                                </>
-                            )}
-                        </TouchableOpacity>
-                    );
-                })}
+            <View style={styles.centerSlot} pointerEvents="box-none">
+                <TouchableOpacity
+                    style={[styles.fab, { backgroundColor: colors.accent, ...shadows.md }]}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('tabAdd')}
+                    onPress={() => {
+                        hapticSelection();
+                        if (!addActive) {
+                            router.push('/upload');
+                        }
+                    }}
+                >
+                    <Ionicons name="add" size={28} color="#0B1220" />
+                </TouchableOpacity>
+                <Text
+                    style={[styles.label, { color: addActive ? colors.primary : colors.textSecondary }]}
+                    numberOfLines={1}
+                >
+                    {t('tabAdd')}
+                </Text>
             </View>
+
+            {renderSide(sideTabs[1])}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        paddingHorizontal: spacing.lg,
-        paddingTop: spacing.sm,
-    },
-    tabBar: {
+    bar: {
         flexDirection: 'row',
-        minHeight: 72,
-        borderWidth: 1,
-        borderRadius: radii.xxl,
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: spacing.sm,
-        paddingVertical: spacing.sm,
+        alignItems: 'flex-end',
+        minHeight: 64,
+        borderTopWidth: StyleSheet.hairlineWidth,
     },
-    tabItem: {
+    sideItem: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: spacing.xs,
-        paddingVertical: spacing.sm,
-        borderRadius: radii.lg,
+        gap: 3,
+        paddingTop: 8,
+        paddingBottom: 2,
     },
-    tabItemActive: {
-        // Active state handled by icon container
-    },
-    accentItem: {
-        justifyContent: 'center',
-    },
-    iconContainer: {
-        width: 44,
-        height: 32,
-        borderRadius: radii.full,
-        justifyContent: 'center',
+    centerSlot: {
+        flex: 1,
         alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: 3,
+        paddingBottom: 2,
     },
     fab: {
-        width: 48,
-        height: 48,
-        borderRadius: radii.full,
-        justifyContent: 'center',
+        width: 54,
+        height: 54,
+        borderRadius: 27,
         alignItems: 'center',
-    },
-    activeDot: {
-        width: 4,
-        height: 4,
-        borderRadius: radii.full,
-        marginTop: 1,
+        justifyContent: 'center',
+        marginBottom: -20,
     },
     label: {
         fontSize: 11,
-        fontWeight: '500',
+        fontWeight: '600',
     },
 });

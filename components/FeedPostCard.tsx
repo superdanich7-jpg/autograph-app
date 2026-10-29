@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Post } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticLight, hapticMedium } from '../lib/haptics';
 import {
@@ -41,6 +42,7 @@ export default function FeedPostCard({
 }) {
     const verdict = getAuthenticityVerdict(item);
     const userVote = item.votesByUser[currentUserId];
+    const { t } = useLanguage();
     const [imageError, setImageError] = useState(false);
     const disputed = isDisputed(item);
     const isOwnPost = item.ownerId === currentUserId;
@@ -231,9 +233,9 @@ export default function FeedPostCard({
             </View>
 
             <View style={styles.metaBlock}>
-                <Text style={[styles.metaTitle, { color: colors.text }]}>{item.celebrityName || 'Автограф без имени'}</Text>
+                <Text style={[styles.metaTitle, { color: colors.text }]}>{item.celebrityName || t('noName')}</Text>
                 <Text style={[styles.metaLine, { color: colors.textTertiary }]}>
-                    Получен: {item.dateReceived || 'дата не указана'}
+                    {t('received', { value: item.dateReceived || '—' })}
                 </Text>
                 {item.caption ? <Text style={[styles.caption, { color: colors.text }]}>{item.caption}</Text> : null}
             </View>
@@ -292,7 +294,7 @@ export default function FeedPostCard({
             <View style={styles.voteSection}>
                 <View style={styles.voteButtonsRow}>
                     <VoteButton
-                        label="Подтверждаю"
+                        label={t('voteReal')}
                         icon="checkmark-circle"
                         active={userVote === 'real'}
                         color={colors.success}
@@ -300,7 +302,7 @@ export default function FeedPostCard({
                         disabled={votingDisabled}
                     />
                     <VoteButton
-                        label="Фейк"
+                        label={t('voteFake')}
                         icon="close-circle"
                         active={userVote === 'fake'}
                         color={colors.danger}
@@ -311,15 +313,13 @@ export default function FeedPostCard({
 
                 {votingDisabled ? (
                     <Text style={[styles.interactionHint, { color: colors.textSecondary }]}>
-                        {!canInteract
-                            ? 'Войдите, чтобы лайкать, комментировать и подтверждать автографы.'
-                            : 'За собственный пост голосовать нельзя.'}
+                        {!canInteract ? t('guestVoteHint') : t('ownVoteHint')}
                     </Text>
                 ) : null}
 
                 <View style={styles.voteStatsRow}>
                     <Text style={[styles.voteStatsText, { color: colors.textSecondary }]}>
-                        {item.realVotes} за реальный • {item.fakeVotes} за фейк
+                        {t('voteStats', { real: item.realVotes, fake: item.fakeVotes })}
                     </Text>
                     <View
                         style={[

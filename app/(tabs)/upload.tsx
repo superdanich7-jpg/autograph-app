@@ -141,19 +141,26 @@ export default function UploadScreen() {
         };
     }, []);
 
-    const runAnalysis = async () => {
+    // URI передаётся параметром: состояние imageUri в замыкании ещё null
+    // в момент первого выбора фото — из-за этого анализ вечно крутил спиннер.
+    const runAnalysis = async (uri: string) => {
         setIsAnalyzing(true);
         setAnalysis(null);
 
         // Небольшая задержка для UX
         await new Promise((resolve) => setTimeout(resolve, 300));
 
-        if (!isMounted.current || !imageUri) return;
+        if (!isMounted.current || !uri) {
+            if (isMounted.current) {
+                setIsAnalyzing(false);
+            }
+            return;
+        }
 
         try {
             // Локальная ML-модель на клиенте — работает без сервера
             const result = await Promise.race([
-                quickMatch(imageUri),
+                quickMatch(uri),
                 new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
             ]);
 
@@ -192,7 +199,7 @@ export default function UploadScreen() {
 
     const applyPickedImage = async (uri: string) => {
         setImageUri(uri);
-        await runAnalysis();
+        await runAnalysis(uri);
     };
 
     const takePhoto = async () => {

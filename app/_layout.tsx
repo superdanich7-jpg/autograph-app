@@ -14,6 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { LanguageProvider } from '../context/LanguageContext';
 import { PostsProvider } from '../context/PostsContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { configureNotifications } from '../lib/notifications';
@@ -85,16 +86,18 @@ export default function RootLayout() {
       <View style={styles.root} pointerEvents="box-none">
         <ErrorBoundary>
           <ThemeProvider>
-            <PostsProvider>
-              <OnboardingGate>
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="(tabs)" />
-                  <Stack.Screen name="onboarding" />
-                  <Stack.Screen name="chat" options={{ presentation: 'card' }} />
-                  <Stack.Screen name="auth" />
-                </Stack>
-              </OnboardingGate>
-            </PostsProvider>
+            <LanguageProvider>
+              <PostsProvider>
+                <OnboardingGate>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="onboarding" />
+                    <Stack.Screen name="chat" options={{ presentation: 'card' }} />
+                    <Stack.Screen name="auth" />
+                  </Stack>
+                </OnboardingGate>
+              </PostsProvider>
+            </LanguageProvider>
             {/* Toast вызывает useTheme — обязан быть внутри ThemeProvider
                 (вне провайдера на web падал весь монтаж: белый экран). */}
             <Toast />

@@ -55,6 +55,16 @@ export default function MoreScreen() {
 
     const socialRows: Row[] = [
         {
+            key: 'club',
+            icon: 'people-outline',
+            title: 'Клуб коллекционеров',
+            subtitle: 'Карточки, доверие, топ коллекционеров',
+            onPress: () => {
+                hapticLight();
+                router.push('/community');
+            },
+        },
+        {
             key: 'friends',
             icon: 'person-add-outline',
             title: 'Друзья',

@@ -184,11 +184,13 @@ export default function FeedScreen() {
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
             <View style={styles.screenHeader}>
-                <View>
-                    <Text style={[styles.screenTitle, { color: colors.text }]}>Коллекция</Text>
-                    <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
-                        {activeFilterCount > 0 ? `Фильтров активно: ${activeFilterCount}` : 'Лента автографов сообщества'}
-                    </Text>
+                <View style={styles.headerText}>
+                    <Text style={[styles.screenTitle, { color: colors.text }]}>Лента</Text>
+                    {activeFilterCount > 0 ? (
+                        <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
+                            {`Фильтров активно: ${activeFilterCount}`}
+                        </Text>
+                    ) : null}
                 </View>
                 <View style={styles.headerRight}>
                     <TouchableOpacity
@@ -207,10 +209,19 @@ export default function FeedScreen() {
                             </View>
                         ) : null}
                     </TouchableOpacity>
-                    <View style={[styles.userPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Ionicons name="person-circle-outline" size={16} color={colors.primary} />
-                        <Text style={[styles.userPillText, { color: colors.text }]}>{profile.name}</Text>
-                    </View>
+                    <TouchableOpacity
+                        style={[styles.headerAvatar, { backgroundColor: colors.accentLight, borderColor: colors.accent }]}
+                        onPress={() => {
+                            hapticLight();
+                            router.push('/profile');
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel="Профиль"
+                    >
+                        <Text style={[styles.headerAvatarText, { color: colors.accent }]}>
+                            {(profile.name || 'C').trim().charAt(0).toUpperCase()}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -379,24 +390,26 @@ const styles = StyleSheet.create({
     },
     screenTitle: {
         fontSize: 28,
-        fontWeight: '700',
+        fontWeight: '800',
     },
     screenSubtitle: {
         marginTop: 4,
         fontSize: 14,
     },
-    userPill: {
-        borderWidth: 1,
-        borderRadius: 999,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
+    headerText: {
+        flex: 1,
     },
-    userPillText: {
-        fontSize: 12,
-        fontWeight: '600',
+    headerAvatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 999,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerAvatarText: {
+        fontSize: 16,
+        fontWeight: '800',
     },
     headerRight: {
         flexDirection: 'row',

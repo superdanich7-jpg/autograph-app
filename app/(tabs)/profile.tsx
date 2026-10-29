@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { Post, usePosts } from '../../context/PostsContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
 import { getDayStreak } from '../../lib/stats-share';
@@ -30,6 +31,7 @@ export default function ProfileScreen() {
         posts,
             profile,
         reputation,
+        currentUserId,
         isAuthenticated,
         authUserEmail,
         syncStatus,
@@ -41,6 +43,7 @@ export default function ProfileScreen() {
         signOut,
         } = usePosts();
     const { colors, toggleTheme, theme } = useTheme();
+    const { t, lang, setLang } = useLanguage();
     const router = useRouter();
 
     const [editVisible, setEditVisible] = useState(false);
@@ -49,16 +52,23 @@ export default function ProfileScreen() {
     const [draftName, setDraftName] = useState(profile.name);
     const [draftBio, setDraftBio] = useState(profile.bio);
 
-    const totalPosts = posts.length;
-    const totalRealVotes = posts.reduce((sum, post) => sum + post.realVotes, 0);
-    const totalFakeVotes = posts.reduce((sum, post) => sum + post.fakeVotes, 0);
-    const disputedCount = posts.filter((post) => post.realScore + post.fakeScore >= 2 && Math.abs(post.realScore - post.fakeScore) <= 1).length;
-    const uniqueCelebrities = new Set(posts.map((post) => post.celebrityName.trim()).filter(Boolean)).size;
-    const legendaryCount = posts.filter((post) => post.rarity === 'legendary').length;
-    const dayStreak = getDayStreak(posts.map((post) => post.timestamp));
+    // Профиль показывает только СВОИ посты: до фикса сюда попадали демо-сиды
+    // и чужие карточки из общей ленты — гостю «витрина» была заполнена чужим.
+    const myPosts = useMemo(
+        () => posts.filter((post) => post.ownerId === currentUserId),
+        [posts, currentUserId],
+    );
+
+    const totalPosts = myPosts.length;
+    const totalRealVotes = myPosts.reduce((sum, post) => sum + post.realVotes, 0);
+    const totalFakeVotes = myPosts.reduce((sum, post) => sum + post.fakeVotes, 0);
+    const disputedCount = myPosts.filter((post) => post.realScore + post.fakeScore >= 2 && Math.abs(post.realScore - post.fakeScore) <= 1).length;
+    const uniqueCelebrities = new Set(myPosts.map((post) => post.celebrityName.trim()).filter(Boolean)).size;
+    const legendaryCount = myPosts.filter((post) => post.rarity === 'legendary').length;
+    const dayStreak = getDayStreak(myPosts.map((post) => post.timestamp));
     const savedPosts = posts.filter((post) => post.saved);
-    const verifiedGoalCount = posts.filter((post) => getAuthenticityPercent(post) >= 70).length;
-    const topShowcase = [...posts]
+    const verifiedGoalCount = myPosts.filter((post) => getAuthenticityPercent(post) >= 70).length;
+    const topShowcase = [...myPosts]
         .sort((a, b) => {
             const authDiff = getAuthenticityPercent(b) - getAuthenticityPercent(a);
             if (authDiff !== 0) return authDiff;
@@ -67,14 +77,14 @@ export default function ProfileScreen() {
         .slice(0, 3);
 
     const favoriteCategory = useMemo(() => {
-        if (posts.length === 0) return 'Пока не определена';
-        const counts = posts.reduce<Record<string, number>>((acc, post) => {
+        if (myPosts.length === 0) return 'Пока не определена';
+        const counts = myPosts.reduce<Record<string, number>>((acc, post) => {
             acc[post.category] = (acc[post.category] || 0) + 1;
             return acc;
         }, {});
         const [category] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
         return getCategoryLabel(category as Post['category']);
-    }, [posts]);
+    }, [myPosts]);
 
     const trustProgress = useMemo(() => {
         const normalized = Math.max(0, Math.min(100, reputation.score + 20));
@@ -154,7 +164,7 @@ export default function ProfileScreen() {
                         <View style={{ flex: 1 }}>
                             <Text style={[styles.badgeTitle, { color: colors.text }]}>{reputation.label}</Text>
                             <Text style={[styles.badgeSubtitle, { color: colors.textSecondary }]}>
-                                {reputation.score} очков доверия
+                                {t('trustPoints', { n: reputation.score })}
                             </Text>
                         </View>
                     </View>
@@ -166,17 +176,17 @@ export default function ProfileScreen() {
                     <View style={[styles.statsContainer, { backgroundColor: colors.surface }]}>
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalPosts}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Постов</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statPosts')}</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalRealVotes}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Подтверждено</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statVerified')}</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{legendaryCount}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Легендарных</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statLegendary')}</Text>
                         </View>
                         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
@@ -188,7 +198,7 @@ export default function ProfileScreen() {
                                     {dayStreak > 0 ? dayStreak : '—'}
                                 </Text>
                             </View>
-                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>Дней подряд</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statStreak')}</Text>
                         </View>
                     </View>
                 </Card>
@@ -277,7 +287,7 @@ export default function ProfileScreen() {
 
                 {topShowcase.length > 0 ? (
                     <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Витрина лучших</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('showcaseTitle')}</Text>
                         {topShowcase.map((post) => (
                             <TouchableOpacity
                                 key={post.id}
@@ -302,21 +312,21 @@ export default function ProfileScreen() {
                 ) : null}
 
                 <View style={styles.section}>
-                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Моя коллекция</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('myCollection')}</Text>
 
-                    {posts.length === 0 ? (
+                    {myPosts.length === 0 ? (
                         <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
                             <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                                 <Ionicons name="albums-outline" size={28} color={colors.primary} />
                             </View>
-                            <Text style={[styles.emptyText, { color: colors.text }]}>Коллекция еще не заполнена</Text>
+                            <Text style={[styles.emptyText, { color: colors.text }]}>{t('collectionEmpty')}</Text>
                             <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
-                                Когда добавите первый автограф, здесь появится компактная галерея.
+                                {t('collectionEmptyHint')}
                             </Text>
                         </View>
                     ) : (
                         <View style={styles.grid}>
-                            {posts.slice(0, 6).map((post) => (
+                            {myPosts.slice(0, 6).map((post) => (
                                 <TouchableOpacity
                                     key={post.id}
                                     style={[styles.gridItem, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -398,9 +408,44 @@ export default function ProfileScreen() {
 
                     <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.settingTitle, { color: colors.text }]}>Оформление</Text>
+                            <Text style={[styles.settingTitle, { color: colors.text }]}>{t('language')}</Text>
                             <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
-                                {theme === 'light' ? 'Сейчас: светлая тема' : 'Сейчас: тёмная тема'}
+                                {lang === 'ru' ? t('languageRu') : t('languageEn')}
+                            </Text>
+                        </View>
+                        <View style={styles.langSwitch}>
+                            {(['ru', 'en'] as const).map((code) => (
+                                <TouchableOpacity
+                                    key={code}
+                                    onPress={() => setLang(code)}
+                                    style={[
+                                        styles.langOption,
+                                        {
+                                            backgroundColor: lang === code ? colors.primary : colors.surface,
+                                            borderColor: colors.border,
+                                        },
+                                    ]}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={code === 'ru' ? 'Русский' : 'English'}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.langOptionText,
+                                            { color: lang === code ? colors.primaryText : colors.textSecondary },
+                                        ]}
+                                    >
+                                        {code.toUpperCase()}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+
+                    <View style={[styles.settingRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.settingTitle, { color: colors.text }]}>{t('appearance')}</Text>
+                            <Text style={[styles.settingHint, { color: colors.textSecondary }]}>
+                                {theme === 'light' ? t('themeNowLight') : t('themeNowDark')}
                             </Text>
                         </View>
                         <TouchableOpacity
@@ -411,7 +456,7 @@ export default function ProfileScreen() {
                         >
                             <Ionicons name={theme === 'light' ? 'moon-outline' : 'sunny-outline'} size={18} color={colors.text} />
                             <Text style={[styles.settingButtonText, { color: colors.text }]}>
-                                {theme === 'light' ? 'Тёмная' : 'Светлая'}
+                                {theme === 'light' ? t('themeSwitchToDark') : t('themeSwitchToLight')}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -533,6 +578,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 10,
         marginBottom: 12,
+    },
+    langSwitch: {
+        flexDirection: 'row',
+        gap: 6,
+    },
+    langOption: {
+        minWidth: 46,
+        minHeight: 36,
+        borderRadius: radii.md,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 8,
+    },
+    langOptionText: {
+        fontSize: 12,
+        fontWeight: '700',
     },
     reputationIconWrap: {
         width: 36,

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 
 type Colors = ReturnType<typeof useTheme>['colors'];
@@ -19,15 +20,16 @@ export default function AnalysisCard({
     result: AnalysisResult | null;
     colors: Colors;
 }) {
+    const { t } = useLanguage();
     if (!analyzing && !result) return null;
 
     if (analyzing) {
         return (
             <View style={[styles.analysisCard, { backgroundColor: colors.surface }]}>
                 <ActivityIndicator color={colors.primary} />
-                <Text style={[styles.analysisTitle, { color: colors.text }]}>Проверяю подпись...</Text>
+                <Text style={[styles.analysisTitle, { color: colors.text }]}>{t('analyzing')}</Text>
                 <Text style={[styles.analysisHint, { color: colors.textSecondary }]}>
-                    Выполняю предварительную оценку по фото и доступным признакам.
+                    {t('analyzingHint')}
                 </Text>
             </View>
         );
@@ -37,13 +39,13 @@ export default function AnalysisCard({
         <View style={[styles.analysisCard, { backgroundColor: colors.surface }]}>
             <View style={styles.analysisHeader}>
                 <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
-                <Text style={[styles.analysisTitle, { color: colors.text }]}>Предварительная проверка</Text>
+                <Text style={[styles.analysisTitle, { color: colors.text }]}>{t('preCheck')}</Text>
             </View>
             <Text style={[styles.analysisResult, { color: colors.text }]}>
-                Возможное совпадение: {result?.suggestion}
+                {t('matchFound', { name: result?.suggestion ?? '—' })}
             </Text>
             <Text style={[styles.analysisHint, { color: colors.textSecondary }]}>
-                Уверенность оценки: {result?.confidence}%
+                {t('matchConfidence', { n: result?.confidence ?? 0 })}
             </Text>
         </View>
     );
