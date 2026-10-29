@@ -21,6 +21,7 @@ import {
     PostCategory,
     usePosts
 } from '../../context/PostsContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import {
     getAuthenticity,
@@ -41,6 +42,7 @@ import { typography } from '../../lib/theme';
 export default function FeedScreen() {
     const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData, syncStatus } = usePosts();
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -185,7 +187,7 @@ export default function FeedScreen() {
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
             <View style={styles.screenHeader}>
                 <View style={styles.headerText}>
-                    <Text style={[styles.screenTitle, { color: colors.text }]}>Лента</Text>
+                    <Text style={[styles.screenTitle, { color: colors.text }]}>{t('feedTitle')}</Text>
                     {activeFilterCount > 0 ? (
                         <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
                             {`Фильтров активно: ${activeFilterCount}`}

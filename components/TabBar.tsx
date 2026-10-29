@@ -156,7 +156,9 @@ const styles = StyleSheet.create({
         borderRadius: 27,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: -20,
+        // transform не влияет на layout: круг визуально выступает над панелью,
+        // а подпись под ним остаётся на своём месте (marginBottom её накрывал).
+        transform: [{ translateY: -12 }],
     },
     label: {
         fontSize: 11,
