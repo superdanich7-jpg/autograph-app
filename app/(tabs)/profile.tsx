@@ -343,22 +343,21 @@ export default function ProfileScreen() {
                             </Text>
                         </View>
                     ) : (
+                        // Шаг 36 PLAN-100: сетка как в Instagram — 3 колонки квадратных фото
                         <View style={styles.grid}>
-                            {myPosts.slice(0, 6).map((post) => (
+                            {myPosts.slice(0, 12).map((post) => (
                                 <TouchableOpacity
                                     key={post.id}
-                                    style={[styles.gridItem, { backgroundColor: colors.card }]}
+                                    style={styles.gridItem}
+                                    activeOpacity={0.85}
                                     onPress={() => setSelectedPost(post)}
                                 >
                                     <Image source={{ uri: post.uri }} style={styles.gridImage} resizeMode="cover" />
-                                    <View style={styles.gridFooter}>
-                                        <Text style={[styles.gridTitle, { color: colors.text }]} numberOfLines={1}>
-                                            {post.celebrityName || t('nameless')}
-                                        </Text>
-                                        <Text style={[styles.gridSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                                            {categoryLabel(post.category, lang)} • {getRarityLabel(post.rarity)}
-                                        </Text>
-                                    </View>
+                                    {post.rarity === 'legendary' ? (
+                                        <View style={[styles.gridRarity, { backgroundColor: colors.accent }]}>
+                                            <Ionicons name="star" size={11} color="#0B1220" />
+                                        </View>
+                                    ) : null}
                                 </TouchableOpacity>
                             ))}
                         </View>
@@ -784,14 +783,23 @@ const styles = StyleSheet.create({
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        rowGap: 12,
+        gap: 2,
     },
     gridItem: {
-        ...shadows.sm,
-        width: '48%',
-        borderRadius: 18,
+        width: '32%',
+        aspectRatio: 1,
         overflow: 'hidden',
+        borderRadius: 4,
+    },
+    gridRarity: {
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     gridImage: {
         width: '100%',

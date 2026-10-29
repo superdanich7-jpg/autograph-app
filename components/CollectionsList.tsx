@@ -25,6 +25,7 @@ type CollectionItemProps = {
 };
 
 function CollectionItem({ collection, posts, onPress, colors, onShare, onDelete }: CollectionItemProps) {
+  const { t } = useLanguage();
   return (
     <TouchableOpacity style={[styles.item, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={onPress}>
       <View style={[styles.icon, { backgroundColor: collection.color + '22' }]}>
@@ -33,7 +34,7 @@ function CollectionItem({ collection, posts, onPress, colors, onShare, onDelete 
       <View style={{ flex: 1 }}>
         <Text style={[styles.itemTitle, { color: colors.text }]}>{collection.name}</Text>
         <Text style={[styles.itemCount, { color: colors.textSecondary }]}>
-          {collection.postIds.length} автограф{getCountSuffix(collection.postIds.length)}
+          {t('itemsCount', { n: collection.postIds.length })}
         </Text>
       </View>
       <TouchableOpacity onPress={onShare} style={styles.actionBtn}>
@@ -44,12 +45,6 @@ function CollectionItem({ collection, posts, onPress, colors, onShare, onDelete 
       </TouchableOpacity>
     </TouchableOpacity>
   );
-}
-
-function getCountSuffix(count: number) {
-  if (count % 10 === 1 && count % 100 !== 11) return '';
-  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return 'а';
-  return 'ов';
 }
 
 type Props = {
@@ -102,7 +97,7 @@ export default function CollectionsList({ visible, onClose }: Props) {
   const renderEmpty = () => (
     <View style={styles.empty}>
       <Ionicons name="albums-outline" size={36} color={colors.primary} />
-      <Text style={[styles.emptyTitle, { color: colors.text }]}>Пока пусто</Text>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('collEmpty')}</Text>
       <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
         Создайте первую подборку, чтобы начать группировать автографы.
       </Text>
@@ -124,7 +119,7 @@ export default function CollectionsList({ visible, onClose }: Props) {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Мои подборки</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('collTitle')}</Text>
           <View style={styles.headerActions}>
             <Button title={t('collCreate')} onPress={() => setShowCreate(true)} variant="primary" size="sm" icon="add-outline" />
             <TouchableOpacity onPress={onClose}>
@@ -175,7 +170,7 @@ export default function CollectionsList({ visible, onClose }: Props) {
             {detailCollection && detailCollection.postIds.length === 0 ? (
               <View style={styles.empty}>
                 <Ionicons name="images-outline" size={28} color={colors.primary} />
-                <Text style={[styles.emptyTitle, { color: colors.text }]}>В подборке пока нет автографов</Text>
+                <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('collEmptyInside')}</Text>
                 <Button
                   title={t('feedAddFirst')}
                   onPress={() => handleAddPost(detailCollection.id)}

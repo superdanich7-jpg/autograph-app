@@ -44,6 +44,7 @@ function FriendRow({
   action?: React.ReactNode;
   presence?: boolean;
 }) {
+  const { t } = useLanguage();
   return (
     <View style={[styles.row, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.avatarWrap}>
@@ -59,7 +60,7 @@ function FriendRow({
           </Text>
           {friend.isDemo ? (
             <View style={[styles.demoBadge, { backgroundColor: colors.accentLight }]}>
-              <Text style={[typography.labelSmall, { color: colors.accent, fontSize: 9, letterSpacing: 0.4 }]}>ДЕМО</Text>
+              <Text style={[typography.labelSmall, { color: colors.accent, fontSize: 9, letterSpacing: 0.4 }]}>{t('friendsDemo')}</Text>
             </View>
           ) : null}
         </View>
@@ -67,7 +68,7 @@ function FriendRow({
           @{friend.handle}
           {friend.specialty ? ` • ${friend.specialty}` : ''}
           {presence ? ` • ${formatPresence(friend)}` : ''}
-          {typeof friend.mutualCount === 'number' && friend.mutualCount > 0 ? ` • ${friend.mutualCount} общих` : ''}
+          {typeof friend.mutualCount === 'number' && friend.mutualCount > 0 ? t('friendsMutualShort', { n: friend.mutualCount }) : ''}
         </Text>
       </View>
       {onMessage ? (

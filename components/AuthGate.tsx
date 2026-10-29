@@ -59,7 +59,7 @@ export default function AuthGate({ icon, title, hint }: Props) {
                             { backgroundColor: lang === code ? colors.primary : colors.card },
                         ]}
                         accessibilityRole="button"
-                        accessibilityLabel={code === 'ru' ? 'Русский' : 'English'}
+                        accessibilityLabel={code === 'ru' ? t('russian') : 'English'}
                     >
                         <Text
                             style={[

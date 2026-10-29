@@ -39,23 +39,23 @@ export default function CreateCollectionModal({ visible, onClose, onCreate }: Pr
       <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>Новая подборка</Text>
+            <Text style={[styles.title, { color: colors.text }]}>{t('ccTitle')}</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
           <ScrollView contentContainerStyle={styles.form}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Название</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('ccFieldName')}</Text>
             <TextInput
               style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
               value={name}
               onChangeText={setName}
-              placeholder="Например: Спорт"
+              placeholder={t("ccNamePlaceholder")}
               placeholderTextColor={colors.placeholder}
             />
 
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Описание</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('commDescription')}</Text>
             <TextInput
               style={[
                 styles.input,
@@ -64,13 +64,13 @@ export default function CreateCollectionModal({ visible, onClose, onCreate }: Pr
               ]}
               value={description}
               onChangeText={setDescription}
-              placeholder="Кратко о коллекции"
+              placeholder={t("ccName")}
               placeholderTextColor={colors.placeholder}
               multiline
               textAlignVertical="top"
             />
 
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Цвет</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('ccFieldColor')}</Text>
             <View style={styles.colorRow}>
               {COLORS.map((c) => (
                 <TouchableOpacity
