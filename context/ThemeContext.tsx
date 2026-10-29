@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 // A1: единый источник токенов — палитры живут в lib/theme.ts, дублей нет.
 import { darkTheme, lightTheme } from '../lib/theme';
@@ -22,6 +22,14 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const systemScheme = useColorScheme();
     const initialMode: ThemeMode = systemScheme === 'dark' ? 'dark' : 'light';
     const [theme, setThemeState] = useState<ThemeMode>(initialMode);
+    // Статический пререндер (Node) рисует инлайн-стили в light-теме, а React
+    // при гидрации не перезаписывает неизменённые style-атрибуты — фон и панели
+    // оставались «застрявшими» в light. Перерендер после монтирования обновляет
+    // инлайн-стили у всех потребителей темы.
+    const [hydrated, setHydrated] = useState(false);
+    useEffect(() => {
+        setHydrated(true);
+    }, []);
 
     const toggleTheme = () => {
         setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -41,8 +49,15 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         document.body.style.colorScheme = theme;
     }, [colors.background, theme]);
 
+    const value = useMemo(
+        () => ({ theme, colors, toggleTheme, setTheme }),
+        // hydrated сознательно в зависимостях: его флип перерисовывает потребителей
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [theme, hydrated],
+    );
+
     return (
-        <ThemeContext.Provider value={{ theme, colors, toggleTheme, setTheme }}>
+        <ThemeContext.Provider value={value}>
             {children}
         </ThemeContext.Provider>
     );

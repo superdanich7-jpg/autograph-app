@@ -1,13 +1,15 @@
 /**
  * GlassCard — liquid-glass поверхность: полупрозрачный фон + blur подложки
- * (expo-blur на нативе; на web — CSS backdrop-filter) + светлый блик сверху.
+ * (expo-blur на нативе; на web — CSS backdrop-filter через инжект <style>,
+ * потому что RNW вырезает backdropFilter из StyleSheet) + светлый блик сверху.
  * Заменяет «коробки» с рамками на стеклянные плоскости.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Platform, StyleSheet, View, ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../../context/ThemeContext';
+import { ensureWebGlassCss } from '../../lib/web-glass';
 
 type Props = {
     children: React.ReactNode;
@@ -21,12 +23,18 @@ type Props = {
 export default function GlassCard({ children, style, radius = 20, flat = false }: Props) {
     const { colors, theme } = useTheme();
     const dark = theme === 'dark';
+
+    useEffect(() => {
+        ensureWebGlassCss();
+    }, []);
+
     const glass = (colors as { glassCard?: string }).glassCard ?? colors.card;
     const hairline = (colors as { glassBorder?: string }).glassBorder ?? colors.border;
     const highlight = (colors as { glassHighlight?: string }).glassHighlight ?? 'rgba(255,255,255,0.06)';
 
     return (
         <View
+            testID={Platform.OS === 'web' ? 'glass-card' : undefined}
             style={[
                 styles.card,
                 {
@@ -37,7 +45,7 @@ export default function GlassCard({ children, style, radius = 20, flat = false }
                 style,
             ]}
         >
-            {!flat ? (
+            {!flat && Platform.OS !== 'web' ? (
                 <BlurView intensity={40} tint={dark ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
             ) : null}
             <View
@@ -60,9 +68,6 @@ const styles = StyleSheet.create({
     card: {
         overflow: 'hidden',
         borderWidth: 1,
-        ...(Platform.OS === 'web'
-            ? ({ backdropFilter: 'blur(24px) saturate(160%)' } as unknown as ViewStyle)
-            : {}),
     },
     highlight: {
         position: 'absolute',

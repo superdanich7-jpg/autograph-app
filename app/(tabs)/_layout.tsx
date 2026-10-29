@@ -7,6 +7,9 @@ export default function TabsLayout() {
       tabBar={() => <CustomTabBar />}
       screenOptions={{
         headerShown: false,
+        // Сцены прозрачны: сквозь них видно liquid-glass фон из корневого layout
+        // (в bottom-tabs v7 опция называется sceneStyle)
+        sceneStyle: { backgroundColor: 'transparent' },
       }}
     >
       <Tabs.Screen name="index" />

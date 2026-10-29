@@ -84,15 +84,16 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <View style={styles.root} pointerEvents="box-none">
-        {/* Liquid-glass фон: градиент + золотые свечения под всеми экранами */}
-        <AppBackground />
-        <ErrorBoundary>
-          <ThemeProvider>
+      <ThemeProvider>
+        <View style={styles.root} pointerEvents="box-none">
+          {/* Liquid-glass фон: градиент + золотые свечения под всеми экранами.
+              Обязан быть ВНУТРИ ThemeProvider (использует useTheme). */}
+          <AppBackground />
+          <ErrorBoundary>
             <LanguageProvider>
               <PostsProvider>
                 <OnboardingGate>
-                  <Stack screenOptions={{ headerShown: false }}>
+                  <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
                     <Stack.Screen name="(tabs)" />
                     <Stack.Screen name="onboarding" />
                     <Stack.Screen name="chat" options={{ presentation: 'card' }} />
@@ -104,9 +105,9 @@ export default function RootLayout() {
             {/* Toast вызывает useTheme — обязан быть внутри ThemeProvider
                 (вне провайдера на web падал весь монтаж: белый экран). */}
             <Toast />
-          </ThemeProvider>
-        </ErrorBoundary>
-      </View>
+          </ErrorBoundary>
+        </View>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

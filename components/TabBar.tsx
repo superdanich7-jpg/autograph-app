@@ -5,13 +5,14 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { Href, usePathname, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticSelection } from '../lib/haptics';
+import { ensureWebGlassCss } from '../lib/web-glass';
 import { shadows } from '../lib/theme';
 import type { TranslationKey } from '../lib/i18n';
 
@@ -47,7 +48,18 @@ export default function CustomTabBar() {
     const { t } = useLanguage();
     const insets = useSafeAreaInsets();
 
+    React.useEffect(() => {
+        ensureWebGlassCss();
+    }, []);
+
     const addActive = pathname === '/upload';
+
+    // Аналогично AppBackground: стеклянная панель — только клиентская,
+    // иначе пререндер оставляет light-инлайн-стили после гидрации.
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const renderSide = (tab: TabItem) => {
         const isActive =
@@ -88,8 +100,13 @@ export default function CustomTabBar() {
         );
     };
 
+    if (!mounted) {
+        return null;
+    }
+
     return (
         <View
+            testID={Platform.OS === 'web' ? 'glass-card' : undefined}
             style={[
                 styles.bar,
                 {
@@ -99,7 +116,9 @@ export default function CustomTabBar() {
                 },
             ]}
         >
-            <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
+            {Platform.OS !== 'web' ? (
+                <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
+            ) : null}
             {renderSide(sideTabs[0])}
 
             <View style={styles.centerSlot} pointerEvents="box-none">
