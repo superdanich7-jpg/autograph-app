@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
-        gap: 3,
+        gap: 5,
         paddingBottom: 2,
     },
     fab: {

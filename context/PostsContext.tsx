@@ -332,7 +332,7 @@ type CloudPostRow = {
     updated_at: string;
 };
 
-function getReputation(posts: Post[]): Reputation {
+export function getReputation(posts: Post[]): Reputation {
     const score = posts.reduce((sum, post) => {
         const evidenceBonus = Math.min(post.evidence.length * 3, 12);
         const rarityBonus = post.rarity === 'legendary' ? 8 : post.rarity === 'rare' ? 4 : 0;

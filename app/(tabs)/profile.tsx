@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import { Post, usePosts } from '../../context/PostsContext';
+import { Post, usePosts, getReputation } from '../../context/PostsContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../../lib/helpers';
@@ -30,7 +30,6 @@ export default function ProfileScreen() {
     const {
         posts,
             profile,
-        reputation,
         currentUserId,
         isAuthenticated,
         authUserEmail,
@@ -58,6 +57,10 @@ export default function ProfileScreen() {
         () => posts.filter((post) => post.ownerId === currentUserId),
         [posts, currentUserId],
     );
+
+    // Репутация в контексте — «участие» (влияет на вес голоса по всей ленте).
+    // В герое показываем доверие, заработанное своими постами.
+    const myReputation = useMemo(() => getReputation(myPosts), [myPosts]);
 
     const totalPosts = myPosts.length;
     const totalRealVotes = myPosts.reduce((sum, post) => sum + post.realVotes, 0);
@@ -87,9 +90,9 @@ export default function ProfileScreen() {
     }, [myPosts]);
 
     const trustProgress = useMemo(() => {
-        const normalized = Math.max(0, Math.min(100, reputation.score + 20));
+        const normalized = Math.max(0, Math.min(100, myReputation.score + 20));
         return `${normalized}%` as const;
-    }, [reputation.score]);
+    }, [myReputation.score]);
 
     const saveProfile = () => {
         updateProfile({ name: draftName, bio: draftBio });
@@ -162,9 +165,9 @@ export default function ProfileScreen() {
                             <Ionicons name="medal" size={20} color={colors.accent} />
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.badgeTitle, { color: colors.text }]}>{reputation.label}</Text>
+                            <Text style={[styles.badgeTitle, { color: colors.text }]}>{myReputation.label}</Text>
                             <Text style={[styles.badgeSubtitle, { color: colors.textSecondary }]}>
-                                {t('trustPoints', { n: reputation.score })}
+                                {t('trustPoints', { n: myReputation.score })}
                             </Text>
                         </View>
                     </View>
