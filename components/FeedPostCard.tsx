@@ -102,7 +102,7 @@ export default function FeedPostCard({
                 <View style={styles.headerText}>
                     <Text style={[styles.username, { color: colors.text }]}>{item.ownerName || 'Collector'}</Text>
                     <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
-                        {new Date(item.timestamp).toLocaleDateString('ru-RU')}
+                        {new Date(item.timestamp).toLocaleDateString(lang === 'en' ? 'en-US' : 'ru-RU')}
                         {item.location ? ` • ${item.location}` : ''}
                     </Text>
                 </View>

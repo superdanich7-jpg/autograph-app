@@ -192,22 +192,17 @@ export default function ProfileScreen() {
                         <View style={[styles.trustBarFill, { backgroundColor: colors.accent, width: trustProgress }]} />
                     </View>
 
-                    <View style={[styles.statsContainer, { backgroundColor: colors.surface }]}>
+                    {/* Шаг 39 PLAN-100: статы в один ряд как в Instagram —
+                        без контейнера-плашки, число сверху, подпись снизу */}
+                    <View style={styles.statsContainer}>
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalPosts}</Text>
                             <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statPosts')}</Text>
                         </View>
-                        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <Text style={[styles.statNumber, { color: colors.text }]}>{totalRealVotes}</Text>
                             <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statVerified')}</Text>
                         </View>
-                        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-                        <View style={styles.statItem}>
-                            <Text style={[styles.statNumber, { color: colors.text }]}>{legendaryCount}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statLegendary')}</Text>
-                        </View>
-                        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
                         <View style={styles.statItem}>
                             <View style={styles.statStreakRow}>
                                 {dayStreak > 0 ? (
@@ -218,6 +213,10 @@ export default function ProfileScreen() {
                                 </Text>
                             </View>
                             <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statStreak')}</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={[styles.statNumber, { color: colors.accent }]}>{myReputation.score}</Text>
+                            <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statTrustShort')}</Text>
                         </View>
                     </View>
                 </Card>
@@ -639,8 +638,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '100%',
         justifyContent: 'space-around',
-        paddingVertical: 18,
-        borderRadius: radii.lg,
+        paddingVertical: 14,
+        marginTop: 4,
     },
     statItem: { alignItems: 'center', flex: 1, minWidth: 0 },
     statStreakRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
