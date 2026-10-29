@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePosts } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { Community, CommunityCategory, getMembership, sortCommunitiesForUser, validateCommunityInput } from '../lib/communities';
 import { hapticLight } from '../lib/haptics';
@@ -28,17 +29,19 @@ import Button from './ui/Button';
 
 type Colors = ReturnType<typeof useTheme>['colors'];
 
-const CATEGORIES: { value: CommunityCategory; label: string; emoji: string }[] = [
-    { value: 'sports', label: 'Спорт', emoji: '🏅' },
-    { value: 'music', label: 'Музыка', emoji: '🎵' },
-    { value: 'movies', label: 'Кино', emoji: '🎬' },
-    { value: 'politics', label: 'Политика', emoji: '🏛️' },
-    { value: 'other', label: 'Другое', emoji: '✨' },
-];
-
 export default function CommunitiesList({ visible, onClose }: { visible: boolean; onClose: () => void }) {
     const { communities, currentUserId, createCommunity, requestJoinCommunity, approveCommunityJoin, leaveCommunity } = usePosts();
     const { colors } = useTheme();
+    const { t } = useLanguage();
+
+    // Метки категорий зависят от языка — собираются в компоненте
+    const CATEGORIES: { value: CommunityCategory; label: string; emoji: string }[] = [
+        { value: 'sports', label: t('commCatSports'), emoji: '🏅' },
+        { value: 'music', label: t('commCatMusic'), emoji: '🎵' },
+        { value: 'movies', label: t('commCatMovies'), emoji: '🎬' },
+        { value: 'politics', label: t('commCatPolitics'), emoji: '🏛️' },
+        { value: 'other', label: t('commCatOther'), emoji: '✨' },
+    ];
 
     const [showCreate, setShowCreate] = useState(false);
     const [name, setName] = useState('');
@@ -58,7 +61,7 @@ export default function CommunitiesList({ visible, onClose }: { visible: boolean
     const handleCreate = () => {
         const validation = validateCommunityInput({ name });
         if (!validation.valid) {
-            Alert.alert('Не получилось', validation.error || 'Проверьте название');
+            Alert.alert(t('commFailed'), validation.error || t('commNameError'));
             return;
         }
         const emoji = CATEGORIES.find((c) => c.value === category)?.emoji ?? '🏆';
@@ -73,7 +76,7 @@ export default function CommunitiesList({ visible, onClose }: { visible: boolean
                 <View style={styles.header}>
                     <Text style={[styles.title, { color: colors.text }]}>Сообщества</Text>
                     <View style={styles.headerActions}>
-                        <Button title="Создать" onPress={() => setShowCreate(true)} variant="primary" size="sm" icon="add-outline" />
+                        <Button title={t('commCreate')} onPress={() => setShowCreate(true)} variant="primary" size="sm" icon="add-outline" />
                         <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={24} color={colors.textSecondary} />
                         </TouchableOpacity>
@@ -117,14 +120,14 @@ export default function CommunitiesList({ visible, onClose }: { visible: boolean
 
                                 <TextInput
                                     style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
-                                    placeholder="Название (от 3 символов)"
+                                    placeholder={t("commNameHint")}
                                     placeholderTextColor={colors.placeholder}
                                     value={name}
                                     onChangeText={setName}
                                 />
                                 <TextInput
                                     style={[styles.input, styles.textArea, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
-                                    placeholder="Описание"
+                                    placeholder={t("commDescription")}
                                     placeholderTextColor={colors.placeholder}
                                     value={description}
                                     onChangeText={setDescription}
@@ -167,8 +170,8 @@ export default function CommunitiesList({ visible, onClose }: { visible: boolean
                                 </View>
 
                                 <View style={styles.createActions}>
-                                    <Button title="Отмена" onPress={() => { setShowCreate(false); reset(); }} variant="secondary" size="sm" />
-                                    <Button title="Создать" onPress={handleCreate} variant="primary" size="sm" />
+                                    <Button title={t('cancel')} onPress={() => { setShowCreate(false); reset(); }} variant="secondary" size="sm" />
+                                    <Button title={t('commCreate')} onPress={handleCreate} variant="primary" size="sm" />
                                 </View>
                             </View>
                         </View>
@@ -195,6 +198,7 @@ function CommunityRow({
     onLeave: () => void;
     onApprove: (userId: string) => void;
 }) {
+    const { t } = useLanguage();
     const m = getMembership(community, currentUserId);
     const pendingCount = community.pendingIds.length;
 
@@ -208,8 +212,8 @@ function CommunityRow({
                 </View>
                 <Text style={[styles.itemMeta, { color: colors.textSecondary }]} numberOfLines={1}>
                     {community.memberIds.length} участник(ов)
-                    {m.isOwner ? ' · владелец' : ''}
-                    {m.isPending ? ' · заявка на рассмотрении' : ''}
+                    {m.isOwner ? t('commOwner') : ''}
+                    {m.isPending ? t('commPending') : ''}
                 </Text>
                 {community.description ? (
                     <Text style={[styles.itemDesc, { color: colors.textSecondary }]} numberOfLines={2}>
@@ -239,7 +243,7 @@ function CommunityRow({
             {!m.isMember && !m.isOwner && !m.isPending && (
                 <TouchableOpacity onPress={onJoin} style={[styles.joinBtn, { backgroundColor: colors.primary }]}>
                     <Text style={[styles.joinText, { color: colors.primaryText }]}>
-                        {community.isPrivate ? 'Запросить' : 'Вступить'}
+                        {community.isPrivate ? t('commRequest') : t('commJoin')}
                     </Text>
                 </TouchableOpacity>
             )}

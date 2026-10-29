@@ -12,6 +12,9 @@ export interface Achievement {
   slug: string;
   title: string;
   description: string;
+  /** EN-версии (миграция 010); UI выбирает по языку пользователя */
+  title_en?: string;
+  description_en?: string;
   icon: string;
   category: string;
   threshold: number;

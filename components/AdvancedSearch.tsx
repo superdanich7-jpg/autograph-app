@@ -14,15 +14,13 @@ import {
     View,
 } from 'react-native';
 import { Post } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { getAuthenticityPercent, getCategoryLabel, getRarityLabel } from '../lib/helpers';
 
 const CATEGORIES = ['all', 'sports', 'music', 'movies', 'politics', 'other'];
-const CATEGORY_LABELS: Record<string, string> = { all: 'Все', sports: 'Спорт', music: 'Музыка', movies: 'Кино', politics: 'Политика', other: 'Другое' };
 const RARITIES = ['all', 'common', 'rare', 'legendary'];
-const RARITY_LABELS: Record<string, string> = { all: 'Все', common: 'Обычный', rare: 'Редкий', legendary: 'Легендарный' };
 const SORT_OPTIONS = ['date', 'name', 'authenticity'] as const;
-const SORT_LABELS: Record<string, string> = { date: 'По дате', name: 'По имени', authenticity: 'По достоверности' };
 
 type SortKey = (typeof SORT_OPTIONS)[number];
 
@@ -33,6 +31,11 @@ type Props = {
 
 export default function AdvancedSearch({ posts, onPostPress }: Props) {
     const { colors } = useTheme();
+    const { t, lang } = useLanguage();
+    // Метки зависят от языка — собираются в компоненте
+    const CATEGORY_LABELS: Record<string, string> = { all: t('advSearchAll'), sports: t('commCatSports'), music: t('commCatMusic'), movies: t('commCatMovies'), politics: t('commCatPolitics'), other: t('commCatOther') };
+    const RARITY_LABELS: Record<string, string> = { all: t('advSearchAll'), common: t('rarityCommon'), rare: t('rarityRare'), legendary: t('rarityLegendary') };
+    const SORT_LABELS: Record<string, string> = { date: t('advSortDate'), name: t('advSortName'), authenticity: t('advSortTrust') };
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('all');
     const [rarity, setRarity] = useState('all');
@@ -92,7 +95,7 @@ export default function AdvancedSearch({ posts, onPostPress }: Props) {
                     style={[styles.searchInput, { color: colors.text }]}
                     value={query}
                     onChangeText={setQuery}
-                    placeholder="Поиск по имени или описанию..."
+                    placeholder={t("advSearchPlaceholder")}
                     placeholderTextColor={colors.placeholder}
                     returnKeyType="search"
                 />
@@ -187,7 +190,7 @@ export default function AdvancedSearch({ posts, onPostPress }: Props) {
                     >
                         <View style={styles.resultRow}>
                             <View style={styles.resultInfo}>
-                                <Text style={[styles.resultName, { color: colors.text }]}>{post.celebrityName || 'Без имени'}</Text>
+                                <Text style={[styles.resultName, { color: colors.text }]}>{post.celebrityName || t('nameless')}</Text>
                                 <Text style={[styles.resultMeta, { color: colors.textSecondary }]}>
                                     {getCategoryLabel(post.category)} • {getRarityLabel(post.rarity)}
                                 </Text>

@@ -7,6 +7,7 @@ import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
 import { usePosts } from '../../context/PostsContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { trustLabel } from '../../lib/i18n';
 import { useTheme } from '../../context/ThemeContext';
 import { getAuthenticityPercent } from '../../lib/helpers';
 import { getTrustTier } from '../../lib/trust';
@@ -104,7 +105,7 @@ export default function CommunityScreen() {
                                     </Text>
                                     <View style={[styles.trustChip, { backgroundColor: colors.surface }]}>
                                         <Text style={styles.trustChipText}>
-                                            {getTrustTier(item.score).icon} {getTrustTier(item.score).label}
+                                            {getTrustTier(item.score).icon} {trustLabel(getTrustTier(item.score).tier, lang)}
                                         </Text>
                                     </View>
                                 </View>

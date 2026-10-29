@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { usePosts } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticLight } from '../lib/haptics';
 import { formatPresence, suggestFriends, type Friend } from '../lib/friends';
@@ -16,12 +17,6 @@ import { PressableScale } from './ui/primitives';
 import { Sheet } from './ui/Sheet';
 
 type TabKey = 'friends' | 'requests' | 'suggested';
-
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'friends', label: 'Друзья' },
-  { key: 'requests', label: 'Заявки' },
-  { key: 'suggested', label: 'Для вас' },
-];
 
 type Colors = ReturnType<typeof useTheme>['colors'];
 
@@ -103,6 +98,7 @@ export default function FriendsSheet({
   onOpenChat?: (friendId: string, friendName: string) => void;
 }) {
   const { colors } = useTheme();
+    const { t } = useLanguage();
   const {
     friends,
     friendList,
@@ -127,31 +123,37 @@ export default function FriendsSheet({
       }}
       style={[styles.iconBtn, { backgroundColor: colors.surface }]}
       accessibilityRole="button"
-      accessibilityLabel="Удалить из друзей"
+      accessibilityLabel={t('friendsRemove')}
     >
       <Ionicons name="person-remove-outline" size={18} color={colors.textSecondary} />
     </TouchableOpacity>
   );
 
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: 'friends', label: t('rowFriends') },
+    { key: 'requests', label: t('friendsRequests') },
+    { key: 'suggested', label: t('friendsForYou') },
+  ];
+
   return (
-    <Sheet visible={visible} onClose={onClose} title="Друзья" subtitle="Коллекционеры, с которыми вы связаны" size="full">
+    <Sheet visible={visible} onClose={onClose} title={t('rowFriends')} subtitle={t('friendsConnected')} size="full">
       <View style={[styles.tabs, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        {TABS.map((t) => {
-          const active = tab === t.key;
-          const badge = t.key === 'requests' ? incomingFriendRequests.length : 0;
+        {TABS.map((tabItem) => {
+          const active = tab === tabItem.key;
+          const badge = tabItem.key === 'requests' ? incomingFriendRequests.length : 0;
           return (
             <TouchableOpacity
-              key={t.key}
+              key={tabItem.key}
               onPress={() => {
                 hapticLight();
-                setTab(t.key);
+                setTab(tabItem.key);
               }}
               style={[styles.tab, active && { backgroundColor: colors.card }]}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
             >
               <Text style={[typography.bodySmall, { color: active ? colors.text : colors.textSecondary, fontWeight: active ? '700' : '500' }]}>
-                {t.label}
+                {tabItem.label}
               </Text>
               {badge > 0 ? (
                 <View style={[styles.badge, { backgroundColor: colors.danger }]}>
@@ -215,7 +217,7 @@ export default function FriendsSheet({
                   }}
                   style={[styles.acceptBtn, { backgroundColor: colors.primary }]}
                   accessibilityRole="button"
-                  accessibilityLabel="Принять"
+                  accessibilityLabel={t('friendsAccept')}
                 >
                   <Ionicons name="checkmark" size={18} color={colors.primaryText} />
                 </TouchableOpacity>
@@ -226,7 +228,7 @@ export default function FriendsSheet({
                   }}
                   style={[styles.iconBtn, { backgroundColor: colors.surface }]}
                   accessibilityRole="button"
-                  accessibilityLabel="Отклонить"
+                  accessibilityLabel={t('friendsDecline')}
                 >
                   <Ionicons name="close" size={18} color={colors.textSecondary} />
                 </TouchableOpacity>
@@ -255,7 +257,7 @@ export default function FriendsSheet({
               colors={colors}
               presence={false}
               action={
-                <PressableScale onPress={() => canInteract && sendFriendRequest(item.id)} accessibilityLabel="Добавить в друзья">
+                <PressableScale onPress={() => canInteract && sendFriendRequest(item.id)} accessibilityLabel={t('friendsAdd')}>
                   <View style={[styles.addBtn, { backgroundColor: colors.accentLight }]}>
                     <Ionicons name="person-add" size={18} color={colors.accent} />
                   </View>

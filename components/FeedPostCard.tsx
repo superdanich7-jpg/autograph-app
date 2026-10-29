@@ -12,6 +12,7 @@ import {
     isDisputed,
 } from '../lib/helpers';
 import { getAuthenticityVerdict } from '../lib/authenticity';
+import { verdictLabel } from '../lib/i18n';
 import GlassCard from './ui/GlassCard';
 import Badge from './ui/Badge';
 import VoteButton from './ui/VoteButton';
@@ -43,7 +44,7 @@ export default function FeedPostCard({
 }) {
     const verdict = getAuthenticityVerdict(item);
     const userVote = item.votesByUser[currentUserId];
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const [imageError, setImageError] = useState(false);
     const disputed = isDisputed(item);
     const isOwnPost = item.ownerId === currentUserId;
@@ -169,7 +170,7 @@ export default function FeedPostCard({
                             },
                         ]}
                     >
-                        {verdict.label} · {verdict.score}%
+                        {verdictLabel(verdict.verdict, lang)} · {verdict.score}%
                     </Text>
                 </View>
                 <Animated.View
@@ -249,7 +250,7 @@ export default function FeedPostCard({
                     size="sm"
                 />
                 {disputed ? (
-                    <Badge label="Спорный" variant="danger" size="sm" />
+                    <Badge label={t('verdictDisputed')} variant="danger" size="sm" />
                 ) : null}
                 {item.evidence.slice(0, 2).map((entry) => (
                     <Badge key={entry} label={getEvidenceLabel(entry)} variant="default" size="sm" />
@@ -287,7 +288,7 @@ export default function FeedPostCard({
                     </View>
                     <Text style={[styles.aiHint, { color: colors.textSecondary }]}>
                         Возможное совпадение: {item.aiSuggestion || item.celebrityName}
-                        {typeof item.aiConfidence === 'number' ? ` (${item.aiConfidence}% совпадения)` : ''}
+                        {typeof item.aiConfidence === 'number' ? ` (${t('matchSuffix', { n: item.aiConfidence })})` : ''}
                     </Text>
                 </View>
             ) : null}
@@ -359,7 +360,7 @@ export default function FeedPostCard({
                                 },
                             ]}
                         >
-                            {verdict.label} · {verdict.score}%
+                            {verdictLabel(verdict.verdict, lang)} · {verdict.score}%
                         </Text>
                     </View>
                 </View>

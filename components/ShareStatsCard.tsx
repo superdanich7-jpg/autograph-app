@@ -11,6 +11,7 @@ import * as Linking from 'expo-linking';
 import React, { useMemo, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { usePosts } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { hapticMedium, hapticSuccess } from '../lib/haptics';
 import { getCategoryLabel } from '../lib/helpers';
@@ -20,6 +21,7 @@ import { showToast } from './Toast';
 export default function ShareStatsCard() {
     const { posts, profile, reputation } = usePosts();
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const [sharing, setSharing] = useState(false);
 
     const summary = useMemo(() => {
@@ -32,7 +34,7 @@ export default function ShareStatsCard() {
         const favoriteCategory = favoriteCategoryValue ? getCategoryLabel(favoriteCategoryValue as any) : '';
 
         return buildCollectorStatsSummary({
-            name: profile.name || 'Коллекционер',
+            name: profile.name || t('statsCollector'),
             totalPosts: posts.length,
             totalRealVotes,
             legendary,
@@ -46,7 +48,7 @@ export default function ShareStatsCard() {
 
     const handleShare = async () => {
         if (posts.length === 0) {
-            Alert.alert('Пока нечего показать', 'Добавьте первый автограф, чтобы поделиться коллекцией.');
+            Alert.alert(t('statsShareNothing'), t('statsShareEmpty'));
             return;
         }
         setSharing(true);
@@ -56,16 +58,16 @@ export default function ShareStatsCard() {
             if (available) {
                 await Sharing.shareAsync(summary.text, {
                     mimeType: 'text/plain',
-                    dialogTitle: 'Поделиться достижениями',
+                    dialogTitle: t('statsShareCta'),
                     UTI: 'public.plain-text',
                 });
                 hapticSuccess();
-                showToast('Спасибо, что делитесь коллекцией!', 'success');
+                showToast(t('statsShareThanks'), 'success');
             } else {
-                Alert.alert('Моя статистика', summary.text);
+                Alert.alert(t('statsShareCta'), summary.text);
             }
         } catch (e) {
-            Alert.alert('Ошибка', 'Не удалось поделиться статистикой.');
+            Alert.alert(t('error'), t('statsShareError'));
         } finally {
             setSharing(false);
         }
@@ -84,7 +86,7 @@ export default function ShareStatsCard() {
             <View style={styles.body}>
                 <Text style={[styles.title, { color: colors.text }]}>{summary.headline}</Text>
                 <Text style={[styles.subtitle, { color: colors.textSecondary }]} numberOfLines={2}>
-                    {sharing ? 'Открываем share…' : 'Поделитесь достижениями — {0} автографов в коллекции'.replace('{0}', String(posts.length))}
+                    {sharing ? t('statsShareOpened') : t('statsShareText', { n: posts.length })}
                 </Text>
             </View>
             <View style={[styles.shareChip, { backgroundColor: colors.surface }]}>

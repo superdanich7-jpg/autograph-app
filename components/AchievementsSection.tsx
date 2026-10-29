@@ -12,6 +12,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import {
     Achievement,
@@ -27,6 +28,7 @@ type Props = {
 
 export default function AchievementsSection({ userId }: Props) {
     const { colors } = useTheme();
+    const { lang, t } = useLanguage();
     const [all, setAll] = useState<Achievement[]>([]);
     const [earned, setEarned] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function AchievementsSection({ userId }: Props) {
             setEarned(new Set(userAch.map((ua) => ua.achievement_id)));
         } catch (e) {
             const { showToast } = require('./Toast');
-            showToast('Не удалось загрузить достижения', 'error');
+            showToast(t('achievementsLoadError'), 'error');
         }
         setLoading(false);
     }
@@ -125,7 +127,7 @@ export default function AchievementsSection({ userId }: Props) {
                                 ]}
                                 numberOfLines={2}
                             >
-                                {item.title}
+                                {lang === 'en' && item.title_en ? item.title_en : item.title}
                             </Text>
                             {isEarned && (
                                 <View

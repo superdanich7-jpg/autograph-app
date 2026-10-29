@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { usePosts } from '../context/PostsContext';
 import { shareCollection } from '../lib/sharing';
@@ -58,6 +59,7 @@ type Props = {
 
 export default function CollectionsList({ visible, onClose }: Props) {
   const { colors } = useTheme();
+    const { t, lang } = useLanguage();
   const { collections, posts, createCollection, deleteCollection, updateCollection, addPostToCollection, removePostFromCollection } =
     usePosts();
   const [showCreate, setShowCreate] = useState(false);
@@ -74,24 +76,24 @@ export default function CollectionsList({ visible, onClose }: Props) {
   };
 
   const handleDelete = (collectionId: string) => {
-    Alert.alert('Удалить подборку?', 'Автографы не будут удалены из коллекции.', [
-      { text: 'Отмена', style: 'cancel' },
-      { text: 'Удалить', style: 'destructive', onPress: () => deleteCollection(collectionId) },
+    Alert.alert(t('collDeleteCollQ'), t('collDeleteHint'), [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('collDelete'), style: 'destructive', onPress: () => deleteCollection(collectionId) },
     ]);
   };
 
   const handleAddPost = (collectionId: string) => {
     if (posts.length === 0) {
-      Alert.alert('Нет автографов', 'Сначала добавьте автографы в коллекцию.');
+      Alert.alert(t('collNoAutographs'), t('collAddFirst'));
       return;
     }
 
     const options = posts.map((p) => ({
-      text: p.celebrityName || 'Без имени',
+      text: p.celebrityName || t('nameless'),
       value: p.id,
     }));
 
-    Alert.alert('Добавить автограф в подборку', 'Выберите автограф:', options.map((o) => ({
+    Alert.alert(t('collAddAutograph'), t('collPickAutograph'), options.map((o) => ({
       text: o.text,
       onPress: () => addPostToCollection(collectionId, o.value),
     })), { cancelable: true });
@@ -124,7 +126,7 @@ export default function CollectionsList({ visible, onClose }: Props) {
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>Мои подборки</Text>
           <View style={styles.headerActions}>
-            <Button title="Создать" onPress={() => setShowCreate(true)} variant="primary" size="sm" icon="add-outline" />
+            <Button title={t('collCreate')} onPress={() => setShowCreate(true)} variant="primary" size="sm" icon="add-outline" />
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -175,7 +177,7 @@ export default function CollectionsList({ visible, onClose }: Props) {
                 <Ionicons name="images-outline" size={28} color={colors.primary} />
                 <Text style={[styles.emptyTitle, { color: colors.text }]}>В подборке пока нет автографов</Text>
                 <Button
-                  title="Добавить автограф"
+                  title={t('feedAddFirst')}
                   onPress={() => handleAddPost(detailCollection.id)}
                   variant="primary"
                   size="sm"
@@ -194,10 +196,10 @@ export default function CollectionsList({ visible, onClose }: Props) {
                         <TouchableOpacity
                           style={[styles.gridAction, { backgroundColor: colors.danger }]}
                           onPress={() => {
-                            Alert.alert('Удалить из подборки?', post!.celebrityName || 'Автограф', [
-                              { text: 'Отмена', style: 'cancel' },
+                            Alert.alert(t('collDeleteItemQ'), post!.celebrityName || t('autographFallback'), [
+                              { text: t('cancel'), style: 'cancel' },
                               {
-                                text: 'Удалить',
+                                text: t('collDelete'),
                                 style: 'destructive',
                                 onPress: () => removePostFromCollection(detailCollection!.id, post!.id),
                               },
@@ -208,7 +210,7 @@ export default function CollectionsList({ visible, onClose }: Props) {
                         </TouchableOpacity>
                       </View>
                       <Text style={[styles.gridCaption, { color: colors.text }]} numberOfLines={1}>
-                        {post!.celebrityName || 'Без имени'}
+                        {post!.celebrityName || t('nameless')}
                       </Text>
                     </View>
                   ))}

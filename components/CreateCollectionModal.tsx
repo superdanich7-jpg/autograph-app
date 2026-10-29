@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import Button from './ui/Button';
 
@@ -15,6 +16,7 @@ const COLORS = ['#007AFF', '#FF2D55', '#34C759', '#FF9500', '#AF52DE', '#5AC8FA'
 
 export default function CreateCollectionModal({ visible, onClose, onCreate }: Props) {
   const { colors } = useTheme();
+    const { t } = useLanguage();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('#007AFF');
@@ -82,7 +84,7 @@ export default function CreateCollectionModal({ visible, onClose, onCreate }: Pr
               ))}
             </View>
 
-            <Button title="Создать" onPress={handleCreate} variant="primary" size="md" disabled={!name.trim()} />
+            <Button title={t('collCreate')} onPress={handleCreate} variant="primary" size="md" disabled={!name.trim()} />
           </ScrollView>
         </View>
       </SafeAreaView>

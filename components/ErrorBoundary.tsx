@@ -37,7 +37,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[ErrorBoundary]', error.message, info.componentStack);
-    showToast(error.message || 'Произошла ошибка', 'error');
+    showToast(error.message || 'Произошла ошибка / An error occurred', 'error');
   }
 
   handleReset = () => {
@@ -61,10 +61,10 @@ export default class ErrorBoundary extends React.Component<Props, State> {
             <Ionicons name="alert-circle" size={48} color={c.danger} />
           </View>
           <Text style={[styles.title, { color: c.text }]}>
-            {this.props.fallbackTitle ?? 'Что-то пошло не так'}
+            {this.props.fallbackTitle ?? 'Что-то пошло не так / Something went wrong'}
           </Text>
           <Text style={[styles.message, { color: c.textSecondary }]}>
-            {this.props.fallbackMessage ?? 'Произошла непредвиденная ошибка. Попробуйте перезапустить экран.'}
+            {this.props.fallbackMessage ?? 'Произошла непредвиденная ошибка. / An unexpected error occurred. Try restarting the screen.'}
           </Text>
           {this.state.error ? (
             <Text style={[styles.errorDetail, { color: c.textSecondary }]}>{this.state.error.message}</Text>

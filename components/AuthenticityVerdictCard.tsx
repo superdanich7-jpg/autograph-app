@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Post } from '../context/PostsContext';
+import { useLanguage } from '../context/LanguageContext';
+import { verdictLabel } from '../lib/i18n';
 import { useTheme } from '../context/ThemeContext';
 import { getAuthenticityVerdict, AuthenticityVerdict } from '../lib/authenticity';
 import { getEvidenceLabel } from '../lib/helpers';
@@ -13,12 +15,6 @@ const VERDICT_ICON: Record<string, string> = {
     'likely-fake': 'warning',
     disputed: 'help-buoy',
     inconclusive: 'help-circle-outline',
-};
-
-const CONFIDENCE_LABEL: Record<string, string> = {
-    low: 'Низкая',
-    medium: 'Средняя',
-    high: 'Высокая',
 };
 
 function SignalBar({
@@ -61,6 +57,7 @@ export default function AuthenticityVerdictCard({
     verdict?: AuthenticityVerdict;
 }) {
     const { colors } = useTheme();
+    const { t, lang } = useLanguage();
     const v = verdict ?? getAuthenticityVerdict(post);
 
     const verdictColor = v.colorHint === 'success' ? colors.success
@@ -79,7 +76,7 @@ export default function AuthenticityVerdictCard({
                 <Text style={[styles.headerTitle, { color: colors.text }]}>Вердикт Autograph</Text>
                 <View style={[styles.confidenceChip, { backgroundColor: colors.surface }]}>
                     <Text style={[styles.confidenceChipText, { color: colors.textSecondary }]}>
-                        Уверенность: {CONFIDENCE_LABEL[v.confidenceLevel]}
+                        {t('matchConfidence', { n: v.confidenceLevel === 'high' ? 90 : v.confidenceLevel === 'medium' ? 60 : 30 })}
                     </Text>
                 </View>
             </View>
@@ -89,18 +86,18 @@ export default function AuthenticityVerdictCard({
                     <Ionicons name={VERDICT_ICON[v.verdict] as any} size={26} color="#ffffff" />
                 </View>
                 <View style={styles.verdictTextWrap}>
-                    <Text style={[styles.verdictLabel, { color: verdictColor }]}>{v.label}</Text>
+                    <Text style={[styles.verdictLabel, { color: verdictColor }]}>{verdictLabel(v.verdict, lang)}</Text>
                     <Text style={[styles.verdictScore, { color: colors.text }]}>
-                        {v.score}% · {v.totalVotes} {v.totalVotes === 1 ? 'голос' : 'голосов'}
+                        {v.score}% · {v.totalVotes} {v.totalVotes === 1 ? t('votesUnit') : t('votesUnit')}
                     </Text>
                 </View>
             </View>
 
             <View style={styles.signals}>
                 <Text style={[styles.signalsTitle, { color: colors.textSecondary }]}>На основе</Text>
-                <SignalBar icon="sparkles" label="AI-анализ" value={v.aiScore} color={colors.primary} colors={colors} />
-                <SignalBar icon="people" label="Сообщество" value={v.communityScore} color={colors.info} colors={colors} />
-                <SignalBar icon="document-attach" label="Доказательства" value={v.evidenceScore} color={colors.warning} colors={colors} />
+                <SignalBar icon="sparkles" label={t('aiAnalysis')} value={v.aiScore} color={colors.primary} colors={colors} />
+                <SignalBar icon="people" label={t('sectionSocial')} value={v.communityScore} color={colors.info} colors={colors} />
+                <SignalBar icon="document-attach" label={t('detailEvidence')} value={v.evidenceScore} color={colors.warning} colors={colors} />
             </View>
 
             {post.evidence.length > 0 && (
