@@ -22,9 +22,12 @@ import { categoryLabel } from '../../lib/i18n';
 import { getDayStreak } from '../../lib/stats-share';
 import { scheduleStreakReminderIfNeeded } from '../../lib/streak-reminder';
 import { radii, shadows } from '../../lib/theme';
+import { hapticLight } from '../../lib/haptics';
 // Шаг 15 PLAN-100: expo-image — кэш + blur-placeholder
 import { Image } from 'expo-image';
 
+import { SegmentedControl } from '../../components/ui/primitives';
+import CollectionsList from '../../components/CollectionsList';
 import ProfileModal from '../../components/ProfileModal';
 import ProfilePostModal from '../../components/ProfilePostModal';
 import AuthGate from '../../components/AuthGate';
@@ -32,6 +35,7 @@ import AuthGate from '../../components/AuthGate';
 export default function ProfileScreen() {
     const {
         posts,
+        collections,
             profile,
         currentUserId,
         isAuthenticated,
@@ -51,6 +55,8 @@ export default function ProfileScreen() {
     const [editVisible, setEditVisible] = useState(false);
     const [settingsVisible, setSettingsVisible] = useState(false);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [profileTab, setProfileTab] = useState<'posts' | 'collections' | 'saved'>('posts');
+    const [collectionsSheet, setCollectionsSheet] = useState(false);
     const [draftName, setDraftName] = useState(profile.name);
     const [draftBio, setDraftBio] = useState(profile.bio);
 
@@ -282,58 +288,19 @@ export default function ProfileScreen() {
                     />
                 </View>
 
-                {savedPosts.length > 0 ? (
-                    <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('savedTitle')}</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedRow}>
-                            {savedPosts.slice(0, 5).map((post) => (
-                                <TouchableOpacity
-                                    key={post.id}
-                                    style={[styles.savedCard, { backgroundColor: colors.card }]}
-                                    onPress={() => setSelectedPost(post)}
-                                >
-                                    <Image source={{ uri: post.uri }} style={styles.savedImage} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
-                                    <View style={styles.savedFooter}>
-                                        <Text style={[styles.savedTitle, { color: colors.text }]} numberOfLines={1}>
-                                            {post.celebrityName || t('nameless')}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
-                ) : null}
+                {/* Шаг 37 PLAN-100: табы профиля как в Instagram */}
+                <SegmentedControl
+                    segments={[
+                        { key: 'posts', label: t('postsTab'), icon: 'grid-outline' as const },
+                        { key: 'collections', label: t('collectionsTab'), icon: 'albums-outline' as const },
+                        { key: 'saved', label: t('savedTab'), icon: 'bookmark-outline' as const },
+                    ]}
+                    activeKey={profileTab}
+                    onChange={(key) => { hapticLight(); setProfileTab(key as typeof profileTab); }}
+                />
 
-                {topShowcase.length > 0 ? (
-                    <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('showcaseTitle')}</Text>
-                        {topShowcase.map((post) => (
-                            <TouchableOpacity
-                                key={post.id}
-                                style={[styles.showcaseRow, { backgroundColor: colors.card }]}
-                                onPress={() => setSelectedPost(post)}
-                            >
-                                <Image source={{ uri: post.uri }} style={styles.showcaseImage} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
-                                <View style={styles.showcaseBody}>
-                                    <Text style={[styles.showcaseTitle, { color: colors.text }]} numberOfLines={1}>
-                                        {post.celebrityName || t('nameless')}
-                                    </Text>
-                                    <Text style={[styles.showcaseMeta, { color: colors.textSecondary }]} numberOfLines={1}>
-                                        {categoryLabel(post.category, lang)} • {getRarityLabel(post.rarity)}
-                                    </Text>
-                                    <Text style={[styles.showcaseScore, { color: colors.text }]}>
-                                        {getAuthenticityPercent(post)}% доверия
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                ) : null}
-
-                <View style={styles.section}>
-                    <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('myCollection')}</Text>
-
-                    {myPosts.length === 0 ? (
+                {profileTab === 'posts' ? (
+                    myPosts.length === 0 ? (
                         <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
                             <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                                 <Ionicons name="albums-outline" size={28} color={colors.primary} />
@@ -344,7 +311,7 @@ export default function ProfileScreen() {
                             </Text>
                         </View>
                     ) : (
-                        // Шаг 36 PLAN-100: сетка как в Instagram — 3 колонки квадратных фото
+                        // Шаг 36 PLAN-100: сетка 3 колонки квадратных фото
                         <View style={styles.grid}>
                             {myPosts.slice(0, 12).map((post) => (
                                 <TouchableOpacity
@@ -362,8 +329,72 @@ export default function ProfileScreen() {
                                 </TouchableOpacity>
                             ))}
                         </View>
-                    )}
-                </View>
+                    )
+                ) : profileTab === 'collections' ? (
+                    collections.length === 0 ? (
+                        <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
+                            <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
+                                <Ionicons name="albums-outline" size={28} color={colors.primary} />
+                            </View>
+                            <Text style={[styles.emptyText, { color: colors.text }]}>{t('collNoAutographs')}</Text>
+                            <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+                                {t('collAddFirst')}
+                            </Text>
+                        </View>
+                    ) : (
+                        <View style={styles.collList}>
+                            {collections.map((c) => (
+                                <TouchableOpacity
+                                    key={c.id}
+                                    style={[styles.collRow, { backgroundColor: colors.card }]}
+                                    activeOpacity={0.85}
+                                    onPress={() => { hapticLight(); setCollectionsSheet(true); }}
+                                >
+                                    <View style={[styles.collDot, { backgroundColor: c.color }]}>
+                                        <Ionicons name="albums-outline" size={16} color="#FFFFFF" />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={[styles.collName, { color: colors.text }]} numberOfLines={1}>
+                                            {c.name}
+                                        </Text>
+                                        <Text style={[styles.collCount, { color: colors.textSecondary }]}>
+                                            {t('itemsCount', { n: c.postIds.length })}
+                                        </Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )
+                ) : savedPosts.length === 0 ? (
+                    <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
+                        <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
+                            <Ionicons name="bookmark-outline" size={28} color={colors.primary} />
+                        </View>
+                        <Text style={[styles.emptyText, { color: colors.text }]}>{t('savedTitle')}</Text>
+                        <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>
+                            {t('statsShareEmpty')}
+                        </Text>
+                    </View>
+                ) : (
+                    <View style={styles.grid}>
+                        {savedPosts.map((post) => (
+                            <TouchableOpacity
+                                key={post.id}
+                                style={styles.gridItem}
+                                activeOpacity={0.85}
+                                onPress={() => setSelectedPost(post)}
+                            >
+                                <Image source={{ uri: post.uri }} style={styles.gridImage} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
+                                {post.rarity === 'legendary' ? (
+                                    <View style={[styles.gridRarity, { backgroundColor: colors.accent }]}>
+                                        <Ionicons name="star" size={11} color="#0B1220" />
+                                    </View>
+                                ) : null}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
             </ScrollView>
 
             <ProfileModal visible={editVisible} title={t('profileEditTitle')} colors={colors} onClose={() => setEditVisible(false)}>
@@ -550,6 +581,8 @@ export default function ProfileScreen() {
             <ProfileModal visible={Boolean(selectedPost)} title={selectedPost?.celebrityName || t('autographFallback')} colors={colors} onClose={() => setSelectedPost(null)}>
                 <ProfilePostModal post={selectedPost} colors={colors} onClose={() => setSelectedPost(null)} />
             </ProfileModal>
+
+            <CollectionsList visible={collectionsSheet} onClose={() => setCollectionsSheet(false)} />
         </SafeAreaView>
     );
 }
@@ -781,6 +814,33 @@ const styles = StyleSheet.create({
     },
     emptyText: { fontSize: 18, fontWeight: '700', marginBottom: 8 },
     emptyHint: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+    collList: {
+        gap: 10,
+        marginTop: 12,
+    },
+    collRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        borderRadius: radii.lg,
+        padding: 12,
+        ...shadows.sm,
+    },
+    collDot: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    collName: {
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    collCount: {
+        fontSize: 12,
+        marginTop: 2,
+    },
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',

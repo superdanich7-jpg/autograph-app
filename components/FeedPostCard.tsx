@@ -323,6 +323,21 @@ export default function FeedPostCard({
                     </Text>
                 ) : null}
 
+                {/* Шаг 30 PLAN-100: полоса распределения голосов real vs fake */}
+                <View style={[styles.voteBarTrack, { backgroundColor: colors.dangerLight }]}>
+                    <View
+                        style={[
+                            styles.voteBarFill,
+                            {
+                                backgroundColor: colors.success,
+                                width: `${item.realVotes + item.fakeVotes > 0
+                                    ? Math.round((item.realVotes / (item.realVotes + item.fakeVotes)) * 100)
+                                    : 0}%`,
+                            },
+                        ]}
+                    />
+                </View>
+
                 <View style={styles.voteStatsRow}>
                     <Text style={[styles.voteStatsText, { color: colors.textSecondary }]}>
                         {t('voteStats', { real: item.realVotes, fake: item.fakeVotes })}
@@ -520,6 +535,15 @@ const styles = StyleSheet.create({
     interactionHint: {
         fontSize: 12,
         lineHeight: 17,
+    },
+    voteBarTrack: {
+        height: 6,
+        borderRadius: 3,
+        overflow: 'hidden',
+    },
+    voteBarFill: {
+        height: '100%',
+        borderRadius: 3,
     },
     voteStatsRow: {
         flexDirection: 'row',

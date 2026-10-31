@@ -273,12 +273,13 @@ export default function FeedScreen() {
                     data={filteredPosts}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
+                    /* Шаг 22 PLAN-100: фирменный pull-to-refresh — золото */
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={onRefresh}
-                            tintColor={colors.primary}
-                            colors={[colors.primary]}
+                            tintColor={colors.accent}
+                            colors={[colors.accent]}
                             progressBackgroundColor={colors.card}
                         />
                     }
