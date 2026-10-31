@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, FlatList, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // Шаг 15 PLAN-100: expo-image — кэш диска + blur-placeholder (быстрее RN Image)
 import { Image } from 'expo-image';
 import { Post } from '../context/PostsContext';
@@ -49,6 +49,9 @@ export default function FeedPostCard({
     const { t, lang } = useLanguage();
     const [imageError, setImageError] = useState(false);
     const disputed = isDisputed(item);
+    // Шаг 16 PLAN-100: карусель — все фото поста или одно
+    const postPhotos = item.photos && item.photos.length > 0 ? item.photos : [item.uri];
+    const [carouselIndex, setCarouselIndex] = useState(0);
     const isOwnPost = item.ownerId === currentUserId;
     const votingDisabled = !canInteract || isOwnPost;
 
@@ -74,9 +77,10 @@ export default function FeedPostCard({
             onToggleLike(item.id);
         }
         hapticMedium();
+        // Шаг 13 PLAN-100: резкий поп с перелётом и быстрым затуханием (IG-плавность)
         Animated.sequence([
-            Animated.spring(heartAnim, { toValue: 1, useNativeDriver: true, friction: 3 }),
-            Animated.timing(heartAnim, { toValue: 0, delay: 500, duration: 400, useNativeDriver: true }),
+            Animated.spring(heartAnim, { toValue: 1, useNativeDriver: true, friction: 4, tension: 160 }),
+            Animated.timing(heartAnim, { toValue: 0, delay: 420, duration: 320, useNativeDriver: true }),
         ]).start();
     };
 
@@ -123,7 +127,27 @@ export default function FeedPostCard({
                             Фото не удалось загрузить
                         </Text>
                     </View>
-                ) : (
+                ) : postPhotos.length > 1 ? (
+                        <FlatList
+                            data={postPhotos}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            onMomentumScrollEnd={(e) => {
+                                const w = e.nativeEvent.layoutMeasurement.width || 1;
+                                setCarouselIndex(Math.round(e.nativeEvent.contentOffset.x / w));
+                            }}
+                            renderItem={({ item: uri }) => (
+                                <Image
+                                    source={{ uri }}
+                                    style={styles.postImage}
+                                    contentFit={Platform.OS === 'web' ? 'contain' : 'cover'}
+                                    placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }}
+                                    transition={150}
+                                />
+                            )}
+                        />
+                    ) : (
                     <Image
                         source={{ uri: item.uri }}
                         style={styles.postImage}
@@ -133,6 +157,17 @@ export default function FeedPostCard({
                         onError={() => setImageError(true)}
                     />
                 )}
+                {/* Точки-индикаторы карусели */}
+                {postPhotos.length > 1 ? (
+                    <View style={styles.carouselDots} pointerEvents="none">
+                        {postPhotos.map((_, i) => (
+                            <View
+                                key={i}
+                                style={[styles.carouselDot, { backgroundColor: i === carouselIndex ? '#FFFFFF' : 'rgba(255,255,255,0.45)' }]}
+                            />
+                        ))}
+                    </View>
+                ) : null}
                 {/* B2: вердикт-оверлей на фото (glass) — подлинность видна до открытия */}
                 <View
                     pointerEvents="none"
@@ -184,7 +219,7 @@ export default function FeedPostCard({
                         {
                             opacity: heartAnim,
                             transform: [
-                                { scale: heartAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1.15] }) },
+                                { scale: heartAnim.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0.2, 1.25, 1] }) },
                             ],
                         },
                     ]}
@@ -242,6 +277,7 @@ export default function FeedPostCard({
                 <Text style={[styles.metaTitle, { color: colors.text }]}>{item.celebrityName || t('noName')}</Text>
                 <Text style={[styles.metaLine, { color: colors.textTertiary }]}>
                     {t('received', { value: item.dateReceived || '—' })}
+                    {item.views ? ` • ${t('viewsCount', { n: item.views })}` : ''}
                 </Text>
                 {item.caption ? <Text style={[styles.caption, { color: colors.text }]}>{item.caption}</Text> : null}
             </View>
@@ -535,6 +571,20 @@ const styles = StyleSheet.create({
     interactionHint: {
         fontSize: 12,
         lineHeight: 17,
+    },
+    carouselDots: {
+        position: 'absolute',
+        bottom: 10,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 5,
+    },
+    carouselDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
     voteBarTrack: {
         height: 6,

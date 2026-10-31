@@ -43,7 +43,7 @@ import { hapticLight } from '../../lib/haptics';
 import { typography } from '../../lib/theme';
 
 export default function FeedScreen() {
-    const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData, syncStatus } = usePosts();
+    const { posts, profile, currentUserId, canInteract, toggleLike, toggleSaved, addComment, voteAuthenticity, refreshCloudData, syncStatus, registerView } = usePosts();
     const { colors } = useTheme();
     const { t, lang } = useLanguage();
     const router = useRouter();
@@ -184,7 +184,7 @@ export default function FeedScreen() {
                 colors={colors}
                 currentUserId={currentUserId}
                 canInteract={canInteract}
-                onOpenDetail={(post) => setDetailPost(post)}
+                onOpenDetail={(post) => { registerView(post.id); setDetailPost(post); }}
                 onToggleLike={toggleLike}
                 onOpenComments={(id) => {
                     setSelectedPostId(id);

@@ -26,6 +26,7 @@ import { hapticLight } from '../../lib/haptics';
 // Шаг 15 PLAN-100: expo-image — кэш + blur-placeholder
 import { Image } from 'expo-image';
 
+import * as ImagePicker from 'expo-image-picker';
 import { SegmentedControl } from '../../components/ui/primitives';
 import CollectionsList from '../../components/CollectionsList';
 import ProfileModal from '../../components/ProfileModal';
@@ -120,6 +121,30 @@ export default function ProfileScreen() {
         Alert.alert(t('signedOutTitle'), t('signedOutBody'));
     };
 
+    // Шаг 41 PLAN-100: смена аватара — пик → Storage → profile.avatar (закрывает BUG-08)
+    const handlePickAvatar = async () => {
+        try {
+            const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (perm.status !== 'granted') {
+                Alert.alert(t('permTitle'), t('permPhotoBody'));
+                return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: 'images',
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
+            if (result.canceled || !result.assets?.[0]?.uri) return;
+            const { uploadAutographPhoto } = await import('../../lib/storage');
+            const url = await uploadAutographPhoto(result.assets[0].uri, `avatar-${currentUserId}`);
+            updateProfile({ avatar: url });
+            hapticLight();
+        } catch (e) {
+            console.warn('Avatar upload failed:', e);
+        }
+    };
+
     const syncStatusLabel = useMemo(() => {
         if (syncStatus === 'syncing') return t('syncAutoLoading');
         if (syncStatus === 'loading') return t('syncLocalLoading');
@@ -170,10 +195,19 @@ export default function ProfileScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <Card variant="elevated" padding="lg" style={{ alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => Alert.alert(t('avatarAlert'), t('avatarComingSoon'))}>
+                    <TouchableOpacity onPress={handlePickAvatar} accessibilityRole="button" accessibilityLabel={t('avatarAlert')}>
                         <View style={[styles.avatarRing, { borderColor: colors.accent }]}>
                             <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
-                                <Ionicons name="person" size={44} color={colors.primary} />
+                                {profile.avatar ? (
+                                    <Image
+                                        source={{ uri: profile.avatar }}
+                                        style={{ width: '100%', height: '100%' }}
+                                        contentFit="cover"
+                                        transition={150}
+                                    />
+                                ) : (
+                                    <Ionicons name="person" size={44} color={colors.primary} />
+                                )}
                             </View>
                         </View>
                     </TouchableOpacity>

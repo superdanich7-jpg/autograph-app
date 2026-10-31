@@ -90,6 +90,8 @@ export default function UploadScreen() {
     const { t } = useLanguage();
 
     const [imageUri, setImageUri] = useState<string | null>(null);
+    // Шаг 16 PLAN-100: карусель — все выбранные фото (первое = обложка)
+    const [photoUris, setPhotoUris] = useState<string[]>([]);
     const [caption, setCaption] = useState('');
     const [celebrityName, setCelebrityName] = useState('');
     const [location, setLocation] = useState('');
@@ -199,9 +201,11 @@ export default function UploadScreen() {
         return true;
     };
 
-    const applyPickedImage = async (uri: string) => {
-        setImageUri(uri);
-        await runAnalysis(uri);
+    const applyPickedImages = async (uris: string[]) => {
+        if (uris.length === 0) return;
+        setImageUri(uris[0]);
+        setPhotoUris(uris);
+        await runAnalysis(uris[0]);
     };
 
     const takePhoto = async () => {
@@ -227,7 +231,7 @@ export default function UploadScreen() {
             });
 
             if (isMounted.current && !result.canceled && result.assets?.[0]?.uri) {
-                await applyPickedImage(result.assets[0].uri);
+                await applyPickedImages(result.assets.map((a) => a.uri).filter(Boolean));
             }
         } catch (error) {
             console.warn(error);
@@ -249,8 +253,8 @@ export default function UploadScreen() {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: 'images',
-                allowsEditing: true,
-                aspect: [4, 3],
+                allowsMultipleSelection: true,
+                selectionLimit: 5,
                 quality: 0.8,
                 ...(Platform.OS === 'ios'
                     ? { presentationStyle: ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN }
@@ -258,7 +262,7 @@ export default function UploadScreen() {
             });
 
             if (isMounted.current && !result.canceled && result.assets?.[0]?.uri) {
-                await applyPickedImage(result.assets[0].uri);
+                await applyPickedImages(result.assets.map((a) => a.uri).filter(Boolean));
             }
         } catch (error) {
             console.warn(error);
@@ -275,6 +279,7 @@ export default function UploadScreen() {
 
     const resetForm = () => {
         setImageUri(null);
+        setPhotoUris([]);
         setCaption('');
         setCelebrityName('');
         setLocation('');
@@ -315,15 +320,25 @@ export default function UploadScreen() {
         try {
             // LOOP-31: фото → Supabase Storage, в пост пишем публичный URL (не file://)
             let finalUri = imageUri;
+            let finalPhotos: string[] | undefined;
             try {
                 const { uploadAutographPhoto } = await import('../../lib/storage');
-                finalUri = await uploadAutographPhoto(imageUri, String(currentUserId ?? 'guest'));
+                // Шаг 16 PLAN-100: каждое фото карусели — в Storage
+                const uploaded: string[] = [];
+                for (const uri of photoUris.length > 0 ? photoUris : [imageUri]) {
+                    uploaded.push(await uploadAutographPhoto(uri, String(currentUserId ?? 'guest')));
+                }
+                finalUri = uploaded[0] ?? imageUri;
+                if (uploaded.length > 1) {
+                    finalPhotos = uploaded;
+                }
             } catch (uploadError) {
                 console.warn('Storage upload failed, fallback to local uri:', uploadError);
             }
 
             addPost({
                 uri: finalUri,
+                photos: finalPhotos,
                 caption,
                 celebrityName,
                 location: location.trim() || t('placeUnspecified'),

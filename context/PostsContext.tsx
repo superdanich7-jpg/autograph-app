@@ -73,6 +73,10 @@ export type Post = {
     ownerId: string | null;
     ownerName: string;
     uri: string;
+    /** Шаг 16 PLAN-100: дополнительные фото карусели (uri — главное/обложка) */
+    photos?: string[];
+    /** Шаг 25 PLAN-100: локальный счётчик просмотров */
+    views?: number;
     caption: string;
     timestamp: string;
     likes: number;
@@ -120,6 +124,8 @@ export type CommunityCollector = {
 export type UserProfile = {
     name: string;
     bio: string;
+    /** Шаг 41 PLAN-100: URL аватара в Storage (нет — монограмма) */
+    avatar?: string;
     notificationsEnabled: boolean;
     following: string[];
 };
@@ -135,6 +141,8 @@ export type Collection = {
 
 type AddPostInput = {
     uri: string;
+    /** Карусель: все фото (uri — первое) */
+    photos?: string[];
     caption: string;
     celebrityName: string;
     location: string;
@@ -171,10 +179,11 @@ type PostsContextType = {
     collections: Collection[];
     addPost: (data: AddPostInput) => void;
     toggleLike: (postId: string) => void;
+    registerView: (postId: string) => void;
     toggleSaved: (postId: string) => void;
     addComment: (postId: string, text: string) => void;
     voteAuthenticity: (postId: string, vote: VoteChoice) => void;
-    updateProfile: (data: Pick<UserProfile, 'name' | 'bio'>) => void;
+    updateProfile: (data: Partial<Pick<UserProfile, 'name' | 'bio' | 'avatar'>>) => void;
     setNotificationsEnabled: (enabled: boolean) => void;
     toggleFollowCollector: (collectorId: string) => void;
     getCollectorById: (collectorId: string) => CommunityCollector | undefined;
@@ -684,6 +693,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const addPost = ({
         uri,
+        photos,
         caption,
         celebrityName,
         location,
@@ -702,6 +712,8 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             ownerId,
             ownerName,
             uri,
+            photos: photos && photos.length > 1 ? photos : undefined,
+            views: 0,
             caption,
             celebrityName,
             location,
@@ -741,6 +753,13 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 persistPostToCloud(nextPost);
                 return nextPost;
             })
+        );
+    };
+
+    // Шаг 25 PLAN-100: локальный счётчик просмотров (считается при открытии карточки)
+    const registerView = (postId: string) => {
+        setPosts((prev) =>
+            prev.map((post) => (post.id === postId ? { ...post, views: (post.views ?? 0) + 1 } : post)),
         );
     };
 
@@ -851,11 +870,12 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         );
     };
 
-    const updateProfile = (data: Pick<UserProfile, 'name' | 'bio'>) => {
-        const newName = data.name.trim() || profileRef.current.name;
-        const newBio = data.bio.trim() || profileRef.current.bio;
+    const updateProfile = (data: Partial<Pick<UserProfile, 'name' | 'bio' | 'avatar'>>) => {
+        const newName = data.name?.trim() || profileRef.current.name;
+        const newBio = data.bio?.trim() || profileRef.current.bio;
+        const nextAvatar = data.avatar !== undefined ? data.avatar : profileRef.current.avatar;
 
-        const nextProfile = { ...profileRef.current, name: newName, bio: newBio };
+        const nextProfile = { ...profileRef.current, name: newName, bio: newBio, avatar: nextAvatar };
         profileRef.current = nextProfile;
 
         setProfile(nextProfile);
@@ -1053,6 +1073,7 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 collections,
                 addPost,
                 toggleLike,
+        registerView,
                 toggleSaved,
                 addComment,
                 voteAuthenticity,
