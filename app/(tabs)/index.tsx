@@ -185,6 +185,7 @@ export default function FeedScreen() {
                 currentUserId={currentUserId}
                 canInteract={canInteract}
                 onOpenDetail={(post) => { registerView(post.id); setDetailPost(post); }}
+                onHashtagPress={(tag) => { hapticLight(); setQuery(tag); }}
                 onToggleLike={toggleLike}
                 onOpenComments={(id) => {
                     setSelectedPostId(id);

@@ -32,6 +32,7 @@ export default function FeedPostCard({
     onToggleSaved,
     onVote,
     onRequireAuth,
+    onHashtagPress,
 }: {
     item: Post;
     colors: Colors;
@@ -43,6 +44,8 @@ export default function FeedPostCard({
     onToggleSaved: (id: string) => void;
     onVote: (id: string, vote: 'real' | 'fake') => void;
     onRequireAuth: () => void;
+    /** Шаг 21 PLAN-100: тап по хештегу — поиск по тегу в ленте */
+    onHashtagPress?: (tag: string) => void;
 }) {
     const verdict = getAuthenticityVerdict(item);
     const userVote = item.votesByUser[currentUserId];
@@ -279,7 +282,23 @@ export default function FeedPostCard({
                     {t('received', { value: item.dateReceived || '—' })}
                     {item.views ? ` • ${t('viewsCount', { n: item.views })}` : ''}
                 </Text>
-                {item.caption ? <Text style={[styles.caption, { color: colors.text }]}>{item.caption}</Text> : null}
+                {item.caption ? (
+                    <Text style={[styles.caption, { color: colors.text }]}>
+                        {item.caption.split(/(#[\wа-яА-ЯёЁ]+)/g).map((part, i) =>
+                            part.startsWith('#') ? (
+                                <Text
+                                    key={i}
+                                    style={{ color: colors.accent, fontWeight: '700' }}
+                                    onPress={() => onHashtagPress?.(part)}
+                                >
+                                    {part}
+                                </Text>
+                            ) : (
+                                part
+                            ),
+                        )}
+                    </Text>
+                ) : null}
             </View>
 
             <View style={styles.badgesRow}>
