@@ -7,7 +7,8 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Post } from '../context/PostsContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
@@ -15,27 +16,18 @@ import { hapticLight } from '../lib/haptics';
 import { spacing } from '../lib/theme';
 
 type Props = {
-    posts: Post[];
-    onPressPost: (post: Post) => void;
+    /** Уже отфильтрованный список свежих постов (считает экран ленты) */
+    stories: Post[];
+    onPressStory: (index: number) => void;
     onPressAdd: () => void;
 };
 
-// Окно 7 дней: на раннем этапе постов мало, 24ч оставляют рейку пустой на демо
-const FRESH_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_ITEMS = 12;
-
-export default function StoriesRail({ posts, onPressPost, onPressAdd }: Props) {
+export default function StoriesRail({ stories, onPressStory, onPressAdd }: Props) {
     const { colors } = useTheme();
     const { t } = useLanguage();
 
-    // Date.now() — «нечистый» вызов: берём один раз при монтировании (useState-инициализатор)
-    const [now] = useState(() => Date.now());
-    const fresh = posts
-        .filter((p) => now - new Date(p.timestamp).getTime() < FRESH_WINDOW_MS)
-        .slice(0, MAX_ITEMS);
-
     // Без свежих постов рейка не рисуется (в IG пустых кружков не бывает)
-    if (fresh.length === 0) {
+    if (stories.length === 0) {
         return null;
     }
 
@@ -44,7 +36,7 @@ export default function StoriesRail({ posts, onPressPost, onPressAdd }: Props) {
             <Text style={[styles.title, { color: colors.text }]}>{t('freshInClub')}</Text>
             <FlatList
                 horizontal
-                data={fresh}
+                data={stories}
                 keyExtractor={(item) => item.id}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.list}
@@ -66,13 +58,13 @@ export default function StoriesRail({ posts, onPressPost, onPressAdd }: Props) {
                         <TouchableOpacity
                             style={styles.item}
                             activeOpacity={0.8}
-                            onPress={() => { hapticLight(); onPressPost(item); }}
+                            onPress={() => { hapticLight(); onPressStory(stories.indexOf(item)); }}
                             accessibilityRole="button"
                             accessibilityLabel={name}
                         >
                             <View style={[styles.ring, { borderColor: colors.accent }]}>
                                 <View style={[styles.circle, { backgroundColor: colors.surface }]}>
-                                    <Image source={{ uri: item.uri }} style={styles.image} resizeMode="cover" />
+                                    <Image source={{ uri: item.uri }} style={styles.image} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
                                 </View>
                             </View>
                             <Text style={[styles.label, { color: colors.textSecondary }]} numberOfLines={1}>

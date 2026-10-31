@@ -35,6 +35,7 @@ import PostDetailModal from '../../components/PostDetailModal';
 import CommentsModal from '../../components/CommentsModal';
 import FeedPostCard from '../../components/FeedPostCard';
 import StoriesRail from '../../components/StoriesRail';
+import StoryViewer from '../../components/StoryViewer';
 import { PostCardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState, SegmentedControl } from '../../components/ui/primitives';
 import { Sheet } from '../../components/ui/Sheet';
@@ -58,6 +59,7 @@ export default function FeedScreen() {
     const [detailPost, setDetailPost] = useState<Post | null>(null);
     const [sharePost, setSharePost] = useState<Post | null>(null);
     const [filtersVisible, setFiltersVisible] = useState(false);
+    const [storyIndex, setStoryIndex] = useState<number | null>(null);
 
     // R-10: бейдж на кнопке поиска — сколько фильтров активно (поиск/категория/только-подтв./сортировка).
     const activeFilterCount =
@@ -122,6 +124,17 @@ export default function FeedScreen() {
         const legendary = posts.filter((post) => post.rarity === 'legendary').length;
         return { verified, disputed, legendary };
     }, [posts]);
+
+    // Шаг 12 PLAN-100: список свежих постов для рейки и story-вьюера.
+    // Date.now() — в useState-инициализаторе (react-compiler: нечистые вызовы в рендере запрещены).
+    const [nowTs] = React.useState(() => Date.now());
+    const freshStories = useMemo(
+        () =>
+            posts
+                .filter((p) => nowTs - new Date(p.timestamp).getTime() < 7 * 24 * 60 * 60 * 1000)
+                .slice(0, 12),
+        [posts, nowTs],
+    );
 
     const recommendations = useMemo<Recommendation[]>(
         () =>
@@ -229,10 +242,10 @@ export default function FeedScreen() {
                 </View>
             </View>
 
-            {/* Шаг 11 PLAN-100: рейка «Свежее в клубе» */}
+            {/* Шаг 11 PLAN-100: рейка «Свежее в клубе» (список считает экран) */}
             <StoriesRail
-                posts={posts}
-                onPressPost={(post) => setDetailPost(post)}
+                stories={freshStories}
+                onPressStory={(idx) => setStoryIndex(idx)}
                 onPressAdd={() => router.push('/upload')}
             />
 
@@ -283,6 +296,13 @@ export default function FeedScreen() {
                     }
                 />
             )}
+
+            {/* Шаг 12 PLAN-100: полноэкранный story-вьюер */}
+            <StoryViewer
+                stories={freshStories}
+                startIndex={storyIndex ?? 0}
+                onClose={() => setStoryIndex(null)}
+            />
 
             <CommentsModal
                 visible={commentsVisible}

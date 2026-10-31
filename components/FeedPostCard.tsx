@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+// Шаг 15 PLAN-100: expo-image — кэш диска + blur-placeholder (быстрее RN Image)
+import { Image } from 'expo-image';
 import { Post } from '../context/PostsContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
@@ -125,7 +127,9 @@ export default function FeedPostCard({
                     <Image
                         source={{ uri: item.uri }}
                         style={styles.postImage}
-                        resizeMode={Platform.OS === 'web' ? 'contain' : 'cover'}
+                        contentFit={Platform.OS === 'web' ? 'contain' : 'cover'}
+                        placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }}
+                        transition={150}
                         onError={() => setImageError(true)}
                     />
                 )}

@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
-    Image,
     ScrollView,
     StyleSheet,
     Switch,
@@ -23,6 +22,8 @@ import { categoryLabel } from '../../lib/i18n';
 import { getDayStreak } from '../../lib/stats-share';
 import { scheduleStreakReminderIfNeeded } from '../../lib/streak-reminder';
 import { radii, shadows } from '../../lib/theme';
+// Шаг 15 PLAN-100: expo-image — кэш + blur-placeholder
+import { Image } from 'expo-image';
 
 import ProfileModal from '../../components/ProfileModal';
 import ProfilePostModal from '../../components/ProfilePostModal';
@@ -291,7 +292,7 @@ export default function ProfileScreen() {
                                     style={[styles.savedCard, { backgroundColor: colors.card }]}
                                     onPress={() => setSelectedPost(post)}
                                 >
-                                    <Image source={{ uri: post.uri }} style={styles.savedImage} resizeMode="cover" />
+                                    <Image source={{ uri: post.uri }} style={styles.savedImage} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
                                     <View style={styles.savedFooter}>
                                         <Text style={[styles.savedTitle, { color: colors.text }]} numberOfLines={1}>
                                             {post.celebrityName || t('nameless')}
@@ -312,7 +313,7 @@ export default function ProfileScreen() {
                                 style={[styles.showcaseRow, { backgroundColor: colors.card }]}
                                 onPress={() => setSelectedPost(post)}
                             >
-                                <Image source={{ uri: post.uri }} style={styles.showcaseImage} resizeMode="cover" />
+                                <Image source={{ uri: post.uri }} style={styles.showcaseImage} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
                                 <View style={styles.showcaseBody}>
                                     <Text style={[styles.showcaseTitle, { color: colors.text }]} numberOfLines={1}>
                                         {post.celebrityName || t('nameless')}
@@ -352,7 +353,7 @@ export default function ProfileScreen() {
                                     activeOpacity={0.85}
                                     onPress={() => setSelectedPost(post)}
                                 >
-                                    <Image source={{ uri: post.uri }} style={styles.gridImage} resizeMode="cover" />
+                                    <Image source={{ uri: post.uri }} style={styles.gridImage} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
                                     {post.rarity === 'legendary' ? (
                                         <View style={[styles.gridRarity, { backgroundColor: colors.accent }]}>
                                             <Ionicons name="star" size={11} color="#0B1220" />
