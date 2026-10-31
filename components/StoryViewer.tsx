@@ -5,7 +5,7 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Post } from '../context/PostsContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -34,7 +34,6 @@ export default function StoryViewer({
     const { t, lang } = useLanguage();
     const [index, setIndex] = useState(Math.max(0, Math.min(startIndex, stories.length - 1)));
     const [progress, setProgress] = useState(0);
-    const raf = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
         setIndex(Math.max(0, Math.min(startIndex, stories.length - 1)));
@@ -45,24 +44,21 @@ export default function StoryViewer({
         if (stories.length === 0) return;
         setProgress(0);
         const started = Date.now();
-        raf.current = setInterval(() => {
+        const id = setInterval(() => {
             const ratio = Math.min(1, (Date.now() - started) / SEGMENT_MS);
             setProgress(ratio);
             if (ratio >= 1) {
-                // Сегмент кончился — вперёд или закрыть
-                setIndex((prev) => {
-                    if (prev < stories.length - 1) {
-                        hapticLight();
-                        return prev + 1;
-                    }
+                clearInterval(id);
+                // Автопереход/закрытие — вне setState-updater (апдейтеры обязаны быть чистыми)
+                if (index < stories.length - 1) {
+                    hapticLight();
+                    setIndex(index + 1);
+                } else {
                     onClose();
-                    return prev;
-                });
+                }
             }
         }, 50);
-        return () => {
-            if (raf.current) clearInterval(raf.current);
-        };
+        return () => clearInterval(id);
     }, [index, stories.length, onClose]);
 
     if (stories.length === 0) return null;

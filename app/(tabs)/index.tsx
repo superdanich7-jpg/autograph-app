@@ -297,12 +297,15 @@ export default function FeedScreen() {
                 />
             )}
 
-            {/* Шаг 12 PLAN-100: полноэкранный story-вьюер */}
-            <StoryViewer
-                stories={freshStories}
-                startIndex={storyIndex ?? 0}
-                onClose={() => setStoryIndex(null)}
-            />
+            {/* Шаг 12 PLAN-100: полноэкранный story-вьюер.
+                Монтируется только при открытии — Modal.visible сам не сбрасывает */}
+            {storyIndex !== null ? (
+                <StoryViewer
+                    stories={freshStories}
+                    startIndex={storyIndex}
+                    onClose={() => setStoryIndex(null)}
+                />
+            ) : null}
 
             <CommentsModal
                 visible={commentsVisible}
