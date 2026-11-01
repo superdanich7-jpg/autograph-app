@@ -115,6 +115,8 @@ export default function CollectionsList({ visible, onClose }: Props) {
 
   const detailCollection = detailCollectionId ? collections.find((c) => c.id === detailCollectionId) : null;
 
+  if (!visible) return null;
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.container}>
