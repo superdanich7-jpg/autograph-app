@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { Platform, StyleSheet, View, ViewStyle } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../../context/ThemeContext';
 import { ensureWebGlassCss } from '../../lib/web-glass';
@@ -18,9 +18,11 @@ type Props = {
     radius?: number;
     /** Отключить blur (дешёвые поверхности: чипы, плашки) */
     flat?: boolean;
+    /** Нажимаемая стеклянная карточка (строки списков) */
+    onPress?: () => void;
 };
 
-export default function GlassCard({ children, style, radius = 20, flat = false }: Props) {
+export default function GlassCard({ children, style, radius = 20, flat = false, onPress }: Props) {
     const { colors, theme } = useTheme();
     const dark = theme === 'dark';
 
@@ -32,7 +34,7 @@ export default function GlassCard({ children, style, radius = 20, flat = false }
     const hairline = (colors as { glassBorder?: string }).glassBorder ?? colors.border;
     const highlight = (colors as { glassHighlight?: string }).glassHighlight ?? 'rgba(255,255,255,0.06)';
 
-    return (
+    const content = (
         <View
             testID={Platform.OS === 'web' ? 'glass-card' : undefined}
             style={[
@@ -62,6 +64,16 @@ export default function GlassCard({ children, style, radius = 20, flat = false }
             {children}
         </View>
     );
+
+    if (onPress) {
+        return (
+            <TouchableOpacity activeOpacity={0.85} onPress={onPress} disabled={false}>
+                {content}
+            </TouchableOpacity>
+        );
+    }
+
+    return content;
 }
 
 const styles = StyleSheet.create({

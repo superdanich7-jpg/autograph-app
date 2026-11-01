@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import GlassCard from '../../components/ui/GlassCard';
 import { Post, usePosts, getReputation } from '../../context/PostsContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -194,7 +195,7 @@ export default function ProfileScreen() {
                 contentContainerStyle={styles.content}
                 showsVerticalScrollIndicator={false}
             >
-                <Card variant="elevated" padding="lg" style={{ alignItems: 'center' }}>
+                <GlassCard style={{ padding: 22, alignItems: 'center' }}>
                     <TouchableOpacity onPress={handlePickAvatar} accessibilityRole="button" accessibilityLabel={t('avatarAlert')}>
                         <View style={[styles.avatarRing, { borderColor: colors.accent }]}>
                             <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
@@ -260,20 +261,20 @@ export default function ProfileScreen() {
                             <Text style={[styles.statLabel, { color: colors.textTertiary }]} numberOfLines={1}>{t('statTrustShort')}</Text>
                         </View>
                     </View>
-                </Card>
+                </GlassCard>
 
                 <View style={styles.insightsRow}>
-                    <View style={[styles.insightCard, { backgroundColor: colors.card }]}>
+                    <GlassCard radius={16} style={{ padding: 14, flex: 1 }}>
                         <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>{t('uniqueNames')}</Text>
                         <Text style={[styles.insightValue, { color: colors.text }]}>{uniqueCelebrities}</Text>
-                    </View>
-                    <View style={[styles.insightCard, { backgroundColor: colors.card }]}>
+                    </GlassCard>
+                    <GlassCard radius={16} style={{ padding: 14, flex: 1 }}>
                         <Text style={[styles.insightLabel, { color: colors.textSecondary }]}>{t('favCategory')}</Text>
                         <Text style={[styles.insightValue, { color: colors.text }]}>{favoriteCategory}</Text>
-                    </View>
+                    </GlassCard>
                 </View>
 
-                <View style={[styles.goalCard, { backgroundColor: colors.card }]}>
+                <GlassCard radius={20} style={{ padding: 16, marginTop: 16 }}>
                     <View style={styles.goalHeader}>
                         <Text style={[styles.goalTitle, { color: colors.text }]}>{t('goalTitle')}</Text>
                         <Text style={[styles.goalProgress, { color: colors.textSecondary }]}>{verifiedGoalCount}/3</Text>
@@ -292,7 +293,7 @@ export default function ProfileScreen() {
                             ]}
                         />
                     </View>
-                </View>
+                </GlassCard>
 
                 <View style={styles.actions}>
                     <Button
@@ -335,7 +336,7 @@ export default function ProfileScreen() {
 
                 {profileTab === 'posts' ? (
                     myPosts.length === 0 ? (
-                        <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
+                        <View style={[styles.emptyState, { backgroundColor: colors.glassCard }]}>
                             <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                                 <Ionicons name="albums-outline" size={28} color={colors.primary} />
                             </View>
@@ -366,7 +367,7 @@ export default function ProfileScreen() {
                     )
                 ) : profileTab === 'collections' ? (
                     collections.length === 0 ? (
-                        <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
+                        <View style={[styles.emptyState, { backgroundColor: colors.glassCard }]}>
                             <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                                 <Ionicons name="albums-outline" size={28} color={colors.primary} />
                             </View>
@@ -378,10 +379,10 @@ export default function ProfileScreen() {
                     ) : (
                         <View style={styles.collList}>
                             {collections.map((c) => (
-                                <TouchableOpacity
+                                <GlassCard
                                     key={c.id}
-                                    style={[styles.collRow, { backgroundColor: colors.card }]}
-                                    activeOpacity={0.85}
+                                    radius={16}
+                                    style={{ padding: 12, flexDirection: 'row', alignItems: 'center', gap: 12 }}
                                     onPress={() => { hapticLight(); setCollectionsSheet(true); }}
                                 >
                                     <View style={[styles.collDot, { backgroundColor: c.color }]}>
@@ -396,12 +397,12 @@ export default function ProfileScreen() {
                                         </Text>
                                     </View>
                                     <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-                                </TouchableOpacity>
+                                </GlassCard>
                             ))}
                         </View>
                     )
                 ) : savedPosts.length === 0 ? (
-                    <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
+                    <View style={[styles.emptyState, { backgroundColor: colors.glassCard }]}>
                         <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
                             <Ionicons name="bookmark-outline" size={28} color={colors.primary} />
                         </View>
