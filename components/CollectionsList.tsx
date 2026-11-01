@@ -99,7 +99,7 @@ export default function CollectionsList({ visible, onClose }: Props) {
       <Ionicons name="albums-outline" size={36} color={colors.primary} />
       <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('collEmpty')}</Text>
       <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-        Создайте первую подборку, чтобы начать группировать автографы.
+        {t('collEmptyHint')}
       </Text>
     </View>
   );

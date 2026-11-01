@@ -13,13 +13,13 @@ import { hapticLight } from '../lib/haptics';
 
 const SEGMENT_MS = 6000;
 
-function timeAgoShort(iso: string, lang: 'ru' | 'en'): string {
+function timeAgoShort(iso: string, t: ReturnType<typeof useLanguage>['t']): string {
     const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-    if (minutes < 1) return lang === 'ru' ? 'сейчас' : 'now';
-    if (minutes < 60) return lang === 'ru' ? `${minutes} мин` : `${minutes} min`;
+    if (minutes < 1) return t('agoNow');
+    if (minutes < 60) return t('agoMinutes', { n: minutes });
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return lang === 'ru' ? `${hours} ч` : `${hours} h`;
-    return `${Math.floor(hours / 24)} ${lang === 'ru' ? 'дн' : 'd'}`;
+    if (hours < 24) return t('agoHours', { n: hours });
+    return t('agoDays', { n: Math.floor(hours / 24) });
 }
 
 export default function StoryViewer({
@@ -108,7 +108,7 @@ export default function StoryViewer({
                     </View>
                     <View style={styles.headerText}>
                         <Text style={styles.headerName}>{post.ownerName || 'Collector'}</Text>
-                        <Text style={styles.headerTime}>{timeAgoShort(post.timestamp, lang)}</Text>
+                        <Text style={styles.headerTime}>{timeAgoShort(post.timestamp, t)}</Text>
                     </View>
                     <Pressable onPress={onClose} style={styles.closeBtn} accessibilityRole="button" accessibilityLabel={t('close')}>
                         <Ionicons name="close" size={28} color="#FFFFFF" />
