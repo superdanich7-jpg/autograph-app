@@ -161,7 +161,7 @@ export default function AdvancedSearch({ posts, onPostPress }: Props) {
             </View>
 
             <View style={styles.filterRow}>
-                <Text style={[styles.countText, { color: colors.textSecondary }]}>Достоверность ≥ {minAuth}%</Text>
+                <Text style={[styles.countText, { color: colors.textSecondary }]}>{t('advTrustMin', { n: minAuth })}</Text>
                 <View style={styles.minAuthRow}>
                     {[0, 20, 40, 60, 80].map((v) => (
                         <TouchableOpacity
