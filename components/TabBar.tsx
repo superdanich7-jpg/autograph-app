@@ -123,7 +123,7 @@ export default function CustomTabBar() {
 
             <View style={styles.centerSlot} pointerEvents="box-none">
                 <TouchableOpacity
-                    style={[styles.fab, { backgroundColor: colors.accent, ...shadows.md }]}
+                    style={[styles.fab, { backgroundColor: colors.primary, ...shadows.md }]}
                     activeOpacity={0.85}
                     accessibilityRole="button"
                     accessibilityLabel={t('tabAdd')}
@@ -134,7 +134,7 @@ export default function CustomTabBar() {
                         }
                     }}
                 >
-                    <Ionicons name="add" size={28} color="#0B1220" />
+                    <Ionicons name="add" size={28} color={colors.primaryText} />
                 </TouchableOpacity>
                 <Text
                     style={[styles.label, { color: addActive ? colors.primary : colors.textSecondary }]}

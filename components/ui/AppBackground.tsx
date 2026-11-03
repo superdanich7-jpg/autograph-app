@@ -27,7 +27,7 @@ export default function AppBackground() {
     const gradient = ((colors as { bgGradient?: string[] }).bgGradient ??
         [colors.background, colors.background]) as [string, string, ...string[]];
     const glow = (colors as { glow?: string }).glow ?? 'rgba(0,0,0,0)';
-    const coolGlow = theme === 'dark' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(147, 197, 253, 0.18)';
+    const coolGlow = theme === 'dark' ? 'rgba(59, 130, 246, 0.04)' : 'rgba(147, 197, 253, 0.06)';
 
     if (Platform.OS === 'web') {
         // backgroundImage отсутствует в RN ViewStyle (это web-расширение RNW) —

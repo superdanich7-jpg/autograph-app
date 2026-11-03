@@ -222,13 +222,13 @@ export default function FeedScreen() {
                     >
                         <Ionicons name="search-outline" size={20} color={colors.text} />
                         {activeFilterCount > 0 ? (
-                            <View style={[styles.filterBadge, { backgroundColor: colors.accent }]}>
+                            <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
                                 <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
                             </View>
                         ) : null}
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.headerAvatar, { backgroundColor: colors.accentLight, borderColor: colors.accent }]}
+                        style={[styles.headerAvatar, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                         onPress={() => {
                             hapticLight();
                             router.push('/profile');
@@ -236,7 +236,7 @@ export default function FeedScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={t('tabProfile')}
                     >
-                        <Text style={[styles.headerAvatarText, { color: colors.accent }]}>
+                        <Text style={[styles.headerAvatarText, { color: colors.primaryText }]}>
                             {(profile.name || 'C').trim().charAt(0).toUpperCase()}
                         </Text>
                     </TouchableOpacity>

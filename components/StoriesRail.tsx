@@ -42,9 +42,9 @@ export default function StoriesRail({ stories, onPressStory, onPressAdd }: Props
                 contentContainerStyle={styles.list}
                 ListHeaderComponent={
                     <TouchableOpacity style={styles.item} activeOpacity={0.8} onPress={() => { hapticLight(); onPressAdd(); }}>
-                        <View style={[styles.ring, { borderColor: colors.accent }]}>
-                            <View style={[styles.circle, { backgroundColor: colors.accentLight }]}>
-                                <Ionicons name="add" size={22} color={colors.accent} />
+                        <View style={[styles.ring, { borderColor: colors.primary }]}>
+                            <View style={[styles.circle, { backgroundColor: colors.primaryLight }]}>
+                                <Ionicons name="add" size={22} color={colors.primary} />
                             </View>
                         </View>
                         <Text style={[styles.label, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -62,7 +62,7 @@ export default function StoriesRail({ stories, onPressStory, onPressAdd }: Props
                             accessibilityRole="button"
                             accessibilityLabel={name}
                         >
-                            <View style={[styles.ring, { borderColor: colors.accent }]}>
+                            <View style={[styles.ring, { borderColor: colors.primary }]}>
                                 <View style={[styles.circle, { backgroundColor: colors.surface }]}>
                                     <Image source={{ uri: item.uri }} style={styles.image} contentFit="cover" placeholder={{ blurhash: 'L5H2EC=PM+yV0g-mq.wG9c010J}I' }} transition={120} />
                                 </View>

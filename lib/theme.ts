@@ -64,30 +64,30 @@ const palette = {
 // ─── Light Theme ───────────────────────────────
 
 export const lightTheme = {
-  // Backgrounds (paper)
-  background: brandColors.paper50,
-  surface: brandColors.paper100,
+  // «Gallery White» (2026-11): строгая светлая галерея — белый фон, чёрный primary,
+  // золото только на подлинности/редкости
+  background: '#FFFFFF',
+  surface: '#F5F5F3',
   card: '#FFFFFF',
 
-  // Text (ink)
-  text: brandColors.ink900,
-  textSecondary: brandColors.ink500,
-  // gray500: единственный серый, дающий ≥4.5:1 на paper50 (WCAG AA для мелких подписей)
-  textTertiary: palette.gray500,
-  placeholder: palette.gray400,
+  // Text
+  text: '#141414',
+  textSecondary: '#595959',
+  textTertiary: '#8C8C8C',
+  placeholder: '#B3B3B3',
 
   // Borders
-  border: brandColors.paper200,
-  borderLight: brandColors.paper100,
+  border: '#E8E8E6',
+  borderLight: '#F0F0EE',
 
-  // Primary (ink — премиальный, не generic-синий)
-  primary: brandColors.ink900,
-  primaryLight: brandColors.paper200,
+  // Primary — строгий чёрный
+  primary: '#141414',
+  primaryLight: '#ECECEA',
   primaryText: '#FFFFFF',
 
-  // Accent (gold — редкость/подлинность)
+  // Accent — золото зарезервировано за подлинностью/легендарными
   accent: brandColors.gold500,
-  accentLight: '#FAF3DD',
+  accentLight: '#F7F1DF',
   accentText: '#FFFFFF',
 
   // Semantic
@@ -107,18 +107,18 @@ export const lightTheme = {
   shimmer: '#FFFFFF',
   glass: 'rgba(255, 255, 255, 0.72)',
 
-  // Liquid Glass (2026-10-29): полупрозрачные поверхности над градиентным фоном
-  glassCard: 'rgba(255, 255, 255, 0.58)',
-  glassBorder: 'rgba(255, 255, 255, 0.65)',
-  glassHighlight: 'rgba(255, 255, 255, 0.55)',
-  bgGradient: ['#FBF9F5', '#F3EEE3', '#EAE2D0'],
-  glow: 'rgba(201, 162, 39, 0.16)',
+  // Liquid Glass: нейтральное белое стекло над белым градиентом
+  glassCard: 'rgba(255, 255, 255, 0.66)',
+  glassBorder: 'rgba(17, 17, 17, 0.08)',
+  glassHighlight: 'rgba(255, 255, 255, 0.65)',
+  bgGradient: ['#FFFFFF', '#FAFAF8', '#F3F3F1'],
+  glow: 'rgba(20, 20, 20, 0.035)',
 
-  // Shadows (iOS)
+  // Shadows (iOS) — деликатные для белой галереи
   shadowColor: '#000000',
   shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 8,
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
 
   // Elevation (Android)
   elevation: 2,
@@ -174,8 +174,8 @@ export const darkTheme = {
   glassCard: 'rgba(23, 32, 51, 0.55)',
   glassBorder: 'rgba(148, 163, 184, 0.22)',
   glassHighlight: 'rgba(255, 255, 255, 0.08)',
-  bgGradient: ['#0E1626', '#0B1220', '#020617'],
-  glow: 'rgba(231, 200, 115, 0.16)',
+  bgGradient: ['#0B1220', '#0B1220', '#060B14'],
+  glow: 'rgba(231, 200, 115, 0.05)',
 
   // Shadows
   shadowColor: '#000000',

@@ -20,7 +20,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const systemScheme = useColorScheme();
-    const initialMode: ThemeMode = systemScheme === 'dark' ? 'dark' : 'light';
+    // «Gallery White»: светлая тема — выбор по умолчанию (переключатель в настройках)
+    const initialMode: ThemeMode = 'light';
     const [theme, setThemeState] = useState<ThemeMode>(initialMode);
     // Статический пререндер (Node) рисует инлайн-стили в light-теме, а React
     // при гидрации не перезаписывает неизменённые style-атрибуты — фон и панели

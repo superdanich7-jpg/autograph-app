@@ -26,9 +26,9 @@ export default function AuthGate({ icon, title, hint }: Props) {
 
     return (
         <View style={[styles.wrap, { backgroundColor: colors.background }]}>
-            <View style={[styles.logoRing, { borderColor: colors.accent, ...shadows.md }]}>
+            <View style={[styles.logoRing, { borderColor: colors.primary, ...shadows.md }]}>
                 <View style={[styles.logo, { backgroundColor: colors.card }]}>
-                    <Ionicons name={icon} size={40} color={colors.accent} />
+                    <Ionicons name={icon} size={40} color={colors.primary} />
                 </View>
             </View>
 
@@ -36,7 +36,7 @@ export default function AuthGate({ icon, title, hint }: Props) {
             <Text style={[styles.hint, { color: colors.textSecondary }]}>{hint}</Text>
 
             <TouchableOpacity
-                style={[styles.signInButton, { backgroundColor: colors.accent, ...shadows.md }]}
+                style={[styles.signInButton, { backgroundColor: colors.primary, ...shadows.md }]}
                 activeOpacity={0.85}
                 accessibilityRole="button"
                 accessibilityLabel={t('signIn')}
@@ -45,7 +45,7 @@ export default function AuthGate({ icon, title, hint }: Props) {
                     router.push('/auth');
                 }}
             >
-                <Ionicons name="log-in-outline" size={20} color="#0B1220" />
+                <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.signInText}>{t('signIn')}</Text>
             </TouchableOpacity>
 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     signInText: {
         fontSize: 16,
         fontWeight: '800',
-        color: '#0B1220',
+        color: '#FFFFFF',
     },
     langRow: {
         flexDirection: 'row',

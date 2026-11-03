@@ -118,13 +118,13 @@ export default function OnboardingScreen({ onComplete }: Props) {
         <Animated.View
           style={[
             styles.iconContainer,
-            { backgroundColor: colors.accentLight, transform: [{ scale: iconScale }] },
+            { backgroundColor: colors.primaryLight, transform: [{ scale: iconScale }] },
           ]}
         >
           <Ionicons
             name={slides[currentIndex].icon as keyof typeof Ionicons.glyphMap}
             size={68}
-            color={colors.accent}
+            color={colors.primary}
           />
         </Animated.View>
 
@@ -141,7 +141,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
             style={[
               styles.dot,
               {
-                backgroundColor: index === currentIndex ? colors.accent : colors.border,
+                backgroundColor: index === currentIndex ? colors.primary : colors.border,
                 width: index === currentIndex ? 32 : 10,
               },
             ]}
@@ -150,7 +150,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
       </View>
 
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: isLast ? colors.accent : colors.primary }, shadows.lg]}
+        style={[styles.button, { backgroundColor: colors.primary }, shadows.lg]}
         onPress={handleNext}
         activeOpacity={0.85}
         accessibilityRole="button"

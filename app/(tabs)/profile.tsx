@@ -231,7 +231,7 @@ export default function ProfileScreen() {
                     </View>
 
                     <View style={[styles.trustBarWrap, { backgroundColor: colors.surface }]}>
-                        <View style={[styles.trustBarFill, { backgroundColor: colors.accent, width: trustProgress }]} />
+                        <View style={[styles.trustBarFill, { backgroundColor: colors.primary, width: trustProgress }]} />
                     </View>
 
                     {/* Шаг 39 PLAN-100: статы в один ряд как в Instagram —
@@ -248,7 +248,7 @@ export default function ProfileScreen() {
                         <View style={styles.statItem}>
                             <View style={styles.statStreakRow}>
                                 {dayStreak > 0 ? (
-                                    <Ionicons name="flame" size={18} color={colors.accent} />
+                                    <Ionicons name="flame" size={18} color={colors.primary} />
                                 ) : null}
                                 <Text style={[styles.statNumber, { color: colors.text }]}>
                                     {dayStreak > 0 ? dayStreak : '—'}
@@ -287,7 +287,7 @@ export default function ProfileScreen() {
                             style={[
                                 styles.goalBarFill,
                                 {
-                                    backgroundColor: colors.accent,
+                                    backgroundColor: colors.primary,
                                     width: `${Math.min(100, Math.round((verifiedGoalCount / 3) * 100))}%`,
                                 },
                             ]}
