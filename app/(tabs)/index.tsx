@@ -55,6 +55,8 @@ export default function FeedScreen() {
     const [query, setQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<'all' | PostCategory>('all');
     const [onlyVerified, setOnlyVerified] = useState(false);
+    // Шаг 26 PLAN-100: «Новое» — только непросмотренные посты
+    const [onlyNew, setOnlyNew] = useState(false);
     const [sortMode, setSortMode] = useState<'latest' | 'trusted' | 'debated'>('latest');
     const [detailPost, setDetailPost] = useState<Post | null>(null);
     const [sharePost, setSharePost] = useState<Post | null>(null);
@@ -73,6 +75,7 @@ export default function FeedScreen() {
         setQuery('');
         setCategoryFilter('all');
         setOnlyVerified(false);
+        setOnlyNew(false);
         setSortMode('latest');
     };
 
@@ -94,8 +97,9 @@ export default function FeedScreen() {
             const matchesCategory = categoryFilter === 'all' || post.category === categoryFilter;
             const authenticity = getAuthenticity(post);
             const matchesVerified = !onlyVerified || authenticity.confidence >= 70;
+            const matchesNew = !onlyNew || !post.views;
 
-            return matchesQuery && matchesCategory && matchesVerified;
+            return matchesQuery && matchesCategory && matchesVerified && matchesNew;
         });
 
         if (sortMode === 'trusted') {
@@ -115,7 +119,7 @@ export default function FeedScreen() {
         }
 
         return nextPosts;
-    }, [categoryFilter, onlyVerified, posts, query, sortMode]);
+    }, [categoryFilter, onlyNew, onlyVerified, posts, query, sortMode]);
 
     const activePost = posts.find((post) => post.id === selectedPostId);
     const summary = useMemo(() => {
@@ -367,6 +371,12 @@ export default function FeedScreen() {
                             onPress={() => setOnlyVerified((prev) => !prev)}
                         >
                             <Text style={[styles.filterChipText, { color: onlyVerified ? colors.primaryText : colors.text }]}>{t('filterVerifiedOnly')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.filterChip, { backgroundColor: onlyNew ? colors.primary : colors.surface }]}
+                            onPress={() => setOnlyNew((prev) => !prev)}
+                        >
+                            <Text style={[styles.filterChipText, { color: onlyNew ? colors.primaryText : colors.text }]}>{t('filterNewOnly')}</Text>
                         </TouchableOpacity>
                     </View>
 

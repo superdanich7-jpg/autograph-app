@@ -9,15 +9,14 @@ export type TrustTier = 'newcomer' | 'verified' | 'expert' | 'authority';
 
 export interface TrustInfo {
   tier: TrustTier;
-  label: string;
   icon: string;
   colorHint: 'info' | 'success' | 'warning' | 'primary';
 }
 
 /** Определяет уровень доверия по очкам (0..∞). */
 export function getTrustTier(score: number): TrustInfo {
-  if (score >= 90) return { tier: 'authority', label: 'Авторитет', icon: '👑', colorHint: 'warning' };
-  if (score >= 70) return { tier: 'expert', label: 'Эксперт', icon: '🥇', colorHint: 'primary' };
-  if (score >= 40) return { tier: 'verified', label: 'Проверенный', icon: '✅', colorHint: 'success' };
-  return { tier: 'newcomer', label: 'Новичок', icon: '🌱', colorHint: 'info' };
+  if (score >= 90) return { tier: 'authority', icon: '👑', colorHint: 'warning' };
+  if (score >= 70) return { tier: 'expert', icon: '🥇', colorHint: 'primary' };
+  if (score >= 40) return { tier: 'verified', icon: '✅', colorHint: 'success' };
+  return { tier: 'newcomer', icon: '🌱', colorHint: 'info' };
 }

@@ -21,7 +21,7 @@ import { showToast } from './Toast';
 export default function ShareStatsCard() {
     const { posts, profile, reputation } = usePosts();
     const { colors } = useTheme();
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const [sharing, setSharing] = useState(false);
 
     const summary = useMemo(() => {
@@ -43,7 +43,7 @@ export default function ShareStatsCard() {
             reputationLabel: reputation.label,
             reputationScore: reputation.score,
             profileUrl: Linking.createURL('/profile'),
-        });
+        }, lang);
     }, [posts, profile.name, reputation]);
 
     const handleShare = async () => {

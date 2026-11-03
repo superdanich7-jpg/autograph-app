@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Image,
+    Pressable,
     ScrollView,
     StyleSheet,
     Text,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 import { Post } from '../context/PostsContext';
 import { useLanguage } from '../context/LanguageContext';
+import PhotoZoom from './PhotoZoom';
 import { useTheme } from '../context/ThemeContext';
 import { getCategoryLabel, getEvidenceLabel, getRarityLabel } from '../lib/helpers';
 import AuthenticityVerdictCard from './AuthenticityVerdictCard';
@@ -36,6 +38,7 @@ export default function PostDetailModal({
     onShare?: (post: Post) => void;
     colors: Colors;
 }) {
+    const [zoomOpen, setZoomOpen] = useState(false);
     const { t } = useLanguage();
     if (!post) return null;
 
@@ -87,7 +90,9 @@ export default function PostDetailModal({
             </View>
 
             <ScrollView contentContainerStyle={styles.detailScroll} showsVerticalScrollIndicator={false}>
-                <Image source={{ uri: post.uri }} style={styles.detailImage} resizeMode="cover" />
+                <Pressable onPress={() => setZoomOpen(true)}>
+                    <Image source={{ uri: post.uri }} style={styles.detailImage} resizeMode="cover" />
+                </Pressable>
 
                 <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <Text style={[styles.detailTitle, { color: colors.text }]}>{post.celebrityName}</Text>

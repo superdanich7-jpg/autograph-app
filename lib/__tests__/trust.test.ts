@@ -27,16 +27,16 @@ describe('getTrustTier', () => {
   });
 
   test('границы ровно на пороге', () => {
-    expect(getTrustTier(40).label).toBe('Проверенный');
-    expect(getTrustTier(70).label).toBe('Эксперт');
-    expect(getTrustTier(90).label).toBe('Авторитет');
+    expect(getTrustTier(40).tier).toBe('verified');
+    expect(getTrustTier(70).tier).toBe('expert');
+    expect(getTrustTier(90).tier).toBe('authority');
   });
 
   test('каждый тир несёт иконку и цвет', () => {
     for (const s of [0, 40, 70, 90]) {
       const t = getTrustTier(s);
       expect(t.icon.length).toBeGreaterThan(0);
-      expect(t.label.length).toBeGreaterThan(0);
+      expect(t.tier.length).toBeGreaterThan(0);
       expect(['info', 'success', 'warning', 'primary']).toContain(t.colorHint);
     }
   });

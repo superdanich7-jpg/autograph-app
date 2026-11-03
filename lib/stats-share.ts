@@ -32,7 +32,17 @@ const CATEGORY_EMOJI: Record<string, string> = {
 };
 
 /** Определяет «титул» коллекционера по его статистике (геймификация шаринга). */
-export function getCollectorTitle(stats: Pick<CollectorStatsInput, 'totalPosts' | 'legendary' | 'totalRealVotes'>): string {
+export function getCollectorTitle(
+  stats: Pick<CollectorStatsInput, 'totalPosts' | 'legendary' | 'totalRealVotes'>,
+  lang: 'ru' | 'en' = 'ru',
+): string {
+  if (lang === 'en') {
+    if (stats.legendary >= 3) return 'Legendary autograph hunter';
+    if (stats.totalPosts >= 10) return 'Seasoned collector';
+    if (stats.totalPosts >= 5) return 'Growing collector';
+    if (stats.totalRealVotes >= 5) return 'Trusted keeper';
+    return 'Rising collector';
+  }
   if (stats.legendary >= 3) return 'Легендарный охотник за автографами';
   if (stats.totalPosts >= 10) return 'Заядлый коллекционер';
   if (stats.totalPosts >= 5) return 'Растущий коллекционер';
@@ -41,22 +51,23 @@ export function getCollectorTitle(stats: Pick<CollectorStatsInput, 'totalPosts' 
 }
 
 /** Формирует структурированное резюме для шейринга. */
-export function buildCollectorStatsSummary(stats: CollectorStatsInput): CollectorStatsSummary {
-  const title = getCollectorTitle(stats);
+export function buildCollectorStatsSummary(stats: CollectorStatsInput, lang: 'ru' | 'en' = 'ru'): CollectorStatsSummary {
+  const en = lang === 'en';
+  const title = getCollectorTitle(stats, lang);
   const categoryEmoji = CATEGORY_EMOJI[stats.favoriteCategory] ?? '✨';
 
   const lines: string[] = [];
-  lines.push(`🔏 Автографов в коллекции: ${stats.totalPosts}`);
-  if (stats.uniqueCelebrities > 0) lines.push(`⭐ Уникальных имён: ${stats.uniqueCelebrities}`);
-  if (stats.totalRealVotes > 0) lines.push(`✅ Подтверждений сообщества: ${stats.totalRealVotes}`);
-  if (stats.legendary > 0) lines.push(`🏆 Легендарных: ${stats.legendary}`);
-  if (stats.favoriteCategory) lines.push(`${categoryEmoji} Любимая категория: ${stats.favoriteCategory}`);
+  lines.push(en ? `🔏 Autographs in collection: ${stats.totalPosts}` : `🔏 Автографов в коллекции: ${stats.totalPosts}`);
+  if (stats.uniqueCelebrities > 0) lines.push(en ? `⭐ Unique names: ${stats.uniqueCelebrities}` : `⭐ Уникальных имён: ${stats.uniqueCelebrities}`);
+  if (stats.totalRealVotes > 0) lines.push(en ? `✅ Community verifications: ${stats.totalRealVotes}` : `✅ Подтверждений сообщества: ${stats.totalRealVotes}`);
+  if (stats.legendary > 0) lines.push(en ? `🏆 Legendary: ${stats.legendary}` : `🏆 Легендарных: ${stats.legendary}`);
+  if (stats.favoriteCategory) lines.push(en ? `${categoryEmoji} Favorite category: ${stats.favoriteCategory}` : `${categoryEmoji} Любимая категория: ${stats.favoriteCategory}`);
   if (typeof stats.reputationScore === 'number' && stats.reputationLabel) {
-    lines.push(`${stats.reputationLabel} · ${stats.reputationScore} очков доверия`);
+    lines.push(en ? `${stats.reputationLabel} · ${stats.reputationScore} trust points` : `${stats.reputationLabel} · ${stats.reputationScore} очков доверия`);
   }
 
   const headline = `🏅 ${stats.name} — ${title}`;
-  const text = [headline, ...lines, stats.profileUrl ? `\nМоя коллекция: ${stats.profileUrl}` : '']
+  const text = [headline, ...lines, stats.profileUrl ? en ? `\nMy collection: ${stats.profileUrl}` : `\nМоя коллекция: ${stats.profileUrl}` : '']
     .filter(Boolean)
     .join('\n');
 
